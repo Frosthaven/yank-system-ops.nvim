@@ -37,35 +37,49 @@ other programs.
 
 ## Requirements
 
-### Windows
+- You will need access to the `7z` or `7zz` binaries from terminal.
+- You will need a clipboard manager installed for your OS.
 
+See below for installing requirements on your system:
+
+<details>
+    <summary>Windows</summary>
+
+You can install 7zip via winget:
 ```powershell
 winget install -e --id 7zip.7zip
 ```
 
-### MacOS
+Windows has built-in clipboard management via the `clip` command.
+</details>
 
+<details>
+    <summary>MacOS</summary>
+
+You can install 7zip via Homebrew:
 ```bash
 brew install sevenzip
 ```
+MacOS has built-in clipboard management via the `pbcopy` and `pbpaste` commands.
+</details>
 
-### Linux
+<details>
+    <summary>Linux (Wayland)</summary>
 
-In addition to the below, you will need to have a clipboard manager installed.
-For Wayland, `wl-clipboard` is recommended. For X11, `xclip` or `xsel` should
-work.
-
-#### Debian/Ubuntu
-
+You can install 7zip via your package manager. See below for specific distros:
 ```bash
+# Debian/Ubuntu
 sudo apt install 7zip
 ```
 
-#### Arch
-
 ```bash
+# Arch
 sudo pacman -S --needed 7zip
 ```
+
+For Wayland, `wl-clipboard` is recommended for clipboard management. For X11,
+`xclip` or `xsel` should work.
+</details>
 
 ## Setup
 
