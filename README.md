@@ -15,6 +15,10 @@ programs (e.g. file explorer, Slack, Discord, etc.)
 chats
 - Yank lines of code with diagnostic syntax highlighting for pasting into chats
 - Yank link to selected lines in a GitHub repository
+- Open the current buffer's directory in your system's file explorer:
+    - Windows: explorer.exe
+    - MacOS: forklift.app > finder.app
+    - Linux: open-xdg default
 
 In addition, if you yanked a compressed file/folder, you can paste it into the
 buffer's current directory in Neovim to move the file/folder there.
