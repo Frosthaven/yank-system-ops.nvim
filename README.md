@@ -5,15 +5,16 @@ This plugin is still under development.
 Yank More is a cross-platform plugin that enhances the yank functionality in
 Neovim. It does this primarily by leveraging 7zip to generate archives and store
 them in a specified directory for easy access and sharing. With this tool you
-can yank the following:
+can do the following:
 
-- Files or Folders to the system clipboard for pasting into other programs (e.g.
-file explorer, Slack, Discord, etc.)
-- Generated filepaths to compressed files/folders
-- Relative and absolute file/folder paths
-- Lines of code as a code block with syntax highlighting for pasting into chats
-- Lines of code with diagnostic syntax highlighting for pasting into chats
-- Link to selected lines in a GitHub repository
+- Yank files or folders (as zip) to the system clipboard for pasting into other
+programs (e.g. file explorer, Slack, Discord, etc.)
+- Yank generated filepaths to compressed files/folders
+- Yank relative and absolute file/folder paths
+- Yank lines of code as a code block with syntax highlighting for pasting into
+chats
+- Yank lines of code with diagnostic syntax highlighting for pasting into chats
+- Yank link to selected lines in a GitHub repository
 
 In addition, if you yanked a compressed file/folder, you can paste it into the
 buffer's current directory in Neovim to move the file/folder there.
