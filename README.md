@@ -64,7 +64,7 @@ MacOS has built-in clipboard management via the `pbcopy` and `pbpaste` commands.
 </details>
 
 <details>
-    <summary>Linux (Wayland)</summary>
+    <summary>Linux</summary>
 
 You can install 7zip via your package manager. See below for specific distros:
 ```bash
