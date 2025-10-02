@@ -1,6 +1,6 @@
 local M = {}
 
-local config = {
+M.config = {
     storage_path = vim.fn.stdpath 'data' .. '/yank-more',
     files_to_keep = 3,
     debug = false,
@@ -16,10 +16,10 @@ function M.setup(opts)
     M._loaded = true
 
     opts = opts or {}
-    config = vim.tbl_deep_extend('force', config, opts or {})
+    M.config = vim.tbl_deep_extend('force', M.config, opts or {})
 
-    if config.debug then
-        vim.notify('Setup with config:\n' .. vim.inspect(config), vim.log.levels.DEBUG, { title = 'yank-more' })
+    if M.config.debug then
+        vim.notify('Setup with config:\n' .. vim.inspect(M.config), vim.log.levels.DEBUG, { title = 'yank-more' })
     end
 end
 
