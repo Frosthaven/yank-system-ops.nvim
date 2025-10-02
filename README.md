@@ -1,3 +1,114 @@
 # yank-more
 
-This plugin is still under development and not ready for use.
+This plugin is still under development.
+
+Yank More is a cross-platform plugin that enhances the yank functionality in
+Neovim. It does this primarily by leveraging 7zip to generate archives and store
+them in a specified directory for easy access and sharing. With this tool you
+can yank the following:
+
+- Files or Folders to the system clipboard for pasting into other programs (e.g.
+file explorer, Slack, Discord, etc.)
+- Generated filepaths to compressed files/folders
+- Relative and absolute file/folder paths
+- Lines of code as a code block with syntax highlighting for pasting into chats
+- Lines of code with diagnostic syntax highlighting for pasting into chats
+- Link to selected lines in a GitHub repository
+
+In addition, if you yanked a compressed file/folder, you can paste it into the
+buffer's current directory in Neovim to move the file/folder there.
+
+This allows for easy moving of files/folders between Neovim sessions as well as
+other programs.
+
+## Buffers Supported
+
+|Buffer Type | Yank File/Folder Path | Yank File/Folder Zip | Paste/Extract Zip|
+|------------|-----------------------|----------------------|------------------|
+| Editor     | ✅                    | ✅                   | ✅               |
+| Netrw      | ✅                    | ✅                   | ✅               |
+| Mini.files | ✅                    | ✅                   | ✅               |
+| Oil        | ❌                    | ❌                   | ❌               |
+| Telescope  | ❌                    | ❌                   | ❌               |
+| Filetree   | ❌                    | ❌                   | ❌               |
+| Neo-tree   | ❌                    | ❌                   | ❌               |
+| Nerdtree   | ❌                    | ❌                   | ❌               |
+
+## Requirements
+
+### Windows
+
+```powershell
+winget install -e --id 7zip.7zip
+```
+
+### MacOS
+
+```bash
+brew install sevenzip
+```
+
+### Linux
+
+In addition to the below, you will need to have a clipboard manager installed.
+For Wayland, `wl-clipboard` is recommended. For X11, `xclip` or `xsel` should
+work.
+
+#### Debian/Ubuntu
+
+```bash
+sudo apt install 7zip
+```
+
+#### Arch
+
+```bash
+sudo pacman -S --needed 7zip
+```
+
+## Setup
+
+Lazy:
+
+```lua
+return {
+    'frosthaven/yank-more.nvim',
+    enabled = true,
+    lazy = false,
+    opts = {
+        storage_path = vim.fn.expand '~/Downloads', -- path to store files
+        files_to_keep = 3, -- yank_more will delete older files beyond this
+        debug = false,
+    },
+    config = function(_, opts)
+        local yank_more = require 'yank_more'
+        yank_more.setup(opts)
+
+        -- Yank selected line(s) into markdown code block ---------------------
+        vim.keymap.set({ 'n', 'v' }, '<leader>yc', yank_more.yank_codeblock, { desc = '[Y]ank as [C]ode block' })
+
+        -- yank selected line(s) into markdown code block with diagnostics ----
+        vim.keymap.set({ 'n', 'v' }, '<leader>yd', yank_more.yank_diagnostics, { desc = '[Y]ank [D]iagnostic code block' })
+
+        -- yank selected line(s) as github url --------------------------------
+        vim.keymap.set({ 'n', 'v' }, '<leader>yg', yank_more.yank_github_url, { desc = '[Y]ank [G]itHub URL for current line(s)' })
+
+        -- yank current buffer as nvim zip file path --------------------------
+        vim.keymap.set({ 'n', 'v' }, '<leader>yz', yank_more.yank_compressed_file, { desc = '[Y]ank as [Z]ip file' })
+        
+        -- extract nvim zip file path into current buffer's directory ---------
+        vim.keymap.set('n', '<leader>pz', yank_more.paste_compressed_file, { desc = '[Z]ip file [P]aste' })
+
+        -- yank current buffer into file or compressed folder for sharing -----
+        vim.keymap.set({ 'n', 'v' }, '<leader>yb', yank_more.yank_file_binary, { desc = '[Y]ank as Zip [B]inary file' })
+        
+        -- yank file or folder full path text for current buffer --------------
+        vim.keymap.set({ 'n', 'v' }, '<leader>yr', yank_more.yank_relative_path, { desc = '[Y]ank [R]elative path of file' })
+        vim.keymap.set({ 'n', 'v' }, '<leader>ya', yank_more.yank_absolute_path, { desc = '[Y]ank [A]bsolute path of file' })
+
+        -- open buffer in external file browser -------------------------------
+        vim.keymap.set('n', '<leader>o', yank_more.open_buffer_in_file_manager, { desc = '[O]pen in external file browser' })
+
+    end,
+}
+```

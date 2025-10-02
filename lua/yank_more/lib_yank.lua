@@ -1,35 +1,4 @@
--- Yank More ------------------------------------------------------------------
--------------------------------------------------------------------------------
-
 local M = {}
-
-M.config = {
-    storage_path = vim.fn.stdpath 'data' .. '/yank-more',
-    files_to_keep = 3,
-    debug = false,
-}
-
-M._loaded = false
-
-function M.setup(opts)
-    if M._loaded then
-        vim.notify('yank-more is already loaded!', vim.log.levels.WARN, { title = 'yank-more' })
-        return
-    end
-    M._loaded = true
-
-    opts = opts or {}
-    M.config = vim.tbl_deep_extend('force', M.config, opts or {})
-
-    -- ensure storage path ends in a slash
-    if not M.config.storage_path:match '/$' then
-        M.config.storage_path = M.config.storage_path .. '/'
-    end
-
-    if M.config.debug then
-        vim.notify('Setup with config:\n' .. vim.inspect(M.config), vim.log.levels.DEBUG, { title = 'yank-more' })
-    end
-end
 
 -- Flash Highlight Helper -----------------------------------------------------
 -------------------------------------------------------------------------------
@@ -67,19 +36,19 @@ function M.yank_github_url()
 
     local repo_root = vim.fn.systemlist('git rev-parse --show-toplevel')[1]
     if repo_root == '' or vim.fn.isdirectory(repo_root) == 0 then
-        vim.notify('Not inside a Git repository', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify(' Not inside a Git repository', vim.log.levels.WARN, { title = 'Keymap' })
         return
     end
 
     local branch = vim.fn.systemlist('git rev-parse --abbrev-ref HEAD')[1]
     if branch == '' or branch == 'HEAD' then
-        vim.notify('Could not determine Git branch', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify(' Could not determine Git branch', vim.log.levels.WARN, { title = 'Keymap' })
         return
     end
 
     local remote_url = vim.fn.systemlist('git config --get remote.origin.url')[1]
     if not remote_url or remote_url == '' then
-        vim.notify('No Git remote found', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify(' No Git remote found', vim.log.levels.WARN, { title = 'Keymap' })
         return
     end
 
@@ -115,7 +84,7 @@ function M.yank_github_url()
         if #status > 0 then
             table.insert(msg_parts, 'uncommitted changes')
         end
-        vim.notify('Cannot copy GitHub URL: file has ' .. table.concat(msg_parts, '/') .. '!', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify(' Cannot copy GitHub URL: file has ' .. table.concat(msg_parts, '/') .. '!', vim.log.levels.WARN, { title = 'Keymap' })
         return
     end
 
@@ -132,7 +101,7 @@ function M.yank_github_url()
     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'nx', false)
     M.flash_highlight(bufnr, start_line - 1, end_line - 1)
 
-    vim.notify('Yanked GitHub URL', vim.log.levels.INFO, { title = 'Keymap' })
+    vim.notify(' Yanked GitHub URL', vim.log.levels.INFO, { title = 'Keymap' })
 end
 
 -- Yanks the selected line(s) and collects any diagnostics (errors, warnings,
@@ -214,7 +183,7 @@ function M.yank_diagnostics()
     M.flash_highlight(bufnr, start_line, end_line)
 
     -- Notify user
-    vim.notify('Yanked diagnostic code block', vim.log.levels.INFO, { title = 'Keymap', render = 'compact' })
+    vim.notify(' Yanked diagnostic code block', vim.log.levels.INFO, { title = 'Keymap', render = 'compact' })
 end
 
 -- Yanks the selected line(s) and formats them into a markdown code block,
@@ -244,7 +213,7 @@ function M.yank_codeblock()
     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'nx', false)
     M.flash_highlight(bufnr, start_line - 1, end_line - 1)
 
-    vim.notify('Yanked code block', vim.log.levels.INFO, { title = 'Keymap' })
+    vim.notify(' Yanked code block', vim.log.levels.INFO, { title = 'Keymap' })
 end
 
 -- Yank compressed file functions ---------------------------------------------
@@ -257,7 +226,7 @@ function __get_7zip_binary()
         end
     end
 
-    vim.notify('No 7z binary found in PATH (tried: ' .. table.concat(possible_binaries, ', ') .. ')', vim.log.levels.ERROR, { title = 'Keymap' })
+    vim.notify(' No 7z binary found in PATH (tried: ' .. table.concat(possible_binaries, ', ') .. ')', vim.log.levels.ERROR, { title = 'Keymap' })
     return nil
 end
 
@@ -316,7 +285,7 @@ end
 
 local function __compress_file(items, base_dir, filetype)
     if not items or #items == 0 then
-        vim.notify('No files/folders to compress', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify(' No files/folders to compress', vim.log.levels.WARN, { title = 'Keymap' })
         return
     end
 
@@ -346,7 +315,7 @@ local function __compress_file(items, base_dir, filetype)
     local zip_name = string.format('%s%s__%s.nvim.zip', project_prefix, base_name, timestamp)
 
     -- Downloads dir
-    local downloads = M.config.storage_path
+    local downloads = vim.fn.expand '~/Downloads'
     if vim.fn.isdirectory(downloads) == 0 then
         vim.fn.mkdir(downloads, 'p')
     end
@@ -372,12 +341,12 @@ local function __compress_file(items, base_dir, filetype)
     -- Yank zip path
     vim.fn.setreg('+', zip_path)
 
-    -- Keep latest files only
+    -- Keep latest 3 only
     local existing = vim.fn.globpath(downloads, '*.nvim.zip', true, true)
     table.sort(existing, function(a, b)
         return vim.loop.fs_stat(a).mtime.sec > vim.loop.fs_stat(b).mtime.sec
     end)
-    for i = (M.config.files_to_keep + 1), #existing do
+    for i = 4, #existing do
         os.remove(existing[i])
     end
 
@@ -410,6 +379,7 @@ end
 
 -- Copy file(s) reference to clipboard in a platform-specific way
 -- Store the persistent clipboard job ID
+local clipboard_job_id = nil
 
 local function __copy_file_to_clipboard(file)
     if type(file) ~= 'string' or file == '' then
@@ -502,12 +472,12 @@ function M.yank_compressed_file()
 
     local zip_path = __compress_file(items, base_dir, filetype)
     if not zip_path then
-        vim.notify('Failed to create zip file', vim.log.levels.ERROR, { title = 'Keymap' })
+        vim.notify(' Failed to create zip file', vim.log.levels.ERROR, { title = 'Keymap' })
         return
     end
 
     local zip_name = vim.fn.fnamemodify(zip_path, ':t') -- tail of the path
-    vim.notify(string.format('%s\n  Yanked path', zip_name), vim.log.levels.INFO, { title = 'Keymap' })
+    vim.notify(string.format(' %s\n  Yanked path', zip_name), vim.log.levels.INFO, { title = 'Keymap' })
 end
 
 -- puts the entire binary content of the compressed file into the clipboard
@@ -524,7 +494,7 @@ function M.yank_file_binary()
         -- Single file: copy it directly
         target_path = items[1]
         if vim.fn.filereadable(target_path) == 0 then
-            vim.notify('File does not exist: ' .. target_path, vim.log.levels.ERROR, { title = 'Keymap' })
+            vim.notify(' File does not exist: ' .. target_path, vim.log.levels.ERROR, { title = 'Keymap' })
             return
         end
     else
@@ -538,36 +508,36 @@ function M.yank_file_binary()
     -- Copy the file (or zip) as a "real file" to clipboard
     if __copy_file_to_clipboard(target_path) then
         local name = vim.fn.fnamemodify(target_path, ':t')
-        vim.notify(string.format('%s\n  Copied file to clipboard', name), vim.log.levels.INFO, { title = 'Keymap' })
+        vim.notify(string.format(' %s\n  Copied file to clipboard', name), vim.log.levels.INFO, { title = 'Keymap' })
     end
 end
 
 function M.paste_compressed_file()
     local zip_path = vim.fn.getreg '+'
     if zip_path == '' then
-        vim.notify('Clipboard is empty', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify(' Clipboard is empty', vim.log.levels.WARN, { title = 'Keymap' })
         return
     end
     if not zip_path:match '%.nvim%.zip$' then
-        vim.notify('Clipboard does not contain a .nvim.zip file', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify(' Clipboard does not contain a .nvim.zip file', vim.log.levels.WARN, { title = 'Keymap' })
         return
     end
 
     local _, target_dir, filetype = __get_buffer_context 'extract'
     if not target_dir or vim.fn.isdirectory(target_dir) == 0 then
-        vim.notify('Target directory not found', vim.log.levels.ERROR, { title = 'Keymap' })
+        vim.notify(' Target directory not found', vim.log.levels.ERROR, { title = 'Keymap' })
         return
     end
 
     local file_count, err = __extract_zip(zip_path, target_dir)
     if not file_count then
-        vim.notify(err or 'Unknown error extracting zip', vim.log.levels.ERROR, { title = 'Keymap' })
+        vim.notify(err, vim.log.levels.ERROR, { title = 'Keymap' })
         return
     end
 
     __refresh_after_extract(filetype)
 
-    vim.notify(string.format('%s\n  Extracted %d file(s)', zip_path:match '([^/]+)$', file_count), vim.log.levels.INFO, { title = 'Keymap' })
+    vim.notify(string.format(' %s\n  Extracted %d file(s)', zip_path:match '([^/]+)$', file_count), vim.log.levels.INFO, { title = 'Keymap' })
 end
 
 -- Yanks the relative path of the current file to the clipboard
@@ -579,7 +549,7 @@ function M.yank_relative_path()
 
     vim.fn.setreg('+', relpath)
 
-    vim.notify('Yanked relative path', vim.log.levels.INFO, { title = 'Keymap' })
+    vim.notify(' Yanked relative path', vim.log.levels.INFO, { title = 'Keymap' })
 end
 
 -- Yanks the absolute path of the current file to the clipboard
@@ -589,7 +559,7 @@ function M.yank_absolute_path()
 
     vim.fn.setreg('+', filename)
 
-    vim.notify('Yanked absolute path', vim.log.levels.INFO, { title = 'Keymap' })
+    vim.notify(' Yanked absolute path', vim.log.levels.INFO, { title = 'Keymap' })
 end
 
 -- Explorer Functions ---------------------------------------------------------
@@ -597,7 +567,7 @@ end
 
 -- Opens the file manager at the current buffer's file or directory
 function M.open_buffer_in_file_manager()
-    local items, base_dir, _ = __get_buffer_context 'compress'
+    local items, base_dir, filetype = __get_buffer_context 'compress'
 
     local target
     if #items == 1 then
@@ -609,7 +579,7 @@ function M.open_buffer_in_file_manager()
     end
 
     if not target or vim.fn.empty(target) == 1 then
-        vim.notify('No file or directory found', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify(' No file or directory found', vim.log.levels.WARN, { title = 'Keymap' })
         return
     end
 
@@ -666,10 +636,110 @@ function M.open_buffer_in_file_manager()
 
     vim.fn.system(cmd)
     if vim.v.shell_error == 0 then
-        vim.notify('Opened file manager', vim.log.levels.INFO, { title = 'Keymap' })
+        vim.notify(' Opened file manager', vim.log.levels.INFO, { title = 'Keymap' })
     else
         vim.notify('Failed to open file manager', vim.log.levels.ERROR, { title = 'Keymap' })
     end
+end
+
+-- List Movement Functions ----------------------------------------------------
+-------------------------------------------------------------------------------
+
+function M.dynamic_list_location_shift(next)
+    local wininfo_list = vim.fn.getwininfo()
+    local loc_winid = nil
+
+    -- Find first visible location list window
+    for _, win in ipairs(wininfo_list) do
+        if win.loclist == 1 and #vim.fn.getloclist(win.winid) > 0 then
+            loc_winid = win.winid
+            break
+        end
+    end
+
+    if loc_winid then
+        -- Jump to the location list window
+        vim.api.nvim_set_current_win(loc_winid)
+        if next then
+            pcall(function()
+                vim.cmd 'lnext'
+            end)
+        else
+            pcall(function()
+                vim.cmd 'lprev'
+            end)
+        end
+    elseif #vim.fn.getqflist() > 0 then
+        if next then
+            pcall(function()
+                vim.cmd 'cnext'
+            end)
+        else
+            pcall(function()
+                vim.cmd 'cprev'
+            end)
+        end
+    else
+        print 'No location list or quickfix list found'
+    end
+end
+
+function M.move_dynamic_list_prev()
+    M.dynamic_list_location_shift(false)
+end
+
+function M.move_dynamic_list_next()
+    M.dynamic_list_location_shift(true)
+end
+
+-- Diagnostic Toggle Functions ------------------------------------------------
+-------------------------------------------------------------------------------
+
+function M.toggle_diagnostic_virtual_text()
+    if vim.diagnostic.config().virtual_text == true then
+        vim.diagnostic.config { virtual_text = false, virtual_lines = false }
+        vim.notify('󱙎 Global diagnostic virtual lines disabled', vim.log.levels.INFO, { title = 'Keymap', render = 'compact' })
+    else
+        vim.diagnostic.config { virtual_text = true, virtual_lines = false }
+        vim.notify('󱖭 Global diagnostic virtual lines enabled', vim.log.levels.INFO, { title = 'Keymap', render = 'compact' })
+    end
+end
+
+function M.show_curr_diagnostic_float()
+    local opts = {
+        focusable = true,
+        close_events = { 'BufLeave', 'CursorMoved', 'InsertEnter' },
+        border = 'rounded',
+        source = 'always',
+        prefix = ' ',
+        scope = 'line',
+    }
+
+    vim.diagnostic.open_float(nil, opts)
+end
+
+function M.show_next_diagnostic_float()
+    vim.diagnostic.jump {
+        count = 1,
+        on_jump = function()
+            -- small delay to ensure cursor has moved
+            vim.defer_fn(function()
+                M.show_curr_diagnostic_float()
+            end, 50)
+        end,
+    }
+end
+
+function M.show_prev_diagnostic_float()
+    vim.diagnostic.jump {
+        count = -1,
+        on_jump = function()
+            -- small delay to ensure cursor has moved
+            vim.defer_fn(function()
+                M.show_curr_diagnostic_float()
+            end, 50)
+        end,
+    }
 end
 
 return M
