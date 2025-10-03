@@ -162,9 +162,12 @@ vim.keymap.set(
 <details>
     <summary>Open buffer in external file browser</summary>
 Open the current buffer's directory in your system's file explorer:
-    - Windows: explorer.exe
-    - MacOS: forklift.app if available or finder.app
-    - Linux: open-xdg default
+
+- Windows: explorer.exe
+
+- MacOS: forklift.app if available or finder.app
+
+- Linux: open-xdg default
 
 _Example keymap:_
 
