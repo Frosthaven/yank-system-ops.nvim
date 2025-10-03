@@ -109,7 +109,7 @@ vim.keymap.set(
 </details>
 
 <details>
-    <summary>Extract zip file path into current buffer's directory</summary>
+    <summary>Paste zip file path contents into current directory</summary>
 If you have previously yanked a compressed file/folder, you can paste it into
 the current buffer using this hotkey. The compressed file/folder will be
 extracted into the current buffer's directory.
