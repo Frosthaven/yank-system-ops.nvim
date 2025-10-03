@@ -5,7 +5,7 @@ This plugin is still under development and is in the PROTOTYPE phase.
 `frosthaven/yank-system-ops.nvim` is a Neovim plugin that attempts to bridge the
 gap between Neovim and your operating system's file management and clipboard
 functionalities. It allows you to move files and folders between Neovim sessions
-and other applications through its hotkeys.
+and other OS applications through its hotkeys.
 
 
 ##  Supported Features
