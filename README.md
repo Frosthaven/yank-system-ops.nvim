@@ -2,7 +2,7 @@
   <img src="./.meta/logo.png" alt="yank-system-ops Logo"/>
 </p>
 
-## Share files and folders between projects and OS applications
+### Share file(s) between projects and OS applications
 
 > [!IMPORTANT] 
 > This plugin is still in the PROTOTYPE phase. Expect breaking changes!
