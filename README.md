@@ -28,7 +28,6 @@ _Example output:_
 
 ```lua
 M.config = {
-    something_is_wrong_here
     storage_path = vim.fn.stdpath 'data' .. '/yank-more',
     files_to_keep = 3,
     debug = false,
