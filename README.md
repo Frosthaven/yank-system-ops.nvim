@@ -1,8 +1,8 @@
-# 🗃️ `frosthaven/yank-system-ops.nvim`
+# 🗃️ `yank-system-ops.nvim`
 
 This plugin is still under development and is in the PROTOTYPE phase.
 
-`frosthaven/yank-system-ops.nvim` is a Neovim plugin that attempts to bridge the
+`yank-system-ops.nvim` is a Neovim plugin that attempts to bridge the
 gap between Neovim and your operating system's file management and clipboard
 functionalities. It allows you to move files and folders between Neovim sessions
 and other OS applications through its hotkeys.
@@ -196,89 +196,71 @@ used depends on your OS:
 
 ## ⚡️ Requirements
 
-In general, you will need `git`, `7z` or `7zz`, and a cli clipboard manager
+In general, you will need `git`, `7z` or `7zz`, and a CLI clipboard manager
 installed on your system for full functionality. See below for specific
 instructions based on your OS:
 
-- **Windows**
+<details>
+  <summary><strong>Windows</strong></summary>
 
-    - Git CLI: [git](https://git-scm.com/downloads)
-
-    - Archive Manager: `7z`:
-
+  - Git CLI: [git](https://git-scm.com/downloads)
+  - Archive Manager: `7z`:
     ```powershell
     winget install -e --id 7zip.7zip;
     ```
+  - Clipboard manager: `clip` (built-in)
+</details>
 
-    - Clipboard manager: `clip` (built-in)
-    
-- **MacOS**
+<details>
+  <summary><strong>macOS</strong></summary>
 
-    - Git CLI: [git](https://git-scm.com/downloads)
-
-    - Archive Manager: `7zz`:
-
+  - Git CLI: [git](https://git-scm.com/downloads)
+  - Archive Manager: `7zz`:
     ```bash
     brew install sevenzip
     ```
+  - Clipboard manager: `pbcopy` (built-in)
+</details>
 
-    - Clipboard manager: `pbcopy` (built-in)
+<details>
+  <summary><strong>Linux (Wayland)</strong></summary>
 
-- **Linux (Wayland)**
-
-    - Git CLI: [git](https://git-scm.com/downloads)
-
-    - Archive Manager: `7z`:
-
+  - Git CLI: [git](https://git-scm.com/downloads)
+  - Archive Manager: `7z`:
     ```bash
     # Debian/Ubuntu
     sudo apt install 7zip
-    ```
-
-    ```bash
     # Arch
     sudo pacman -S --needed 7zip
     ```
-
-    - Clipboard manager: `wl-clipboard` (recommended)
-
+  - Clipboard manager: `wl-clipboard` (recommended)
     ```bash
     # Debian/Ubuntu
     sudo apt install wl-clipboard
-    ```
-
-    ```bash
     # Arch
     sudo pacman -S --needed wl-clipboard
     ```
+</details>
 
-- **Linux (X11)**
+<details>
+  <summary><strong>Linux (X11)</strong></summary>
 
-    - Git CLI: [git](https://git-scm.com/downloads)
-
-    - Archive Manager: `7z`:
-
+  - Git CLI: [git](https://git-scm.com/downloads)
+  - Archive Manager: `7z`:
     ```bash
     # Debian/Ubuntu
     sudo apt install 7zip
-    ```
-
-    ```bash
     # Arch
     sudo pacman -S --needed 7zip
     ```
-
-    - Clipboard manager: `xclip`
-
+  - Clipboard manager: `xclip`
     ```bash
     # Debian/Ubuntu
     sudo apt install xclip
-    ```
-
-    ```bash
     # Arch
     sudo pacman -S --needed xclip
     ```
+</details>
 
 ---
 
@@ -286,11 +268,11 @@ instructions based on your OS:
 
 ✅️ = Supported | ❌ = Not Supported | ⚠️ = Untested
 
-`frosthaven/yank-system-ops.nvim` needs to interact with your operating system
-clipboard and active neovim buffers to provide its functionality. Below is a
+`yank-system-ops.nvim` needs to interact with your operating system clipboard,
+cli tools, and active neovim buffers to provide its functionality. Below is a
 support matrix for various operating systems and buffer types.
 
-### 🖥️ Operating Systems Supperted
+### Operating Systems Supperted
 
 | OS              | File/Folder Archiving | System Clipboard Integration | Open in File Explorer |
 |-----------------|-----------------------|------------------------------|-----------------------|
@@ -299,7 +281,7 @@ support matrix for various operating systems and buffer types.
 | Linux (Wayland) | ✅                    | ✅                           | ✅                    |
 | Linux (X11)     | ✅                    | ⚠️                           | ⚠️                    |
 
-### 📄 Buffer Types Supported
+### Buffer Types Supported
 
 | Buffer Type | Yank Path Text        | Yank File/Folder Zip | Paste/Extract Zip | Easy Paste Sharing |
 |-------------|-----------------------|----------------------|-------------------|--------------------|
@@ -312,7 +294,7 @@ support matrix for various operating systems and buffer types.
 
 ## 🚀 Usage
 
-See the example below for how to configure `frosthaven/yank-system-ops.nvim`:
+See the example below for how to configure `yank-system-ops.nvim`:
 
 ```lua
 return {
