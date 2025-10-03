@@ -239,8 +239,6 @@ For Wayland, `wl-clipboard` is recommended for clipboard management. For X11,
 
 ## 📄 Buffer Types Supported
 
-✅️ = Supported, ❌ = Not Supported, ⚠️ = Untested
-
 If a buffer type is listed here, there are plans to support it in the future.
 
 | Buffer Type | Yank Path Text        | Yank File/Folder Zip | Paste/Extract Zip | Easy Paste Sharing |
