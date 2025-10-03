@@ -226,9 +226,11 @@ For Wayland, `wl-clipboard` is recommended for clipboard management. For X11,
 `xclip` or `xsel` should work.
 </details>
 
-## 🖥️ Operating Systems Supperted
+---
 
 ✅️ = Supported, ❌ = Not Supported, ⚠️ = Untested
+
+## 🖥️ Operating Systems Supperted
 
 | OS              | File/Folder Archiving | System Clipboard Integration | Open in File Explorer |
 |-----------------|-----------------------|------------------------------|-----------------------|
@@ -247,6 +249,8 @@ If a buffer type is listed here, there are plans to support it in the future.
 | Netrw       | ✅                    | ✅                   | ✅                | ✅                 |
 | Mini.files  | ✅                    | ✅                   | ✅                | ✅                 |
 | Oil         | ❌                    | ❌                   | ❌                | ❌                 |
+
+---
 
 ## 🛠️ Setup
 
