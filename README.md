@@ -13,6 +13,8 @@
   - [Buffer Types Supported](#buffer-types-supported)
 - [🚀 Usage](#-usage)
 
+---
+
 ## ✨ Features
 
 <details>
