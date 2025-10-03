@@ -285,7 +285,7 @@ instructions based on your OS:
 - Compress the file(s) into a zip archive using the `7z` or `7zz` binary, saving
   it to the configured `storage_path` with the extension `.nvim.zip`
 
-- Copy either the path or the file itself to the system clipboard using the
+- Copy the absolute path to the zip file to your system clipboard using the
   appropriate clipboard manager for your OS.
 
 </details>
@@ -301,7 +301,7 @@ instructions based on your OS:
 
 > - On Windows, this uses powershell's `Set-Clipboard` with the `FileDropList` format.  
 > - On MacOS, this uses `osacript` to set the clipboard to a `POSIX` file.  
-> - On Linux, this uses `text/uri-list` mime type and your clipboard manager.  
+> - On Linux, this sets your clipboard to the `text/uri-list` mime type. 
 >   
 > When yanking only a single file buffer, `yank-system-ops.nvim` will opt to
 > skip the archiving step and just copy the file directly to the clipboard.
