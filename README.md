@@ -2,10 +2,10 @@
   <img src="./.meta/logo.png" alt="yank-system-ops Logo"/>
 </p>
 
-> [!WARNING]  
-> This plugin is still in the PROTOTYPE phase. Expect breaking changes!
-
 ## Share files and folders between projects and OS applications
+
+> [!DANGER] 
+> This plugin is still in the PROTOTYPE phase. Expect breaking changes!
 
 `yank-system-ops.nvim` is a Neovim plugin that attempts to bridge the gap
 between Neovim and your operating system's file management and clipboard
