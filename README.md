@@ -1,9 +1,9 @@
+> [!IMPORTANT] 
+> This plugin is still in the PROTOTYPE phase. Expect breaking changes
+
 # 🗃️ `yank-system-ops.nvim`
 
-### Share file(s) between projects, folders, and OS applications
-
-> [!IMPORTANT] 
-> This plugin is still in the PROTOTYPE phase. Expect breaking changes!
+### Share file(s) between projects, folders, and OS applications!
 
 ## 📑 Table of Contents
 
