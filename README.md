@@ -380,7 +380,7 @@ return {
         debug = false,
     },
     keys = {
-        -- yf:yank file(s) ----------------------------------------------------
+        -- yf : yank file(s) --------------------------------------------------
         {
             '<leader>yfc', function()
                 require('yank_system_ops').yank_compressed_file()
