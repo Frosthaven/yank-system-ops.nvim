@@ -543,7 +543,7 @@ function M.yank_file_sharing()
     end
 end
 
-function M.paste_compressed_file()
+function M.extract_compressed_file()
     local zip_path = vim.fn.getreg '+'
     if zip_path == '' then
         vim.notify('Clipboard is empty', vim.log.levels.WARN, { title = 'Keymap' })

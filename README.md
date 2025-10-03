@@ -24,14 +24,14 @@ Yank the current buffer's file(s) as a compressed zip file path. The zip file is
 created in the configured `storage_path` with the extension `.nvim.zip` and the
 absolute path is then copied to your system clipboard.
 
-You can follow this up with the "Paste compressed file(s) here" feature to
+You can follow this up with the "Extract compressed file(s) here" feature to
 extract the contents into the current buffer's directory.
 
 ### Example keymap:
 
 ```lua
 {
-    '<leader>yfc', function()
+    '<leader>yfz', function()
         require('yank_system_ops').yank_compressed_file()
     end, desc = 'Yank file(s) as compressed file path'
 },
@@ -56,7 +56,7 @@ other applications (e.g., File Explorer, Finder, Discord, Slack, email clients).
 </details>
 
 <details>
-    <summary><strong>Paste compressed file(s) here</strong></summary>
+    <summary><strong>Extract compressed file(s) here</strong></summary>
 
 After using the "Yank file(s) as compressed file path" feature, you can use this
 to extract the contents of the zip file into the current buffer's directory.
@@ -65,9 +65,9 @@ to extract the contents of the zip file into the current buffer's directory.
 
 ```lua
 {
-    '<leader>yfp', function()
-        require('yank_system_ops').paste_compressed_file()
-    end, desc = 'Paste compressed file(s) here'
+    '<leader>yfe', function()
+        require('yank_system_ops').extract_compressed_file()
+    end, desc = 'Extract compressed file(s) here'
 },
 ```
 </details>
@@ -338,7 +338,7 @@ Expand the sections below to see how each feature works under the hood:
 </details>
 
 <details>
-<summary><strong>Paste compressed file(s) here</strong></summary>
+<summary><strong>Extract compressed file(s) here</strong></summary>
 
 - Determine the current buffer type (file vs list of files)
 
@@ -386,7 +386,7 @@ are planned to be supported.
 
 ### Buffer Types Supported
 
-| Buffer Type | Yank Path Text        | Yank File/Folder Zip | Paste/Extract Zip | Easy Paste Sharing |
+| Buffer Type | Yank Path Text        | Yank File/Folder Zip | Extract Zip Here  | Easy Paste Sharing |
 |-------------|-----------------------|----------------------|-------------------|--------------------|
 | File        | ✅                    | ✅                   | ✅                | ✅                 |
 | Netrw       | ✅                    | ✅                   | ✅                | ✅                 |
@@ -412,7 +412,7 @@ return {
     keys = {
         -- yf : yank file(s) --------------------------------------------------
         {
-            '<leader>yfc', function()
+            '<leader>yfz', function()
                 require('yank_system_ops').yank_compressed_file()
             end, desc = 'Yank file(s) as compressed file path'
         },
@@ -422,9 +422,9 @@ return {
             end, desc = 'Yank file(s) to system clipboard for sharing'
         },
         {
-            '<leader>yfp', function()
-                require('yank_system_ops').paste_compressed_file()
-            end, desc = 'Paste compressed file(s) here'
+            '<leader>yfe', function()
+                require('yank_system_ops').extract_compressed_file()
+            end, desc = 'Extract compressed file(s) here'
         },
         -- yp : yank path info ------------------------------------------------
         {
