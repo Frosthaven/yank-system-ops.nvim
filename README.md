@@ -65,7 +65,7 @@ to extract the contents of the zip file into the current buffer's directory.
 </details>
 
 <details>
-    <summary><strong>Yank absolute/relative path to file(s)</strong></summary>
+    <summary><strong>Yank path info</strong></summary>
 
 Yank the absolute or cwd-relative path to the current buffer's file(s).
 
@@ -204,7 +204,7 @@ instructions based on your OS:
 <details>
   <summary><strong>Windows</strong></summary>
 
-  - Git CLI: [git](https://git-scm.com/downloads)
+  - [Git CLI](https://git-scm.com/downloads)
   - Archive Manager: `7z`:
     ```powershell
     winget install -e --id 7zip.7zip;
@@ -215,7 +215,7 @@ instructions based on your OS:
 <details>
   <summary><strong>macOS</strong></summary>
 
-  - Git CLI: [git](https://git-scm.com/downloads)
+  - [Git CLI](https://git-scm.com/downloads)
   - Archive Manager: `7zz`:
     ```bash
     brew install sevenzip
@@ -226,7 +226,7 @@ instructions based on your OS:
 <details>
   <summary><strong>Linux (Wayland)</strong></summary>
 
-  - Git CLI: [git](https://git-scm.com/downloads)
+  - [Git CLI](https://git-scm.com/downloads)
   - Archive Manager: `7z`:
     ```bash
     # Debian/Ubuntu
@@ -246,7 +246,7 @@ instructions based on your OS:
 <details>
   <summary><strong>Linux (X11)</strong></summary>
 
-  - Git CLI: [git](https://git-scm.com/downloads)
+  - [Git CLI](https://git-scm.com/downloads)
   - Archive Manager: `7z`:
     ```bash
     # Debian/Ubuntu
@@ -323,7 +323,7 @@ return {
                 require('yank_system_ops').paste_compressed_file()
             end, desc = 'Paste compressed file(s) here'
         },
-        -- yp : yank directory paths ------------------------------------------
+        -- yp : yank path info ------------------------------------------------
         {
             '<leader>ypr', function()
                 require('yank_system_ops').yank_relative_path()
