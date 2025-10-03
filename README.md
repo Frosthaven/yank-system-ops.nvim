@@ -8,10 +8,10 @@ functionalities. It allows you to move files and folders between Neovim sessions
 and other OS applications through its hotkeys.
 
 
-##  Supported Features
+## 🫴 Features
 
 <details>
-    <summary>Yank lines into markdown code block</summary>
+    <summary><strong>Yank lines into markdown code block</strong></summary>
 
 Yank selected line(s) into a language-spec markdown code block for pasting into
 chats, etc.
@@ -37,7 +37,7 @@ M.config = {
 </details>
 
 <details>
-    <summary>Yank lines into markdown code block with diagnostics</summary>
+    <summary><strong>Yank lines into markdown code block with diagnostics</strong></summary>
 Yank selected line(s) into a language-spec markdown code block with diagnostics
 for pasting. Especially useful for pasting into LLMs.
 
@@ -70,7 +70,7 @@ M.config = {
 </details>
 
 <details>
-    <summary>Yank GitHub URL for current line(s)</summary>
+    <summary><strong>Yank GitHub URL for current line(s)</strong></summary>
 Yank a GitHub URL for the current line(s) in the current buffer. Requires that
 there are no pending changes in the current git repository. This respects the
 current branch.
@@ -90,7 +90,7 @@ https://github.com/Frosthaven/yank-system-ops.nvim/blob/main/lua/yank_system_ops
 </details>
 
 <details>
-    <summary>Yank current buffer as zip file path</summary>
+    <summary><strong>Yank current buffer as zip file path</strong></summary>
 Yank the current buffer's file or folder contents as a compressed zip file path.
 The zip file is created in the configured `storage_path` with the extension
 `.nvim.zip` and the path is copied to your system clipboard.
@@ -109,7 +109,7 @@ vim.keymap.set(
 </details>
 
 <details>
-    <summary>Paste zip file path contents into current directory</summary>
+    <summary><strong>Paste zip file path contents into current directory</strong></summary>
 If you have used the previous feature to yank a zip file path, you can paste it
 into the current buffer using this hotkey. The compressed file/folder will
 be extracted into the current buffer's directory.
@@ -125,7 +125,7 @@ vim.keymap.set(
 </details>
 
 <details>
-    <summary>Yank current buffer into file or compressed folder for sharing</summary>
+    <summary><strong>Yank current buffer into file or compressed folder for sharing</strong></summary>
 Yanks the current buffer's file or folder (compressed and saved) into the system
 clipboard for easy sharing in other applications (e.g. file explorer, Slack,
 Discord, etc.).
@@ -141,7 +141,7 @@ vim.keymap.set(
 </details>
 
 <details>
-    <summary>Yank file or folder full path text for current buffer</summary>
+    <summary><strong>Yank file or folder full path text for current buffer</strong></summary>
 Yank the current buffer's file or folder full path text into your system
 clipboard. You can yank either the relative or absolute path.
 
@@ -160,7 +160,7 @@ vim.keymap.set(
 </details>
 
 <details>
-    <summary>Open buffer in external file browser</summary>
+    <summary><strong>Open buffer in external file browser</strong></summary>
 Open the current buffer's directory in your system's file explorer:
 
 - Windows: explorer.exe
@@ -179,7 +179,7 @@ vim.keymap.set(
 ```
 </details>
 
-## Requirements
+## ‼️ Requirements
 
 - You will need `git` installed and available from the terminal.
 - You will need access to the `7z` or `7zz` binaries from terminal.
@@ -188,7 +188,7 @@ vim.keymap.set(
 See below for installing requirements on your system:
 
 <details>
-    <summary>Windows</summary>
+    <summary><strong>Windows</strong></summary>
 
 You can install 7zip via winget:
 ```powershell
@@ -199,7 +199,7 @@ Windows has built-in clipboard management via the `clip` command.
 </details>
 
 <details>
-    <summary>MacOS</summary>
+    <summary><strong>MacOS</strong></summary>
 
 You can install 7zip via Homebrew:
 ```bash
@@ -209,7 +209,7 @@ MacOS has built-in clipboard management via the `pbcopy` and `pbpaste` commands.
 </details>
 
 <details>
-    <summary>Linux</summary>
+    <summary><strong>Linux</strong></summary>
 
 You can install 7zip via your package manager. See below for specific distros:
 ```bash
@@ -226,7 +226,7 @@ For Wayland, `wl-clipboard` is recommended for clipboard management. For X11,
 `xclip` or `xsel` should work.
 </details>
 
-## Operating Systems Supperted
+## 🖥️ Operating Systems Supperted
 
 | OS              | File/Folder Archiving | System Clipboard Integration | Open in File Explorer |
 |-----------------|-----------------------|------------------------------|-----------------------|
@@ -235,7 +235,7 @@ For Wayland, `wl-clipboard` is recommended for clipboard management. For X11,
 | Linux (Wayland) | ✅                    | ✅                           | ✅                    |
 | Linux (X11)     | ✅                    | ⚠️                           | ⚠️                    |
 
-## Buffer Types Supported
+## 📄 Buffer Types Supported
 
 If a buffer type is listed here, there are plans to support it in the future.
 
@@ -250,7 +250,7 @@ If a buffer type is listed here, there are plans to support it in the future.
 | Neo-tree    | ❌                    | ❌                   | ❌                | ❌                 |
 | Nerdtree    | ❌                    | ❌                   | ❌                | ❌                 |
 
-## Setup
+## 🛠️ Setup
 
 Lazy:
 
