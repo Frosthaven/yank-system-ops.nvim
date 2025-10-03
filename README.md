@@ -228,6 +228,8 @@ For Wayland, `wl-clipboard` is recommended for clipboard management. For X11,
 
 ## 🖥️ Operating Systems Supperted
 
+✅️ = Supported, ❌ = Not Supported, ⚠️ = Untested
+
 | OS              | File/Folder Archiving | System Clipboard Integration | Open in File Explorer |
 |-----------------|-----------------------|------------------------------|-----------------------|
 | Windows         | ⚠️                    | ⚠️                           | ⚠️                    |
@@ -236,6 +238,8 @@ For Wayland, `wl-clipboard` is recommended for clipboard management. For X11,
 | Linux (X11)     | ✅                    | ⚠️                           | ⚠️                    |
 
 ## 📄 Buffer Types Supported
+
+✅️ = Supported, ❌ = Not Supported, ⚠️ = Untested
 
 If a buffer type is listed here, there are plans to support it in the future.
 
