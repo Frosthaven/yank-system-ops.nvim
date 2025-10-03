@@ -23,7 +23,7 @@ extract the contents into the current buffer's directory.
 
 ```lua
 {
-    '<leader>yc', function()
+    '<leader>yfc', function()
         require('yank_system_ops').yank_compressed_file()
     end, desc = 'Yank file(s) as compressed file path'
 },
@@ -40,7 +40,7 @@ other applications (e.g., File Explorer, Finder, Discord, Slack, email clients).
 
 ```lua
 {
-    '<leader>ys', function()
+    '<leader>yfs', function()
         require('yank_system_ops').yank_file_sharing()
     end, desc = 'Yank file(s) to system clipboard for sharing'
 },
@@ -57,7 +57,7 @@ to extract the contents of the zip file into the current buffer's directory.
 
 ```lua
 {
-    '<leader>yp', function()
+    '<leader>yfp', function()
         require('yank_system_ops').paste_compressed_file()
     end, desc = 'Paste compressed file(s) here'
 },
@@ -73,12 +73,12 @@ Yank the absolute or cwd-relative path to the current buffer's file(s).
 
 ```lua
 {
-    '<leader>yr', function()
+    '<leader>ypr', function()
         require('yank_system_ops').yank_relative_path()
     end, desc = 'Yank relative path to file(s)'
 },
 {
-    '<leader>ya', function()
+    '<leader>ypa', function()
         require('yank_system_ops').yank_absolute_path()
     end, desc = 'Yank absolute path to file(s)'
 },
@@ -101,7 +101,7 @@ used depends on your OS:
 
 ```lua
 {
-    '<leader>o', function()
+    '<leader>yo', function()
         require('yank_system_ops').open_buffer_in_file_manager()
     end, desc = 'Open current buffer in file browser'
 },
@@ -307,41 +307,40 @@ return {
         debug = false,
     },
     keys = {
-        -- yank file(s) -------------------------------------------------------
+        -- yf:yank file(s) ----------------------------------------------------
         {
-            '<leader>yc', function()
+            '<leader>yfc', function()
                 require('yank_system_ops').yank_compressed_file()
             end, desc = 'Yank file(s) as compressed file path'
         },
         {
-            '<leader>ys', function()
+            '<leader>yfs', function()
                 require('yank_system_ops').yank_file_sharing()
             end, desc = 'Yank file(s) to system clipboard for sharing'
         },
-        -- paste yanked file(s) -----------------------------------------------
         {
-            '<leader>yp', function()
+            '<leader>yfp', function()
                 require('yank_system_ops').paste_compressed_file()
             end, desc = 'Paste compressed file(s) here'
         },
-        -- yank directory paths -----------------------------------------------
+        -- yp : yank directory paths ------------------------------------------
         {
-            '<leader>yr', function()
+            '<leader>ypr', function()
                 require('yank_system_ops').yank_relative_path()
             end, desc = 'Yank relative path to file(s)'
         },
         {
-            '<leader>ya', function()
+            '<leader>ypa', function()
                 require('yank_system_ops').yank_absolute_path()
             end, desc = 'Yank absolute path to file(s)'
         },
-        -- open buffer in external file browser -------------------------------
+        -- yo : open buffer in external file browser --------------------------
         {
-            '<leader>o', function()
+            '<leader>yo', function()
                 require('yank_system_ops').open_buffer_in_file_manager()
             end, desc = 'Open current buffer in file browser'
         },
-        -- yank markdown code blocks ------------------------------------------
+        -- ym : yank markdown code block --------------------------------------
         {
             '<leader>ymc', function()
                 require('yank_system_ops').yank_codeblock()
@@ -352,7 +351,7 @@ return {
                 require('yank_system_ops').yank_diagnostics()
             end, desc = 'Yank line(s) as markdown code block with diagnostics'
         },
-        -- yank github url ----------------------------------------------------
+        -- yg : yank github url -----------------------------------------------
         {
             '<leader>ygl', function()
                 require('yank_system_ops').yank_github_url()
