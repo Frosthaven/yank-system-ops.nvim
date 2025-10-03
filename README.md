@@ -261,7 +261,7 @@ return {
     lazy = false,
     opts = {
         storage_path = vim.fn.expand '~/Downloads', -- path to store files
-        files_to_keep = 3, -- yank_system_ops will delete older files beyond this
+        files_to_keep = 3, -- automatically delete older *.nvim.zip files
         debug = false,
     },
     config = function(_, opts)
