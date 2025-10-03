@@ -1,4 +1,4 @@
-# frosthaven/yank-system-ops.nvim
+# 🗃️ `frosthaven/yank-system-ops.nvim`
 
 This plugin is still under development and is in the PROTOTYPE phase.
 
@@ -7,25 +7,25 @@ gap between Neovim and your operating system's file management and clipboard
 functionalities. It allows you to move files and folders between Neovim sessions
 and other OS applications through its hotkeys.
 
-
-## 🫴 Features
+## ✨ Features
 
 <details>
-    <summary><strong>Yank lines into markdown code block</strong></summary>
+    <summary><strong>Yank line(s) as markdown code block</strong></summary>
 
 Yank selected line(s) into a language-spec markdown code block for pasting into
-chats, etc.
+chats, Github, Obsidian, etc.
 
-_Example keymap:_
+### Example keymap:
 
 ```lua
-vim.keymap.set(
-    { 'n', 'v' }, '<leader>yc', yank_system_ops.yank_codeblock,
-    { desc = '[Y]ank as [C]ode block' }
-)
+{
+    '<leader>ymc', function()
+        require('yank_system_ops').yank_codeblock()
+    end, desc = 'Yank line(s) as markdown code block'
+},
 ```
 
-_Example output:_
+### Example output:
 
 ```lua
 M.config = {
@@ -37,20 +37,23 @@ M.config = {
 </details>
 
 <details>
-    <summary><strong>Yank lines into markdown code block with diagnostics</strong></summary>
-Yank selected line(s) into a language-spec markdown code block with diagnostics
-for pasting. Especially useful for pasting into LLMs.
+    <summary><strong>Yank line(s) as markdown code block with diagnostics</strong></summary>
 
-_Example keymap:_
+Yank selected line(s) into a language-spec markdown code block for pasting into
+chats, Github, Obsidian, etc. Includes any diagnostic messages in the selected
+lines.
+
+### Example keymap:
 
 ```lua
-vim.keymap.set(
-    { 'n', 'v' }, '<leader>yd', yank_system_ops.yank_diagnostics,
-    { desc = '[Y]ank [D]iagnostic code block' }
-)
+{
+    '<leader>ymd', function()
+        require('yank_system_ops').yank_diagnostics()
+    end, desc = 'Yank line(s) as markdown code block with diagnostics'
+},
 ```
 
-_Example output:_
+### Example output:
 
 Diagnostic:
 
@@ -70,167 +73,224 @@ M.config = {
 </details>
 
 <details>
-    <summary><strong>Yank GitHub URL for current line(s)</strong></summary>
-Yank a GitHub URL for the current line(s) in the current buffer. Requires that
-there are no pending changes in the current git repository. This respects the
-current branch.
+    <summary><strong>Yank line(s) as github url</strong></summary>
 
-_Example keymap:_
+Yank a GitHub URL for the current line(s) in the current buffer. This respects
+the current branch. _Note: This only works for files that are part of a
+git-tracked repository and hosted on GitHub. This will also not copy URLs for
+which there are pending commits/changes._
+
+### Example keymap:
 
 ```lua
-vim.keymap.set(
-    { 'n', 'v' }, '<leader>yg', yank_system_ops.yank_github_url,
-    { desc = '[Y]ank [G]itHub URL for current line(s)' }
-)
+{
+    '<leader>ygl', function()
+        require('yank_system_ops').yank_github_url()
+    end, desc = 'Yank line(s) as github url'
+},
 ```
 
-_Example output:_
+### Example output:
 
 https://github.com/Frosthaven/yank-system-ops.nvim/blob/main/lua/yank_system_ops/init.lua?t=1759452837#L6-L10
 </details>
 
 <details>
-    <summary><strong>Yank current buffer as zip file path</strong></summary>
-Yank the current buffer's file or folder contents as a compressed zip file path.
-The zip file is created in the configured `storage_path` with the extension
-`.nvim.zip` and the path is copied to your system clipboard.
+    <summary><strong>Yank file(s) as compressed file path</strong></summary>
 
-You can follow this up with the next feature to paste the contents into the
-current buffer's directory.
+Yank the current buffer's file(s) as a compressed zip file path. The zip file is
+created in the configured `storage_path` with the extension `.nvim.zip` and the
+absolute path is then copied to your system clipboard.
 
-_Example keymap:_
+You can follow this up with the "Paste compressed file(s) here" feature to
+extract the contents into the current buffer's directory.
 
-```lua
-vim.keymap.set(
-    { 'n', 'v' }, '<leader>yz', yank_system_ops.yank_compressed_file,
-    { desc = '[Y]ank as [Z]ip file' }
-)
-```
-</details>
-
-<details>
-    <summary><strong>Paste zip file path contents into current directory</strong></summary>
-If you have used the previous feature to yank a zip file path, you can paste it
-into the current buffer using this hotkey. The compressed file/folder will
-be extracted into the current buffer's directory.
-
-_Example keymap:_
+### Example keymap:
 
 ```lua
-vim.keymap.set(
-    {'n'}, '<leader>pz', yank_system_ops.paste_compressed_file,
-    { desc = '[P]aste [Z]ip file contents' }
-)
+{
+    '<leader>yc', function()
+        require('yank_system_ops').yank_compressed_file()
+    end, desc = 'Yank file(s) as compressed file path'
+},
 ```
 </details>
 
 <details>
-    <summary><strong>Yank current buffer file/folder into clipboard for sharing</strong></summary>
-Yanks the current buffer's file or folder (compressed and saved) into the system
-clipboard for easy sharing in other applications (e.g. file explorer, Slack,
-Discord, etc.).
+    <summary><strong>Yank file(s) to system clipboard for sharing</strong></summary>
 
-_Example keymap:_
+Yanks the current buffer's file(s) into the system clipboard for pasting into
+other applications (e.g., File Explorer, Finder, Discord, Slack, email clients).
+
+### Example keymap:
 
 ```lua
-vim.keymap.set(
-    { 'n', 'v' }, '<leader>ys', yank_system_ops.yank_file_binary,
-    { desc = '[Y]ank as Zip for [S]haring' }
-)
+{
+    '<leader>ys', function()
+        require('yank_system_ops').yank_file_binary()
+    end, desc = 'Yank file(s) to system clipboard for sharing'
+},
 ```
 </details>
 
 <details>
-    <summary><strong>Yank file or folder full path text for current buffer</strong></summary>
-Yank the current buffer's file or folder full path text into your system
-clipboard. You can yank either the relative or absolute path.
+    <summary><strong>Paste compressed file(s) here</strong></summary>
 
-_Example keymaps:_
+After using the "Yank file(s) as compressed file path" feature, you can use this
+to extract the contents of the zip file into the current buffer's directory.
+
+### Example keymap:
 
 ```lua
-vim.keymap.set(
-    { 'n', 'v' }, '<leader>yr', yank_system_ops.yank_relative_path,
-    { desc = '[Y]ank [R]elative path of file' }
-)
-vim.keymap.set(
-    { 'n', 'v' }, '<leader>ya', yank_system_ops.yank_absolute_path,
-    { desc = '[Y]ank [A]bsolute path of file' }
-)
+{
+    '<leader>yp', function()
+        require('yank_system_ops').paste_compressed_file()
+    end, desc = 'Paste compressed file(s) here'
+},
 ```
 </details>
 
 <details>
-    <summary><strong>Open buffer in external file browser</strong></summary>
-Open the current buffer's directory in your system's file explorer:
+    <summary><strong>Yank absolute/relative path to file(s)</strong></summary>
 
-- Windows: explorer.exe
+Yank the absolute or cwd-relative path to the current buffer's file(s).
 
-- MacOS: forklift.app if available or finder.app
-
-- Linux: open-xdg default
-
-_Example keymap:_
+### Example keymaps:
 
 ```lua
-vim.keymap.set(
-    {'n'}, '<leader>o', yank_system_ops.open_buffer_in_file_manager,
-    { desc = '[O]pen in external file browser' }
-)
+{
+    '<leader>yr', function()
+        require('yank_system_ops').yank_relative_path()
+    end, desc = 'Yank relative path to file(s)'
+},
+{
+    '<leader>ya', function()
+        require('yank_system_ops').yank_absolute_path()
+    end, desc = 'Yank absolute path to file(s)'
+},
 ```
-</details>
-
-## ‼️ Requirements
-
-- You will need `git` installed and available from the terminal.
-- You will need access to the `7z` or `7zz` binaries from terminal.
-- You will need a clipboard manager installed for your OS.
-
-See below for installing requirements on your system:
-
-<details>
-    <summary><strong>Windows</strong></summary>
-
-You can install 7zip via winget:
-```powershell
-winget install -e --id 7zip.7zip;
-```
-
-Windows has built-in clipboard management via the `clip` command.
 </details>
 
 <details>
-    <summary><strong>MacOS</strong></summary>
+    <summary><strong>Open current buffer in file browser</strong></summary>
 
-You can install 7zip via Homebrew:
-```bash
-brew install sevenzip
+Open the current buffer's directory in your system's file explorer. The explorer
+used depends on your OS:
+
+- **Windows**: Explorer.exe
+
+- **MacOS**: Forklift or Finder
+
+- **Linux**: open-xdg default
+
+### Example keymap:
+
+```lua
+{
+    '<leader>o', function()
+        require('yank_system_ops').open_buffer_in_file_manager()
+    end, desc = 'Open current buffer in file browser'
+},
 ```
-MacOS has built-in clipboard management via the `pbcopy` and `pbpaste` commands.
 </details>
 
-<details>
-    <summary><strong>Linux</strong></summary>
+## ⚡️ Requirements
 
-You can install 7zip via your package manager. See below for specific distros:
-```bash
-# Debian/Ubuntu
-sudo apt install 7zip
-```
+In general, you will need `git`, `7z` or `7zz`, and a cli clipboard manager
+installed on your system for full functionality. See below for specific
+instructions based on your OS:
 
-```bash
-# Arch
-sudo pacman -S --needed 7zip
-```
+- **Windows**
 
-For Wayland, `wl-clipboard` is recommended for clipboard management. For X11,
-`xclip` or `xsel` should work.
-</details>
+    - Git CLI: [git](https://git-scm.com/downloads)
+
+    - Archive Manager: `7z`:
+
+    ```powershell
+    winget install -e --id 7zip.7zip;
+    ```
+
+    - Clipboard manager: `clip` (built-in)
+    
+- **MacOS**
+
+    - Git CLI: [git](https://git-scm.com/downloads)
+
+    - Archive Manager: `7zz`:
+
+    ```bash
+    brew install sevenzip
+    ```
+
+    - Clipboard manager: `pbcopy` (built-in)
+
+- **Linux (Wayland)**
+
+    - Git CLI: [git](https://git-scm.com/downloads)
+
+    - Archive Manager: `7z`:
+
+    ```bash
+    # Debian/Ubuntu
+    sudo apt install 7zip
+    ```
+
+    ```bash
+    # Arch
+    sudo pacman -S --needed 7zip
+    ```
+
+    - Clipboard manager: `wl-clipboard` (recommended)
+
+    ```bash
+    # Debian/Ubuntu
+    sudo apt install wl-clipboard
+    ```
+
+    ```bash
+    # Arch
+    sudo pacman -S --needed wl-clipboard
+    ```
+
+- **Linux (X11)**
+
+    - Git CLI: [git](https://git-scm.com/downloads)
+
+    - Archive Manager: `7z`:
+
+    ```bash
+    # Debian/Ubuntu
+    sudo apt install 7zip
+    ```
+
+    ```bash
+    # Arch
+    sudo pacman -S --needed 7zip
+    ```
+
+    - Clipboard manager: `xclip`
+
+    ```bash
+    # Debian/Ubuntu
+    sudo apt install xclip
+    ```
+
+    ```bash
+    # Arch
+    sudo pacman -S --needed xclip
+    ```
 
 ---
 
-✅️ = Supported, ❌ = Not Supported, ⚠️ = Untested
+## 📊 Support Matrix
 
-## 🖥️ Operating Systems Supperted
+✅️ = Supported | ❌ = Not Supported | ⚠️ = Untested
+
+`frosthaven/yank-system-ops.nvim` needs to interact with your operating system
+clipboard and active neovim buffers to provide its functionality. Below is a
+support matrix for various operating systems and buffer types.
+
+### 🖥️ Operating Systems Supperted
 
 | OS              | File/Folder Archiving | System Clipboard Integration | Open in File Explorer |
 |-----------------|-----------------------|------------------------------|-----------------------|
@@ -239,88 +299,82 @@ For Wayland, `wl-clipboard` is recommended for clipboard management. For X11,
 | Linux (Wayland) | ✅                    | ✅                           | ✅                    |
 | Linux (X11)     | ✅                    | ⚠️                           | ⚠️                    |
 
-## 📄 Buffer Types Supported
-
-If a buffer type is listed here, there are plans to support it in the future.
+### 📄 Buffer Types Supported
 
 | Buffer Type | Yank Path Text        | Yank File/Folder Zip | Paste/Extract Zip | Easy Paste Sharing |
 |-------------|-----------------------|----------------------|-------------------|--------------------|
-| Editor      | ✅                    | ✅                   | ✅                | ✅                 |
+| File        | ✅                    | ✅                   | ✅                | ✅                 |
 | Netrw       | ✅                    | ✅                   | ✅                | ✅                 |
 | Mini.files  | ✅                    | ✅                   | ✅                | ✅                 |
 | Oil         | ❌                    | ❌                   | ❌                | ❌                 |
 
 ---
 
-## 🛠️ Setup
+## 🚀 Usage
 
-Lazy:
+See the example below for how to configure `frosthaven/yank-system-ops.nvim`:
 
 ```lua
 return {
     'frosthaven/yank-system-ops.nvim',
     enabled = true,
-    lazy = false,
     opts = {
         storage_path = vim.fn.expand '~/Downloads', -- path to store files
         files_to_keep = 3, -- automatically delete older *.nvim.zip files
         debug = false,
     },
-    config = function(_, opts)
-        local yank_system_ops = require 'yank_system_ops'
-        yank_system_ops.setup(opts)
-
-        -- Yank selected line(s) into markdown code block ---------------------
-        vim.keymap.set(
-            { 'n', 'v' }, '<leader>yc', yank_system_ops.yank_codeblock,
-            { desc = '[Y]ank as [C]ode block' }
-        )
-
-        -- yank selected line(s) into markdown code block with diagnostics ----
-        vim.keymap.set(
-            { 'n', 'v' }, '<leader>yd', yank_system_ops.yank_diagnostics,
-            { desc = '[Y]ank [D]iagnostic code block' }
-        )
-
-        -- yank selected line(s) as github url --------------------------------
-        vim.keymap.set(
-            { 'n', 'v' }, '<leader>yg', yank_system_ops.yank_github_url,
-            { desc = '[Y]ank [G]itHub URL for current line(s)' }
-        )
-
-        -- yank current buffer as nvim zip file path --------------------------
-        vim.keymap.set(
-            { 'n', 'v' }, '<leader>yz', yank_system_ops.yank_compressed_file,
-            { desc = '[Y]ank as [Z]ip file' }
-        )
-        
-        -- extract nvim zip file path into current buffer's directory ---------
-        vim.keymap.set(
-            {'n'}, '<leader>pz', yank_system_ops.paste_compressed_file,
-            { desc = '[P]aste [Z]ip file contents' }
-        )
-
-        -- yank current buffer into file or compressed folder for sharing -----
-        vim.keymap.set(
-            { 'n', 'v' }, '<leader>ys', yank_system_ops.yank_file_binary,
-            { desc = '[Y]ank as Zip for [S]haring' }
-        )
-        
-        -- yank file or folder full path text for current buffer --------------
-        vim.keymap.set(
-            { 'n', 'v' }, '<leader>yr', yank_system_ops.yank_relative_path,
-            { desc = '[Y]ank [R]elative path of file' }
-        )
-        vim.keymap.set(
-            { 'n', 'v' }, '<leader>ya', yank_system_ops.yank_absolute_path,
-            { desc = '[Y]ank [A]bsolute path of file' }
-        )
-
+    keys = {
+        -- yank markdown code blocks ------------------------------------------
+        {
+            '<leader>ymc', function()
+                require('yank_system_ops').yank_codeblock()
+            end, desc = 'Yank line(s) as markdown code block'
+        },
+        {
+            '<leader>ymd', function()
+                require('yank_system_ops').yank_diagnostics()
+            end, desc = 'Yank line(s) as markdown code block with diagnostics'
+        },
+        -- yank github url ----------------------------------------------------
+        {
+            '<leader>ygl', function()
+                require('yank_system_ops').yank_github_url()
+            end, desc = 'Yank line(s) as github url'
+        },
+        -- yank file(s) -------------------------------------------------------
+        {
+            '<leader>yc', function()
+                require('yank_system_ops').yank_compressed_file()
+            end, desc = 'Yank file(s) as compressed file path'
+        },
+        {
+            '<leader>ys', function()
+                require('yank_system_ops').yank_file_sharing()
+            end, desc = 'Yank file(s) to system clipboard for sharing'
+        },
+        -- paste yanked file(s) -----------------------------------------------
+        {
+            '<leader>yp', function()
+                require('yank_system_ops').paste_compressed_file()
+            end, desc = 'Paste compressed file(s) here'
+        },
+        -- yank directory paths -----------------------------------------------
+        {
+            '<leader>yr', function()
+                require('yank_system_ops').yank_relative_path()
+            end, desc = 'Yank relative path to file(s)'
+        },
+        {
+            '<leader>ya', function()
+                require('yank_system_ops').yank_absolute_path()
+            end, desc = 'Yank absolute path to file(s)'
+        },
         -- open buffer in external file browser -------------------------------
-        vim.keymap.set(
-            {'n'}, '<leader>o', yank_system_ops.open_buffer_in_file_manager,
-            { desc = '[O]pen in external file browser' }
-        )
-    end,
+        {
+            '<leader>o', function()
+                require('yank_system_ops').open_buffer_in_file_manager()
+            end, desc = 'Open current buffer in file browser'
+        },
+    }
 }
 ```
