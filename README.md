@@ -222,31 +222,6 @@ For Wayland, `wl-clipboard` is recommended for clipboard management. For X11,
 `xclip` or `xsel` should work.
 </details>
 
-
-Yank System Ops is a cross-platform plugin that enhances the yank functionality
-in Neovim. It does this primarily by leveraging 7zip to generate archives and
-store them in a specified directory for easy access and sharing. With this tool
-you can do the following:
-
-- Yank files or folders (as zip) to the system clipboard for pasting into other
-programs (e.g. file explorer, Slack, Discord, etc.)
-- Yank generated filepaths to compressed files/folders
-- Yank relative and absolute file/folder paths
-- Yank lines of code as a code block with syntax highlighting for pasting into
-chats
-- Yank lines of code with diagnostic syntax highlighting for pasting into chats
-- Yank link to selected lines in a GitHub repository
-- Open the current buffer's directory in your system's file explorer:
-    - Windows: explorer.exe
-    - MacOS: forklift.app > finder.app
-    - Linux: open-xdg default
-
-In addition, if you yanked a compressed file/folder, you can paste it into the
-buffer's current directory in Neovim to move the file/folder there.
-
-This allows for easy moving of files/folders between Neovim sessions as well as
-other programs.
-
 ## Operating Systems Supperted
 
 | OS              | File/Folder Archiving | System Clipboard Integration | Open in File Explorer |
