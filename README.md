@@ -7,7 +7,7 @@
 
 - [✨ Features](#-features)
 - [⚡️ Requirements](#️-requirements)
-- [🔍️ How It Works](%EF%B8%8F-how-it-works)
+- [🔍️ How It Works](#%EF%B8%8F-how-it-works)
 - [📊 Support Matrix](#-support-matrix)
   - [Operating Systems Supported](#operating-systems-supperted)
   - [Buffer Types Supported](#buffer-types-supported)
