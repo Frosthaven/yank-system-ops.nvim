@@ -1,7 +1,7 @@
 > [!IMPORTANT] 
 > This plugin is still in the PROTOTYPE phase. Expect breaking changes
 
-# 🗃️ `yank-system-ops.nvim`
+## 🗃️ `yank-system-ops.nvim`
 
 ### Share file(s) between other folders, projects, and applications
 
