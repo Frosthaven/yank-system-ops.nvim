@@ -95,9 +95,8 @@ Yank the current buffer's file or folder contents as a compressed zip file path.
 The zip file is created in the configured `storage_path` with the extension
 `.nvim.zip` and the path is copied to your system clipboard.
 
-You can follow this up with the "Extract zip file path into current buffer's
-directory" feature to paste the compressed file/folder into the current buffer's
-directory.
+You can follow this up with the next feature to paste the contents into the
+current buffer's directory.
 
 _Example keymap:_
 
@@ -111,9 +110,9 @@ vim.keymap.set(
 
 <details>
     <summary>Paste zip file path contents into current directory</summary>
-If you have previously yanked a compressed file/folder, you can paste it into
-the current buffer using this hotkey. The compressed file/folder will be
-extracted into the current buffer's directory.
+If you have used the previous feature to yank a zip file path, you can paste it
+into the current buffer using this hotkey. The compressed file/folder will
+be extracted into the current buffer's directory.
 
 _Example keymap:_
 
