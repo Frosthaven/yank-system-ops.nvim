@@ -247,10 +247,6 @@ If a buffer type is listed here, there are plans to support it in the future.
 | Netrw       | ✅                    | ✅                   | ✅                | ✅                 |
 | Mini.files  | ✅                    | ✅                   | ✅                | ✅                 |
 | Oil         | ❌                    | ❌                   | ❌                | ❌                 |
-| Telescope   | ❌                    | ❌                   | ❌                | ❌                 |
-| Filetree    | ❌                    | ❌                   | ❌                | ❌                 |
-| Neo-tree    | ❌                    | ❌                   | ❌                | ❌                 |
-| Nerdtree    | ❌                    | ❌                   | ❌                | ❌                 |
 
 ## 🛠️ Setup
 
