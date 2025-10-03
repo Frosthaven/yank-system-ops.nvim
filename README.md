@@ -10,92 +10,6 @@ and other OS applications through its hotkeys.
 ## ✨ Features
 
 <details>
-    <summary><strong>Yank line(s) as markdown code block</strong></summary>
-
-Yank selected line(s) into a language-spec markdown code block for pasting into
-chats, Github, Obsidian, etc.
-
-### Example keymap:
-
-```lua
-{
-    '<leader>ymc', function()
-        require('yank_system_ops').yank_codeblock()
-    end, desc = 'Yank line(s) as markdown code block'
-},
-```
-
-### Example output:
-
-```lua
-M.config = {
-    storage_path = vim.fn.stdpath 'data' .. '/yank-more',
-    files_to_keep = 3,
-    debug = false,
-}
-```
-</details>
-
-<details>
-    <summary><strong>Yank line(s) as markdown code block with diagnostics</strong></summary>
-
-Yank selected line(s) into a language-spec markdown code block for pasting into
-chats, Github, Obsidian, etc. Includes any diagnostic messages in the selected
-lines.
-
-### Example keymap:
-
-```lua
-{
-    '<leader>ymd', function()
-        require('yank_system_ops').yank_diagnostics()
-    end, desc = 'Yank line(s) as markdown code block with diagnostics'
-},
-```
-
-### Example output:
-
-Diagnostic:
-
-`7`: Miss symbol `,` or `;` .
-
-`7`: Undefined global `something_is_wrong_here`.
-
-`lua/yank_system_ops/init.lua:6-11`:
-```lua
-M.config = {
-    something_is_wrong_here
-    storage_path = vim.fn.stdpath 'data' .. '/yank-more',
-    files_to_keep = 3,
-    debug = false,
-}
-```
-</details>
-
-<details>
-    <summary><strong>Yank line(s) as github url</strong></summary>
-
-Yank a GitHub URL for the current line(s) in the current buffer. This respects
-the current branch. _Note: This only works for files that are part of a
-git-tracked repository and hosted on GitHub. This will also not copy URLs for
-which there are pending commits/changes._
-
-### Example keymap:
-
-```lua
-{
-    '<leader>ygl', function()
-        require('yank_system_ops').yank_github_url()
-    end, desc = 'Yank line(s) as github url'
-},
-```
-
-### Example output:
-
-https://github.com/Frosthaven/yank-system-ops.nvim/blob/main/lua/yank_system_ops/init.lua?t=1759452837#L6-L10
-</details>
-
-<details>
     <summary><strong>Yank file(s) as compressed file path</strong></summary>
 
 Yank the current buffer's file(s) as a compressed zip file path. The zip file is
@@ -193,6 +107,93 @@ used depends on your OS:
 },
 ```
 </details>
+
+<details>
+    <summary><strong>Yank line(s) as markdown code block</strong></summary>
+
+Yank selected line(s) into a language-spec markdown code block for pasting into
+chats, Github, Obsidian, etc.
+
+### Example keymap:
+
+```lua
+{
+    '<leader>ymc', function()
+        require('yank_system_ops').yank_codeblock()
+    end, desc = 'Yank line(s) as markdown code block'
+},
+```
+
+### Example output:
+
+```lua
+M.config = {
+    storage_path = vim.fn.stdpath 'data' .. '/yank-more',
+    files_to_keep = 3,
+    debug = false,
+}
+```
+</details>
+
+<details>
+    <summary><strong>Yank line(s) as markdown code block with diagnostics</strong></summary>
+
+Yank selected line(s) into a language-spec markdown code block for pasting into
+chats, Github, Obsidian, etc. Includes any diagnostic messages in the selected
+lines.
+
+### Example keymap:
+
+```lua
+{
+    '<leader>ymd', function()
+        require('yank_system_ops').yank_diagnostics()
+    end, desc = 'Yank line(s) as markdown code block with diagnostics'
+},
+```
+
+### Example output:
+
+Diagnostic:
+
+`7`: Miss symbol `,` or `;` .
+
+`7`: Undefined global `something_is_wrong_here`.
+
+`lua/yank_system_ops/init.lua:6-11`:
+```lua
+M.config = {
+    something_is_wrong_here
+    storage_path = vim.fn.stdpath 'data' .. '/yank-more',
+    files_to_keep = 3,
+    debug = false,
+}
+```
+</details>
+
+<details>
+    <summary><strong>Yank line(s) as github url</strong></summary>
+
+Yank a GitHub URL for the current line(s) in the current buffer. This respects
+the current branch. _Note: This only works for files that are part of a
+git-tracked repository and hosted on GitHub. This will also not copy URLs for
+which there are pending commits/changes._
+
+### Example keymap:
+
+```lua
+{
+    '<leader>ygl', function()
+        require('yank_system_ops').yank_github_url()
+    end, desc = 'Yank line(s) as github url'
+},
+```
+
+### Example output:
+
+https://github.com/Frosthaven/yank-system-ops.nvim/blob/main/lua/yank_system_ops/init.lua?t=1759452837#L6-L10
+</details>
+
 
 ## ⚡️ Requirements
 
@@ -306,23 +307,6 @@ return {
         debug = false,
     },
     keys = {
-        -- yank markdown code blocks ------------------------------------------
-        {
-            '<leader>ymc', function()
-                require('yank_system_ops').yank_codeblock()
-            end, desc = 'Yank line(s) as markdown code block'
-        },
-        {
-            '<leader>ymd', function()
-                require('yank_system_ops').yank_diagnostics()
-            end, desc = 'Yank line(s) as markdown code block with diagnostics'
-        },
-        -- yank github url ----------------------------------------------------
-        {
-            '<leader>ygl', function()
-                require('yank_system_ops').yank_github_url()
-            end, desc = 'Yank line(s) as github url'
-        },
         -- yank file(s) -------------------------------------------------------
         {
             '<leader>yc', function()
@@ -356,6 +340,23 @@ return {
             '<leader>o', function()
                 require('yank_system_ops').open_buffer_in_file_manager()
             end, desc = 'Open current buffer in file browser'
+        },
+        -- yank markdown code blocks ------------------------------------------
+        {
+            '<leader>ymc', function()
+                require('yank_system_ops').yank_codeblock()
+            end, desc = 'Yank line(s) as markdown code block'
+        },
+        {
+            '<leader>ymd', function()
+                require('yank_system_ops').yank_diagnostics()
+            end, desc = 'Yank line(s) as markdown code block with diagnostics'
+        },
+        -- yank github url ----------------------------------------------------
+        {
+            '<leader>ygl', function()
+                require('yank_system_ops').yank_github_url()
+            end, desc = 'Yank line(s) as github url'
         },
     }
 }
