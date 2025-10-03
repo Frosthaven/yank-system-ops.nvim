@@ -345,7 +345,8 @@ instructions based on your OS:
   appropriate command for your OS.
 
 > - On Windows, this uses `explorer.exe`.  
-> - On MacOS, this uses `osascript` to open in Forklift (if installed) or Finder.  
+> - On MacOS, this uses `osascript` to open in `Forklift` (if installed) or
+>   `Finder`.  
 > - On Linux, this uses `xdg-open` to open your default file manager.  
 
 </details>
