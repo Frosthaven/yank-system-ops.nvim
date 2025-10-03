@@ -176,6 +176,7 @@ function M.yank_diagnostics()
         for _, diag in ipairs(selected_diags) do
             local line_num = diag.lnum + 1 -- convert 0-index to 1-index
             table.insert(messages, string.format('`%d`: %s', line_num, diag.message))
+            table.insert(messages, '') -- blank line between diagnostics
         end
     end
     local all_messages = table.concat(messages, '\n')
