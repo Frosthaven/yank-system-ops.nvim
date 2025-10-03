@@ -1,5 +1,9 @@
 # 🗃️ `yank-system-ops.nvim`
 
+<p align="center">
+  <img src="./.meta/logo.png" alt="yank-system-ops Logo"/>
+</p>
+
 This plugin is still under development and is in the PROTOTYPE phase.
 
 `yank-system-ops.nvim` is a Neovim plugin that attempts to bridge the gap
