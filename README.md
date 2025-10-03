@@ -7,14 +7,6 @@
 > [!IMPORTANT] 
 > This plugin is still in the PROTOTYPE phase. Expect breaking changes!
 
-`yank-system-ops.nvim` is a Neovim plugin that attempts to bridge the gap
-between Neovim and your operating system's file management and clipboard
-functionalities.
-
-It allows you to move files and folders between Neovim directories (even across
-sessions!), file explorers, chat programs, and more with it's various "yank" and
-"paste" operations.
-
 ## 📑 Table of Contents
 
 - [✨ Features](#-features)
