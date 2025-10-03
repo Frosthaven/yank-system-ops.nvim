@@ -11,9 +11,10 @@ and other applications through its hotkeys.
 ##  Supported Features
 
 <details>
-    <summary>Yank lines into markdown</summary>
+    <summary>Yank lines into markdown code block</summary>
 
-Yank selected line(s) into a markdown code block for pasting into chats, etc.
+Yank selected line(s) into a language-spec markdown code block for pasting into
+chats, etc.
 
 _Example keymap:_
 
@@ -36,9 +37,9 @@ M.config = {
 </details>
 
 <details>
-    <summary>Yank lines into markdown with diagnostics</summary>
-Yank selected line(s) into a markdown code block with diagnostics for pasting.
-Especially useful for pasting into LLMs.
+    <summary>Yank lines into markdown code block with diagnostics</summary>
+Yank selected line(s) into a language-spec markdown code block with diagnostics
+for pasting. Especially useful for pasting into LLMs.
 
 _Example keymap:_
 
@@ -54,6 +55,7 @@ _Example output:_
 Diagnostic:
 
 `7`: Miss symbol `,` or `;` .
+
 `7`: Undefined global `something_is_wrong_here`.
 
 `lua/yank_system_ops/init.lua:6-11`:
