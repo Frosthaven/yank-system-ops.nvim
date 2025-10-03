@@ -365,7 +365,8 @@ are planned to be supported.
 
 ## 🚀 Usage
 
-See the example below for how to configure `yank-system-ops.nvim`:
+Once you've installed the [⚡️ Requirements](#️-requirements), you can use the
+example below to configure `yank-system-ops.nvim`:
 
 ```lua
 return {
