@@ -221,7 +221,7 @@ instructions based on your OS:
 </details>
 
 <details>
-  <summary><strong>macOS</strong></summary>
+  <summary><strong>MacOS</strong></summary>
 
   - [Git CLI](https://git-scm.com/downloads)
   - Archive Manager: `7zz`:
@@ -247,7 +247,7 @@ instructions based on your OS:
     sudo pacman -S --needed 7zip
     ```
 
-  - Clipboard manager: `wl-clipboard` (recommended)
+  - Clipboard manager: `wl-clipboard`
 
     ```bash
     # Debian/Ubuntu
