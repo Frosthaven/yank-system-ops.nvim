@@ -293,6 +293,15 @@ instructions based on your OS:
 
 ## 📋 How It Works
 
+At a high level, `yank-system-ops.nvim`:
+
+- compresses file(s) into a zip archive using the `7z` or `7zz` binary
+
+- saves it to the configured `storage_path` (cleaning up along the way)
+
+- provides either the path to the zip file or the file(s) themselves to your
+system clipboard using the appropriate clipboard manager for your OS.
+
 <details>
 <summary><strong>Yank file(s) as compressed file path</strong></summary>
 
