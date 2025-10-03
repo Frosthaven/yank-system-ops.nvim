@@ -5,8 +5,6 @@
 
 ### Share file(s) between other folders, projects, and applications
 
-## 📑 Table of Contents
-
 - [✨ Features](#-features)
 - [⚡️ Requirements](#️-requirements)
 - [📋 How It Works](#-how-it-works)
