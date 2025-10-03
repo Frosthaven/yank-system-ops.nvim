@@ -2,10 +2,11 @@
 
 This plugin is still under development and is in the PROTOTYPE phase.
 
-`yank-system-ops.nvim` is a Neovim plugin that attempts to bridge the
-gap between Neovim and your operating system's file management and clipboard
-functionalities. It allows you to move files and folders between Neovim sessions
-and other OS applications through its hotkeys.
+`yank-system-ops.nvim` is a Neovim plugin that attempts to bridge the gap
+between Neovim and your operating system's file management and clipboard
+functionalities. It allows you to move files and folders between Neovim
+directories (even across sessions!), file explorers, chat programs, and more
+with it's various "yank" and "paste" operations.
 
 ## ✨ Features
 
@@ -265,13 +266,77 @@ instructions based on your OS:
 
 ---
 
+## 📋 How It Works
+
+<details>
+<summary><strong>Yank file(s) as compressed file path</strong></summary>
+
+- Determine the current buffer type (file vs list of files)
+
+- Compress the file(s) into a zip archive using the `7z` or `7zz` binary, saving
+  it to the configured `storage_path` with the extension `.nvim.zip`
+
+- Copy either the path or the file itself to the system clipboard using the
+  appropriate clipboard manager for your OS.
+
+</details>
+
+<details>
+<summary><strong>Yank file(s) to system clipboard for sharing</strong></summary>
+
+- Determine the current buffer type (file vs list of files)
+
+- Copy the file(s) to the system clipboard using the appropriate clipboard
+  manager for your OS. It does this in a format that can be pasted into file
+  explorers, chat programs, email clients, etc.
+
+> [!NOTE]  
+> - On Windows, this uses powershell's `Set-Clipboard` with the `FileDropList` format.  
+> - On MacOS, this uses `osacript` to set the clipboard to a `POSIX` file.  
+> - On Linux, this uses `text/uri-list` mime type and your clipboard manager.  
+>   
+> When yanking only a single file buffer, `yank-system-ops.nvim` will opt to
+> skip the archiving step and just copy the file directly to the clipboard.
+
+</details>
+
+<details>
+<summary><strong>Paste compressed file(s) here</strong></summary>
+
+- Determine the current buffer type (file vs list of files)
+
+- Read the system clipboard to get the path to the `.nvim.zip` file
+
+- Extract the contents of the zip file into the current buffer's directory using
+  the `7z` or `7zz` binary.
+
+</details>
+
+<details>
+<summary><strong>Open current buffer in file browser</strong></summary>
+
+- Determine the current buffer type (file vs list of files)
+
+- Open the current buffer's directory in your system's file explorer using the
+  appropriate command for your OS.
+
+> [!NOTE]  
+> - On Windows, this uses `explorer.exe`.  
+> - On MacOS, this uses `osascript` to open in Forklift (if installed) or Finder.  
+> - On Linux, this uses `xdg-open` to open your default file manager.  
+
+</details>
+
+---
+
 ## 📊 Support Matrix
 
 ✅️ = Supported | ❌ = Not Supported | ⚠️ = Untested
 
 `yank-system-ops.nvim` needs to interact with your operating system clipboard,
 cli tools, and active neovim buffers to provide its functionality. Below is a
-support matrix for various operating systems and buffer types.
+support matrix for various operating systems and buffer types. All listed items
+are planned to be supported.
 
 ### Operating Systems Supperted
 
