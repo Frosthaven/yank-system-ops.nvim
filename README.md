@@ -1,8 +1,6 @@
-<p align="center">
-  <img src="./.meta/logo.png" alt="yank-system-ops Logo"/>
-</p>
+# 🗃️ `yank-system-ops.nvim`
 
-### Share file(s) between projects and OS applications
+### Share file(s) between projects, folders, and OS applications
 
 > [!IMPORTANT] 
 > This plugin is still in the PROTOTYPE phase. Expect breaking changes!
