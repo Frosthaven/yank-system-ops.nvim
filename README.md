@@ -217,7 +217,6 @@ instructions based on your OS:
     ```powershell
     winget install -e --id 7zip.7zip;
     ```
-  - Clipboard manager: `clip` (built-in)
 </details>
 
 <details>
@@ -228,7 +227,6 @@ instructions based on your OS:
     ```bash
     brew install sevenzip
     ```
-  - Clipboard manager: `pbcopy` (built-in)
 </details>
 
 <details>
