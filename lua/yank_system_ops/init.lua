@@ -13,7 +13,7 @@ M._loaded = false
 
 function M.setup(opts)
     if M._loaded then
-        vim.notify('yank-more is already loaded!', vim.log.levels.WARN, { title = 'yank-more' })
+        vim.notify('yank-system-ops is already loaded!', vim.log.levels.WARN, { title = 'yank-system-ops' })
         return
     end
     M._loaded = true
@@ -27,14 +27,14 @@ function M.setup(opts)
     end
 
     if M.config.debug then
-        vim.notify('Setup with config:\n' .. vim.inspect(M.config), vim.log.levels.DEBUG, { title = 'yank-more' })
+        vim.notify('Setup with config:\n' .. vim.inspect(M.config), vim.log.levels.DEBUG, { title = 'yank-system-ops' })
     end
 end
 
 -- Flash Highlight Helper -----------------------------------------------------
 -------------------------------------------------------------------------------
 
-local ns = vim.api.nvim_create_namespace 'yank_more_yank_flash'
+local ns = vim.api.nvim_create_namespace 'yank_system_ops_yank_flash'
 
 -- this function highlights lines from start_line to end_line (0-indexed) in the
 -- given buffer for a short duration
@@ -513,7 +513,7 @@ end
 
 -- puts the entire binary content of the compressed file into the clipboard
 -- for pasting into other applications that accept binary data
-function M.yank_file_binary()
+function M.yank_file_sharing()
     local items, base_dir, filetype = __get_buffer_context 'compress'
     if not base_dir or #items == 0 then
         return
