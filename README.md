@@ -293,22 +293,17 @@ instructions based on your OS:
 
 ## 📋 How It Works
 
-At a high level, `yank-system-ops.nvim`:
-
-- compresses file(s) into a zip archive using the `7z` or `7zz` binary
-
-- saves it to the configured `storage_path` (cleaning up along the way)
-
-- provides either the path to the zip file or the file(s) themselves to your
-system clipboard using the appropriate clipboard manager for your OS.
-
 <details>
 <summary><strong>Yank file(s) as compressed file path</strong></summary>
 
 - Determine the current buffer type (file vs list of files)
 
-- Compress the file(s) into a zip archive using the `7z` or `7zz` binary, saving
-  it to the configured `storage_path` with the extension `.nvim.zip`
+- Compress the file(s) into a `.nvim.zip` archive using the `7z` or `7zz` binary
+
+- Save the archive to the configured `storage_path`
+
+- Delete older `.nvim.zip` files in the `storage_path` if the number of
+`.nvim.zip` files exceeds the configured `files_to_keep`
 
 - Copy the absolute path to the zip file to your system clipboard using the
   appropriate clipboard manager for your OS.
@@ -320,15 +315,22 @@ system clipboard using the appropriate clipboard manager for your OS.
 
 - Determine the current buffer type (file vs list of files)
 
-- Copy the file(s) to the system clipboard using the appropriate clipboard
-  manager for your OS. It does this in a format that can be pasted into file
-  explorers, chat programs, email clients, etc.
+- Compress the files into a `.nvim.zip` archive using the `7z` or `7zz` binary
+
+- Save the archive to the configured `storage_path`
+
+- Delete older `.nvim.zip` files in the `storage_path` if the number of
+`.nvim.zip` files exceeds the configured `files_to_keep`
+
+- Copy the compressed file to the system clipboard using the appropriate
+  clipboard manager for your OS. It does this in a format that can be pasted
+  into file explorers, chat programs, email clients, etc.
 
 > - On Windows, this uses powershell's `Set-Clipboard` with the `FileDropList` format.  
 > - On MacOS, this uses `osacript` to set the clipboard to a `POSIX` file.  
 > - On Linux, this sets your clipboard to the `text/uri-list` mime type. 
 >   
-> When yanking only a single file buffer, `yank-system-ops.nvim` will opt to
+> When sharing only a single file buffer, `yank-system-ops.nvim` will opt to
 > skip the archiving step and just copy the file directly to the clipboard.
 
 </details>
