@@ -127,7 +127,7 @@ other applications (e.g., File Explorer, Finder, Discord, Slack, email clients).
 ```lua
 {
     '<leader>ys', function()
-        require('yank_system_ops').yank_file_binary()
+        require('yank_system_ops').yank_file_sharing()
     end, desc = 'Yank file(s) to system clipboard for sharing'
 },
 ```
