@@ -291,7 +291,9 @@ instructions based on your OS:
 
 ---
 
-## 📋 How It Works
+## 🔍️ How It Works
+
+Expand the sections below to see how each feature works under the hood:
 
 <details>
 <summary><strong>Yank file(s) as compressed file path</strong></summary>
