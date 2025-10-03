@@ -290,7 +290,6 @@ instructions based on your OS:
   manager for your OS. It does this in a format that can be pasted into file
   explorers, chat programs, email clients, etc.
 
-> [!NOTE]  
 > - On Windows, this uses powershell's `Set-Clipboard` with the `FileDropList` format.  
 > - On MacOS, this uses `osacript` to set the clipboard to a `POSIX` file.  
 > - On Linux, this uses `text/uri-list` mime type and your clipboard manager.  
@@ -320,7 +319,6 @@ instructions based on your OS:
 - Open the current buffer's directory in your system's file explorer using the
   appropriate command for your OS.
 
-> [!NOTE]  
 > - On Windows, this uses `explorer.exe`.  
 > - On MacOS, this uses `osascript` to open in Forklift (if installed) or Finder.  
 > - On Linux, this uses `xdg-open` to open your default file manager.  
