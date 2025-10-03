@@ -3,7 +3,7 @@
 
 # 🗃️ `yank-system-ops.nvim`
 
-### Share file(s) between projects, folders, and OS applications!
+### Share file(s) between other folders, projects, and OS applications
 
 ## 📑 Table of Contents
 
