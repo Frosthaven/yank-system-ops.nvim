@@ -226,10 +226,10 @@ For Wayland, `wl-clipboard` is recommended for clipboard management. For X11,
 
 | OS              | File/Folder Archiving | System Clipboard Integration | Open in File Explorer |
 |-----------------|-----------------------|------------------------------|-----------------------|
-| Windows         | untested              | untested                     | untested              |
+| Windows         | ⚠️                    | ⚠️                           | ⚠️                    |
 | MacOS           | ✅                    | ✅                           | ✅                    |
 | Linux (Wayland) | ✅                    | ✅                           | ✅                    |
-| Linux (X11)     | ✅                    | untested                     | untested              |
+| Linux (X11)     | ✅                    | ⚠️                           | ⚠️                    |
 
 ## Buffer Types Supported
 
