@@ -236,19 +236,29 @@ instructions based on your OS:
 
   - [Git CLI](https://git-scm.com/downloads)
   - Archive Manager: `7z`:
+
     ```bash
     # Debian/Ubuntu
     sudo apt install 7zip
+    ```
+
+    ```bash
     # Arch
     sudo pacman -S --needed 7zip
     ```
+
   - Clipboard manager: `wl-clipboard` (recommended)
+
     ```bash
     # Debian/Ubuntu
     sudo apt install wl-clipboard
+    ```
+
+    ```bash
     # Arch
     sudo pacman -S --needed wl-clipboard
     ```
+
 </details>
 
 <details>
@@ -256,19 +266,29 @@ instructions based on your OS:
 
   - [Git CLI](https://git-scm.com/downloads)
   - Archive Manager: `7z`:
+
     ```bash
     # Debian/Ubuntu
     sudo apt install 7zip
+    ```
+
+    ```bash
     # Arch
     sudo pacman -S --needed 7zip
     ```
+
   - Clipboard manager: `xclip`
+
     ```bash
     # Debian/Ubuntu
     sudo apt install xclip
+    ```
+
+    ```bash
     # Arch
     sudo pacman -S --needed xclip
     ```
+
 </details>
 
 ---
