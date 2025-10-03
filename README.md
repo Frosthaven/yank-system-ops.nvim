@@ -125,7 +125,7 @@ vim.keymap.set(
 </details>
 
 <details>
-    <summary><strong>Yank current buffer into file or compressed folder for sharing</strong></summary>
+    <summary><strong>Yank current buffer file/folder into clipboard for sharing</strong></summary>
 Yanks the current buffer's file or folder (compressed and saved) into the system
 clipboard for easy sharing in other applications (e.g. file explorer, Slack,
 Discord, etc.).
