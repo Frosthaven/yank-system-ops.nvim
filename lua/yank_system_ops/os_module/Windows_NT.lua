@@ -1,22 +1,13 @@
--- yank_system_ops/os_module/Windows_NT.lua
+--- Windows-specific OS module for yank_system_ops
+-- Implements abstract methods from Base for Windows environments
+-- @module yank_system_ops.os_module.Windows_NT
 local Base = require("yank_system_ops.os_module.__base")
 local Windows = Base:extend()
 
--- Copy text to clipboard
-function Windows.add_text_to_clipboard(text)
-    local ps_cmd = string.format(
-        'powershell -Command "[System.Windows.Forms.Clipboard]::SetText(\'%s\')]"',
-        text:gsub("'", "''") -- escape single quotes
-    )
-    local result = vim.fn.system(ps_cmd)
-    if vim.v.shell_error ~= 0 then
-        vim.notify('Failed to copy text to clipboard: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
-        return false
-    end
-    return true
-end
-
--- Copy files to clipboard
+--- Copy file(s) to the system clipboard
+-- Uses PowerShell and the .NET `System.Windows.Forms.Clipboard` class
+-- @param files string|table A file path or list of file paths
+-- @return boolean True if copied successfully, false otherwise
 function Windows.add_files_to_clipboard(files)
     if type(files) == 'string' then
         files = { files }
@@ -32,18 +23,29 @@ function Windows.add_files_to_clipboard(files)
 
     local result = vim.fn.system(ps_cmd)
     if vim.v.shell_error ~= 0 then
-        vim.notify('Failed to copy file(s) to clipboard: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
+        vim.notify(
+            'Failed to copy file(s) to clipboard: ' .. result,
+            vim.log.levels.ERROR,
+            { title = 'Keymap' }
+        )
         return false
     end
     return true
 end
 
--- Open file browser
+--- Open a file or directory in the system's file browser
+-- Uses Windows Explorer
+-- @param path string Absolute path to file or directory
+-- @return boolean True if opened successfully, false otherwise
 function Windows.open_file_browser(path)
     local ps_cmd = string.format('explorer "%s"', path)
     local result = vim.fn.system(ps_cmd)
     if vim.v.shell_error ~= 0 then
-        vim.notify('Failed to open file browser: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
+        vim.notify(
+            'Failed to open file browser: ' .. result,
+            vim.log.levels.ERROR,
+            { title = 'Keymap' }
+        )
         return false
     end
     return true

@@ -1,75 +1,77 @@
--- yank_system_ops/os_module/Linux.lua
-local Base = require("yank_system_ops.os_module.__base")
-local Linux = Base:extend()
+--- Darwin-specific OS module for yank_system_ops
+-- Implements abstract methods from Base for Darwin environments
+-- @module yank_system_ops.os_module.Darwin
+local Base = require('yank_system_ops.os_module.__base')
+local Darwin = Base:extend()
 
-function Linux.add_text_to_clipboard(text)
-    local cmd
-    if vim.fn.executable('wl-copy') == 1 then
-        cmd = string.format([[bash -c 'printf "%%s" "%s" | wl-copy']], text)
-    elseif vim.fn.executable('xclip') == 1 then
-        cmd = string.format([[bash -c 'printf "%%s" "%s" | xclip -selection clipboard']], text)
-    elseif vim.fn.executable('xsel') == 1 then
-        cmd = string.format([[bash -c 'printf "%%s" "%s" | xsel --clipboard --input']], text)
+--- Copy a single file (or multiple files) to macOS clipboard
+-- @param files string|table File path(s) to copy
+-- @return boolean success
+function Darwin.add_files_to_clipboard(files)
+    local function copy_file(file)
+        local osa_cmd = string.format('osascript -e \'set the clipboard to POSIX file "%s"\'', file)
+        local result = vim.fn.system(osa_cmd)
+        if vim.v.shell_error ~= 0 then
+            vim.notify('Failed to copy file to clipboard: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
+            return false
+        end
+        return true
+    end
+
+    if type(files) == 'string' then
+        return copy_file(files)
+    elseif type(files) == 'table' then
+        for _, f in ipairs(files) do
+            if not copy_file(f) then
+                return false
+            end
+        end
+        return true
     else
-        vim.notify('No supported clipboard utility found (wl-copy, xclip, xsel)', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify('Invalid input to add_files_to_clipboard', vim.log.levels.WARN, { title = 'Keymap' })
         return false
     end
-
-    local result = vim.fn.system(cmd)
-    if vim.v.shell_error ~= 0 then
-        vim.notify('Failed to copy text to clipboard: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
-        return false
-    end
-    return true
 end
 
-function Linux.add_files_to_clipboard(files)
-    if type(files) == 'string' then files = { files } end
-    local uri_list = {}
-    for _, f in ipairs(files) do
-        local abs_path = vim.fn.fnamemodify(f, ':p')
-        table.insert(uri_list, 'file://' .. abs_path)
+--- Open a file or folder in Finder (or ForkLift if installed)
+-- @param path string Absolute path to file or directory
+-- @return boolean success
+function Darwin.open_file_browser(path)
+    if not path or path == '' then
+        vim.notify('No path provided to open_file_browser', vim.log.levels.WARN, { title = 'Keymap' })
+        return false
     end
-    local uris_str = table.concat(uri_list, '\n'):gsub('"', '\\"')
 
+    local forklift_path = '/Applications/ForkLift.app'
     local cmd
-    if vim.fn.executable('wl-copy') == 1 then
-        cmd = string.format([[bash -c 'printf "%%s" "%s" | wl-copy -t text/uri-list']], uris_str)
-    elseif vim.fn.executable('xclip') == 1 then
-        cmd = string.format([[bash -c 'printf "%%s" "%s" | xclip -selection clipboard -t text/uri-list']], uris_str)
-    elseif vim.fn.executable('xsel') == 1 then
-        vim.notify('xsel does not support text/uri-list — copying as plain text instead', vim.log.levels.WARN, { title = 'Keymap' })
-        cmd = string.format([[bash -c 'printf "%%s" "%s" | xsel --clipboard --input']], uris_str)
+
+    if vim.fn.isdirectory(forklift_path) == 1 then
+        cmd = string.format([[
+            osascript -e 'tell application "ForkLift" to open POSIX file "%s"
+                           tell application "ForkLift" to activate'
+        ]], path)
     else
-        vim.notify('No supported clipboard utility found (wl-copy, xclip, xsel)', vim.log.levels.WARN, { title = 'Keymap' })
-        return false
+        if vim.fn.isdirectory(path) == 1 then
+            cmd = string.format([[
+                osascript -e 'tell application "Finder" to open POSIX file "%s"
+                               tell application "Finder" to activate'
+            ]], path)
+        else
+            cmd = string.format([[
+                osascript -e 'tell application "Finder" to reveal POSIX file "%s"
+                               tell application "Finder" to activate'
+            ]], path)
+        end
     end
 
-    local result = vim.fn.system(cmd)
-    if vim.v.shell_error ~= 0 then
-        vim.notify('Failed to copy file(s) to clipboard: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
+    vim.fn.system(cmd)
+    if vim.v.shell_error == 0 then
+        vim.notify('Opened file manager', vim.log.levels.INFO, { title = 'Keymap' })
+        return true
+    else
+        vim.notify('Failed to open file manager', vim.log.levels.ERROR, { title = 'Keymap' })
         return false
     end
-    return true
 end
 
-function Linux.open_file_browser(path)
-    local cmd
-    if vim.fn.executable('xdg-open') == 1 then
-        cmd = string.format('xdg-open "%s"', path)
-    elseif vim.fn.executable('gio') == 1 then
-        cmd = string.format('gio open "%s"', path)
-    else
-        vim.notify('No supported file browser opener found (xdg-open, gio)', vim.log.levels.WARN, { title = 'Keymap' })
-        return false
-    end
-
-    local result = vim.fn.system(cmd)
-    if vim.v.shell_error ~= 0 then
-        vim.notify('Failed to open file browser: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
-        return false
-    end
-    return true
-end
-
-return Linux
+return Darwin

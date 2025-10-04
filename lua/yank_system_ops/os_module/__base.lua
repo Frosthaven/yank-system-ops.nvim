@@ -1,19 +1,35 @@
--- yank_system_ops/os_module/base.lua
+--- Base OS module for yank_system_ops
+-- Provides interface-like abstract methods to be overridden by OS-specific modules
+-- @module Base
 local Base = {}
 
-function Base.add_text_to_clipboard(text)
-    error("add_text_to_clipboard not implemented for this OS")
-end
-
+--- Copy file(s) to the system clipboard
+-- Abstract method. Must be implemented in subclass.
+-- @param files string|table A file path or a list of file paths
 function Base.add_files_to_clipboard(files)
-    error("add_files_to_clipboard not implemented for this OS")
+    files = files or {}
+    vim.notify(
+        "add_files_to_clipboard not implemented for this OS",
+        vim.log.levels.WARN,
+        { title = "Keymap" }
+    )
 end
 
+--- Open a file or directory in the system's file browser
+-- Abstract method. Must be implemented in subclass.
+-- @param path string Absolute path to file or directory
 function Base.open_file_browser(path)
-    error("open_file_browser not implemented for this OS")
+    path = path or ""
+    vim.notify(
+        "open_file_browser not implemented for this OS",
+        vim.log.levels.WARN,
+        { title = "Keymap" }
+    )
 end
 
--- Helper for inheritance
+--- Helper for inheritance
+-- @param subclass table Optional table to extend from this base
+-- @return table Subclass table with metatable set for inheritance
 function Base:extend(subclass)
     subclass = subclass or {}
     setmetatable(subclass, { __index = self })
