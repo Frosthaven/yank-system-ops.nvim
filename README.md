@@ -386,12 +386,11 @@ are planned to be supported.
 
 ### Operating Systems Supperted
 
-| OS              | File/Folder Archiving | System Clipboard Integration | Open in File Explorer |
-|-----------------|-----------------------|------------------------------|-----------------------|
-| Windows         | ⚠️                    | ⚠️                           | ⚠️                    |
-| MacOS           | ✅                    | ✅                           | ✅                    |
-| Linux (Wayland) | ✅                    | ✅                           | ✅                    |
-| Linux (X11)     | ✅                    | ⚠️                           | ⚠️                    |
+| Operating System | Write Archive (Path Text) | Write Archive (OS URI) | Read Archive (Path Text) | Read Archive (OS URI) | Write File(s) (OS URI) | Read File(s) (OS URI) | Open in File Explorer |
+|------------------|---------------------------|------------------------|--------------------------|-----------------------|------------------------|-----------------------|-----------------------|
+| Windows          | ⚠️                        | ⚠️                     | ⚠️                       | ❌                    | ⚠️                     | ❌                    | ⚠️                    |
+| MacOS            | ✅                        | ✅                     | ✅                       | ❌                    | ✅                     | ❌                    | ✅                    |
+| Linux            | ✅                        | ✅                     | ✅                       | ❌                    | ✅                     | ❌                    | ✅                    |
 
 ### Buffer Types Supported
 
