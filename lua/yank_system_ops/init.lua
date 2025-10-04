@@ -31,6 +31,22 @@ function M.setup(opts)
     end
 end
 
+-- Include OS Specific Module -------------------------------------------------
+-------------------------------------------------------------------------------
+
+local os_name = vim.loop.os_uname().sysname
+local os_module_ok, os_module = pcall(
+    require,
+    "yank_system_ops.os_module." .. os_name
+)
+if not os_module_ok then
+    vim.notify(
+        "yank-system-ops: Unsupported OS: " .. os_name, vim.log.levels.WARN,
+        { title = 'yank-system-ops' }
+    )
+    return
+end
+
 -- Flash Highlight Helper -----------------------------------------------------
 -------------------------------------------------------------------------------
 
@@ -53,6 +69,95 @@ function M.flash_highlight(bufnr, start_line, end_line)
     vim.defer_fn(function()
         vim.api.nvim_buf_clear_namespace(bufnr, ns, start_line, end_line + 1)
     end, duration)
+end
+
+
+-- OS-Specific ----------------------------------------------------------------
+-------------------------------------------------------------------------------
+
+local os_functions = {}
+
+os_functions.add_files_to_clipboard = {}
+function os_functions.add_files_to_clipboard.Darwin (files)
+    -- handle single file by wrapping in array
+    if type(files) == 'string' then
+        files = { files }
+    end
+
+    local osa_files = {}
+    for _, f in ipairs(files) do
+        table.insert(osa_files, 'POSIX file "' .. f .. '"')
+    end
+
+    local osa_cmd = 'osascript -e \'set the clipboard to {' .. table.concat(osa_files, ', ') .. '}\''
+    local result = vim.fn.system(osa_cmd)
+    if vim.v.shell_error ~= 0 then
+        vim.notify('Failed to copy file to clipboard: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
+        return false
+    end
+    return true
+end
+
+function os_functions.add_files_to_clipboard.Linux(files)
+    -- Handle single file input
+    if type(files) == 'string' then
+        files = { files }
+    end
+
+    -- Build URI list
+    local uri_list = {}
+    for _, f in ipairs(files) do
+        local abs_path = vim.fn.fnamemodify(f, ':p')
+        table.insert(uri_list, 'file://' .. abs_path)
+    end
+
+    -- Join URIs and escape quotes for shell safety
+    local uris_str = table.concat(uri_list, '\n'):gsub('"', '\\"')
+
+    local cmd
+    if vim.fn.executable('wl-copy') == 1 then
+        -- Wayland
+        cmd = string.format([[bash -c 'printf "%%s" "%s" | wl-copy -t text/uri-list']], uris_str)
+    elseif vim.fn.executable('xclip') == 1 then
+        -- X11
+        cmd = string.format([[bash -c 'printf "%%s" "%s" | xclip -selection clipboard -t text/uri-list']], uris_str)
+    elseif vim.fn.executable('xsel') == 1 then
+        -- Fallback: plain text only
+        vim.notify('xsel does not support text/uri-list — copying as plain text instead', vim.log.levels.WARN, { title = 'Keymap' })
+        cmd = string.format([[bash -c 'printf "%%s" "%s" | xsel --clipboard --input']], uris_str)
+    else
+        vim.notify('No supported clipboard utility found (wl-copy, xclip, xsel)', vim.log.levels.WARN, { title = 'Keymap' })
+        return false
+    end
+
+    -- Run the command
+    local result = vim.fn.system(cmd)
+    if vim.v.shell_error ~= 0 then
+        vim.notify('Failed to copy file(s) to clipboard: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
+        return false
+    end
+
+    return true
+end
+
+function os_functions.add_files_to_clipboard.Windows_NT (files)
+    -- handle single file by wrapping in array
+    if type(files) == 'string' then
+        files = { files }
+    end
+
+    local ps_files = {}
+    for _, f in ipairs(files) do
+        table.insert(ps_files, '\'' .. f .. '\'')
+    end
+
+    local ps_cmd = 'powershell -Command "[System.Windows.Forms.Clipboard]::SetFileDropList((New-Object System.Collections.Specialized.StringCollection; ' .. table.concat(ps_files, '; $_.Add(') .. ')))"'
+    local result = vim.fn.system(ps_cmd)
+    if vim.v.shell_error ~= 0 then
+        vim.notify('Failed to copy file to clipboard: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
+        return false
+    end
+    return true
 end
 
 -- Yank Functions -------------------------------------------------------------
@@ -128,7 +233,7 @@ function M.yank_github_url()
         url = url .. '#L' .. start_line .. '-L' .. end_line
     end
 
-    vim.fn.setreg('+', url)
+    os_module.add_text_to_clipboard(url)
     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'nx', false)
     M.flash_highlight(bufnr, start_line - 1, end_line - 1)
 
@@ -210,7 +315,7 @@ function M.yank_diagnostics()
     local out = string.format('Diagnostic:\n\n%s\n\n`%s`:\n```%s\n%s\n```', all_messages, line_info, lang, code_text)
 
     -- clipboard copy
-    vim.fn.setreg('+', out)
+    os_module.add_text_to_clipboard(out)
     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'nx', false)
     M.flash_highlight(bufnr, start_line, end_line)
 
@@ -241,7 +346,7 @@ function M.yank_codeblock()
     local filetype = vim.bo.filetype ~= '' and vim.bo.filetype or 'txt'
     local out = string.format('```%s\n%s\n```', filetype, table.concat(lines, '\n'))
 
-    vim.fn.setreg('+', out)
+    os_module.add_text_to_clipboard(out)
     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'nx', false)
     M.flash_highlight(bufnr, start_line - 1, end_line - 1)
 
@@ -371,7 +476,7 @@ local function __compress_file(items, base_dir, filetype)
     end
 
     -- Yank zip path
-    vim.fn.setreg('+', zip_path)
+    os_module.add_text_to_clipboard(zip_path)
 
     -- Keep latest files only
     local existing = vim.fn.globpath(downloads, '*.nvim.zip', true, true)
@@ -407,72 +512,6 @@ local function __extract_zip(zip_path, target_dir)
     end
 
     return file_count
-end
-
--- Copy file(s) reference to clipboard in a platform-specific way
--- Store the persistent clipboard job ID
-
-local function __copy_file_to_clipboard(file)
-    if type(file) ~= 'string' or file == '' then
-        vim.notify('No file provided to copy', vim.log.levels.WARN, { title = 'Keymap' })
-        return false
-    end
-
-    -- macOS
-    if vim.fn.has 'mac' == 1 then
-        local osa_cmd = string.format('osascript -e \'set the clipboard to POSIX file "%s"\'', file)
-        local result = vim.fn.system(osa_cmd)
-        if vim.v.shell_error ~= 0 then
-            vim.notify('Failed to copy file to clipboard: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
-            return false
-        end
-
-    -- Windows
-    elseif vim.fn.has 'win32' == 1 then
-        local ps_cmd = string.format(
-            'powershell -Command "[System.Windows.Forms.Clipboard]::SetFileDropList((New-Object System.Collections.Specialized.StringCollection; $_.Add(\'%s\')))"',
-            file
-        )
-        local result = vim.fn.system(ps_cmd)
-        if vim.v.shell_error ~= 0 then
-            vim.notify('Failed to copy file to clipboard: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
-            return false
-        end
-
-    -- Linux
-    elseif vim.fn.has 'linux' == 1 then
-        local abs_path = vim.fn.fnamemodify(file, ':p')
-        local uri = 'file://' .. abs_path
-
-        if os.getenv 'WAYLAND_DISPLAY' then
-            -- Copy the file URI
-            local cmd = string.format([[bash -c 'wl-copy -t text/uri-list "%s"']], uri)
-            vim.fn.system(cmd)
-
-            -- Notify on errors
-            local result = vim.fn.system(cmd)
-            if vim.v.shell_error ~= 0 then
-                vim.notify('Failed to copy file to clipboard: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
-                return false
-            end
-        elseif os.getenv 'DISPLAY' then
-            -- X11 fallback
-            local cmd = string.format('xclip -selection clipboard -t x-special/gnome-copied-files <<< "copy\nfile://%s\n"', file)
-            local result = vim.fn.system(cmd)
-            if vim.v.shell_error ~= 0 then
-                vim.notify('Failed to copy file to clipboard: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
-                return false
-            end
-        else
-            vim.notify('Copying files to clipboard not supported on this Linux environment', vim.log.levels.WARN, { title = 'Keymap' })
-            return false
-        end
-    else
-        vim.notify('Copying files to clipboard not supported on this OS', vim.log.levels.WARN, { title = 'Keymap' })
-        return false
-    end
-
-    return true
 end
 
 -- Refresh explorers and buffers after extraction
@@ -537,10 +576,7 @@ function M.yank_file_sharing()
     end
 
     -- Copy the file (or zip) as a "real file" to clipboard
-    if __copy_file_to_clipboard(target_path) then
-        local name = vim.fn.fnamemodify(target_path, ':t')
-        vim.notify(string.format('%s\n  Copied file to clipboard', name), vim.log.levels.INFO, { title = 'Keymap' })
-    end
+    os_module.add_files_to_clipboard(target_path)
 end
 
 function M.extract_compressed_file()
@@ -578,7 +614,7 @@ function M.yank_relative_path()
     local cwd = vim.fn.getcwd()
     local relpath = vim.fn.fnamemodify(filename, ':.' .. cwd)
 
-    vim.fn.setreg('+', relpath)
+    os_module.add_text_to_clipboard(relpath)
 
     vim.notify('Yanked relative path', vim.log.levels.INFO, { title = 'Keymap' })
 end
@@ -588,7 +624,7 @@ function M.yank_absolute_path()
     local bufnr = vim.api.nvim_get_current_buf()
     local filename = vim.api.nvim_buf_get_name(bufnr)
 
-    vim.fn.setreg('+', filename)
+    os_module.add_text_to_clipboard(filename)
 
     vim.notify('Yanked absolute path', vim.log.levels.INFO, { title = 'Keymap' })
 end
@@ -614,63 +650,8 @@ function M.open_buffer_in_file_manager()
         return
     end
 
-    local abs_path = vim.fn.fnamemodify(target, ':p')
-    local cmd
-
-    if vim.fn.has 'mac' == 1 then
-        local forklift_path = '/Applications/ForkLift.app'
-        if vim.fn.isdirectory(forklift_path) == 1 then
-            -- ForkLift
-            cmd = string.format(
-                [[
-                    osascript -e 'tell application "ForkLift" to open POSIX file "%s"
-                        tell application "ForkLift" to activate'
-                ]],
-                abs_path
-            )
-        else
-            -- Finder
-            if vim.fn.isdirectory(abs_path) == 1 then
-                cmd = string.format(
-                    [[
-                    osascript -e 'tell application "Finder" to open POSIX file "%s"
-                        tell application "Finder" to activate'
-                ]],
-                    abs_path
-                )
-            else
-                cmd = string.format(
-                    [[
-                    osascript -e 'tell application "Finder" to reveal POSIX file "%s"
-                        tell application "Finder" to activate'
-                ]],
-                    abs_path
-                )
-            end
-        end
-    elseif vim.fn.has 'win32' == 1 then
-        if vim.fn.isdirectory(abs_path) == 1 then
-            cmd = string.format('explorer "%s"', abs_path)
-        else
-            cmd = string.format('explorer /select,"%s"', abs_path)
-        end
-    elseif vim.fn.has 'linux' == 1 then
-        if vim.fn.isdirectory(abs_path) == 1 then
-            cmd = string.format('xdg-open "%s"', abs_path)
-        else
-            cmd = string.format('xdg-open "%s"', vim.fn.fnamemodify(abs_path, ':h'))
-        end
-    else
-        vim.notify('Opening files not supported on this OS', vim.log.levels.WARN, { title = 'Keymap' })
-        return
-    end
-
-    vim.fn.system(cmd)
-    if vim.v.shell_error == 0 then
-        vim.notify('Opened file manager', vim.log.levels.INFO, { title = 'Keymap' })
-    else
-        vim.notify('Failed to open file manager', vim.log.levels.ERROR, { title = 'Keymap' })
-    end
+    local file_path = vim.fn.fnamemodify(target, ':p')
+    os_module.open_file_browser(file_path)
 end
 
 return M
