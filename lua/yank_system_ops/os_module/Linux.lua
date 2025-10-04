@@ -57,29 +57,85 @@ end
 -- @param path string Absolute path to file or directory
 -- @return boolean True if opened successfully, false otherwise
 function Linux.open_file_browser(path)
-    local cmd
-    if vim.fn.executable('xdg-open') == 1 then
-        cmd = string.format('xdg-open "%s"', path)
-    elseif vim.fn.executable('gio') == 1 then
-        cmd = string.format('gio open "%s"', path)
-    else
+    if not path or path == "" then
+        vim.notify("Invalid path provided", vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return false
+    end
+
+    local stat = vim.loop.fs_stat(path)
+    if not stat then
+        vim.notify("Path does not exist: " .. path, vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return false
+    end
+
+    local is_file = stat.type == "file"
+
+    -- Candidates: { binary, supports_select_flag }
+    local candidates = {
+        { "cosmic-files", true },
+        { "nautilus", true },
+        { "nemo", true },
+        { "caja", true },
+        { "dolphin", true },
+        { "spacefm", true },
+        { "thunar", false },
+        { "pcmanfm", false },
+        { "io.elementary.files", false },
+        { "krusader", false },
+        { "doublecmd", false },
+        { "xdg-open", false },
+        { "gio", false },
+    }
+
+    local browser = nil
+    for _, entry in ipairs(candidates) do
+        if vim.fn.executable(entry[1]) == 1 then
+            browser = entry
+            break
+        end
+    end
+
+    if not browser then
         vim.notify(
-            'No supported file browser opener found (xdg-open, gio)',
-            vim.log.levels.WARN,
-            { title = 'yank-system-ops' }
+            "No supported file browser found on this system",
+            vim.log.levels.ERROR,
+            { title = "yank-system-ops" }
         )
         return false
+    end
+
+    local binary, supports_select = browser[1], browser[2]
+    local cmd
+
+    if supports_select and is_file then
+        -- File managers that support `--select`
+        if binary == "spacefm" then
+            cmd = string.format('%s --select "%s"', binary, path)
+        elseif binary == "doublecmd" then
+            cmd = string.format('%s /L="%s"', binary, vim.fn.fnamemodify(path, ":h"))
+        else
+            cmd = string.format('%s --select "%s"', binary, path)
+        end
+    else
+        -- Open parent directory or directory itself
+        local target_dir = is_file and vim.fn.fnamemodify(path, ":h") or path
+        if binary == "gio" then
+            cmd = string.format('gio open "%s"', target_dir)
+        else
+            cmd = string.format('%s "%s"', binary, target_dir)
+        end
     end
 
     local result = vim.fn.system(cmd)
     if vim.v.shell_error ~= 0 then
         vim.notify(
-            'Failed to open file browser: ' .. result,
+            string.format("Failed to open file browser (%s): %s", binary, result),
             vim.log.levels.ERROR,
-            { title = 'yank-system-ops' }
+            { title = "yank-system-ops" }
         )
         return false
     end
+
     return true
 end
 
