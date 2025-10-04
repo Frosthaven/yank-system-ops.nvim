@@ -12,7 +12,7 @@ function Darwin.add_files_to_clipboard(files)
         local osa_cmd = string.format('osascript -e \'set the clipboard to POSIX file "%s"\'', file)
         local result = vim.fn.system(osa_cmd)
         if vim.v.shell_error ~= 0 then
-            vim.notify('Failed to copy file to clipboard: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
+            vim.notify('Failed to copy file to clipboard: ' .. result, vim.log.levels.ERROR, { title = 'yank-system-ops' })
             return false
         end
         return true
@@ -28,7 +28,7 @@ function Darwin.add_files_to_clipboard(files)
         end
         return true
     else
-        vim.notify('Invalid input to add_files_to_clipboard', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify('Invalid input to add_files_to_clipboard', vim.log.levels.WARN, { title = 'yank-system-ops' })
         return false
     end
 end
@@ -38,7 +38,7 @@ end
 -- @return boolean success
 function Darwin.open_file_browser(path)
     if not path or path == '' then
-        vim.notify('No path provided to open_file_browser', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify('No path provided to open_file_browser', vim.log.levels.WARN, { title = 'yank-system-ops' })
         return false
     end
 
@@ -66,10 +66,10 @@ function Darwin.open_file_browser(path)
 
     vim.fn.system(cmd)
     if vim.v.shell_error == 0 then
-        vim.notify('Opened file manager', vim.log.levels.INFO, { title = 'Keymap' })
+        vim.notify('Opened file manager', vim.log.levels.INFO, { title = 'yank-system-ops' })
         return true
     else
-        vim.notify('Failed to open file manager', vim.log.levels.ERROR, { title = 'Keymap' })
+        vim.notify('Failed to open file manager', vim.log.levels.ERROR, { title = 'yank-system-ops' })
         return false
     end
 end

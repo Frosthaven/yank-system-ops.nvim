@@ -26,7 +26,7 @@ function Windows.add_files_to_clipboard(files)
         vim.notify(
             'Failed to copy file(s) to clipboard: ' .. result,
             vim.log.levels.ERROR,
-            { title = 'Keymap' }
+            { title = 'yank-system-ops' }
         )
         return false
     end
@@ -44,7 +44,7 @@ function Windows.open_file_browser(path)
         vim.notify(
             'Failed to open file browser: ' .. result,
             vim.log.levels.ERROR,
-            { title = 'Keymap' }
+            { title = 'yank-system-ops' }
         )
         return false
     end

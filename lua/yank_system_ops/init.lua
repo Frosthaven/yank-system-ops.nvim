@@ -124,19 +124,19 @@ function M.yank_github_url()
 
     local repo_root = vim.fn.systemlist('git rev-parse --show-toplevel')[1]
     if repo_root == '' or vim.fn.isdirectory(repo_root) == 0 then
-        vim.notify('Not inside a Git repository', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify('Not inside a Git repository', vim.log.levels.WARN, { title = 'yank-system-ops' })
         return
     end
 
     local branch = vim.fn.systemlist('git rev-parse --abbrev-ref HEAD')[1]
     if branch == '' or branch == 'HEAD' then
-        vim.notify('Could not determine Git branch', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify('Could not determine Git branch', vim.log.levels.WARN, { title = 'yank-system-ops' })
         return
     end
 
     local remote_url = vim.fn.systemlist('git config --get remote.origin.url')[1]
     if not remote_url or remote_url == '' then
-        vim.notify('No Git remote found', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify('No Git remote found', vim.log.levels.WARN, { title = 'yank-system-ops' })
         return
     end
 
@@ -172,7 +172,7 @@ function M.yank_github_url()
         if #status > 0 then
             table.insert(msg_parts, 'uncommitted changes')
         end
-        vim.notify('Cannot copy GitHub URL: file has ' .. table.concat(msg_parts, '/') .. '!', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify('Cannot copy GitHub URL: file has ' .. table.concat(msg_parts, '/') .. '!', vim.log.levels.WARN, { title = 'yank-system-ops' })
         return
     end
 
@@ -189,7 +189,7 @@ function M.yank_github_url()
     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'nx', false)
     M.flash_highlight(bufnr, start_line - 1, end_line - 1)
 
-    vim.notify('Yanked GitHub URL', vim.log.levels.INFO, { title = 'Keymap' })
+    vim.notify('Yanked GitHub URL', vim.log.levels.INFO, { title = 'yank-system-ops' })
 end
 
 --- Yank diagnostics in selection as a markdown code block
@@ -236,7 +236,7 @@ function M.yank_diagnostics()
     -- Ensure all lines are strings and valid text
     for _, line in ipairs(code_lines) do
         if type(line) ~= 'string' then
-            vim.notify('Cannot yank: selection contains non-text content', vim.log.levels.WARN, { title = 'Keymap' })
+            vim.notify('Cannot yank: selection contains non-text content', vim.log.levels.WARN, { title = 'yank-system-ops' })
             return
         end
     end
@@ -260,12 +260,12 @@ function M.yank_diagnostics()
 
     local ok, _ = pcall(vim.fn.setreg, '+', out)
     if not ok then
-        vim.notify('Cannot yank: selection contains non-text content', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify('Cannot yank: selection contains non-text content', vim.log.levels.WARN, { title = 'yank-system-ops' })
         return
     end
 
     M.flash_highlight(bufnr, start_line, end_line)
-    vim.notify('Yanked diagnostic code block', vim.log.levels.INFO, { title = 'Keymap', render = 'compact' })
+    vim.notify('Yanked diagnostic code block', vim.log.levels.INFO, { title = 'yank-system-ops', render = 'compact' })
 end
 
 --- Yank selected lines as markdown code block
@@ -291,7 +291,7 @@ function M.yank_codeblock()
     -- Ensure all lines are strings and valid text
     for _, line in ipairs(lines) do
         if type(line) ~= 'string' then
-            vim.notify('Cannot yank: selection contains non-text content', vim.log.levels.WARN, { title = 'Keymap' })
+            vim.notify('Cannot yank: selection contains non-text content', vim.log.levels.WARN, { title = 'yank-system-ops' })
             return
         end
     end
@@ -301,12 +301,12 @@ function M.yank_codeblock()
 
     local ok, _ = pcall(vim.fn.setreg, '+', out)
     if not ok then
-        vim.notify('Cannot yank: selection contains non-text content', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify('Cannot yank: selection contains non-text content', vim.log.levels.WARN, { title = 'yank-system-ops' })
         return
     end
 
     M.flash_highlight(bufnr, start_line - 1, end_line - 1)
-    vim.notify('Yanked code block', vim.log.levels.INFO, { title = 'Keymap' })
+    vim.notify('Yanked code block', vim.log.levels.INFO, { title = 'yank-system-ops' })
 end
 
 -- Yank compressed file functions ---------------------------------------------
@@ -321,7 +321,7 @@ function __get_7zip_binary()
         end
     end
 
-    vim.notify('No 7z binary found in PATH (tried: ' .. table.concat(possible_binaries, ', ') .. ')', vim.log.levels.ERROR, { title = 'Keymap' })
+    vim.notify('No 7z binary found in PATH (tried: ' .. table.concat(possible_binaries, ', ') .. ')', vim.log.levels.ERROR, { title = 'yank-system-ops' })
     return nil
 end
 
@@ -347,7 +347,7 @@ end
 -- @return string|nil Path to zip file
 local function __compress_file(items, base_dir, filetype)
     if not items or #items == 0 then
-        vim.notify('No files/folders to compress', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify('No files/folders to compress', vim.log.levels.WARN, { title = 'yank-system-ops' })
         return
     end
 
@@ -389,7 +389,7 @@ local function __compress_file(items, base_dir, filetype)
     local cmd = string.format('%s a -tzip "%s" %s -r', binary, zip_path, table.concat(rel_items, ' '))
     local result = vim.fn.system(cmd)
     if vim.v.shell_error ~= 0 then
-        vim.notify('Failed to create zip: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
+        vim.notify('Failed to create zip: ' .. result, vim.log.levels.ERROR, { title = 'yank-system-ops' })
         return
     end
 
@@ -460,12 +460,12 @@ function M.yank_compressed_file()
 
     local zip_path = __compress_file(items, base_dir, filetype)
     if not zip_path then
-        vim.notify('Failed to create zip file', vim.log.levels.ERROR, { title = 'Keymap' })
+        vim.notify('Failed to create zip file', vim.log.levels.ERROR, { title = 'yank-system-ops' })
         return
     end
 
     local zip_name = vim.fn.fnamemodify(zip_path, ':t')
-    vim.notify(string.format('%s\n  Yanked path', zip_name), vim.log.levels.INFO, { title = 'Keymap' })
+    vim.notify(string.format('%s\n  Yanked path', zip_name), vim.log.levels.INFO, { title = 'yank-system-ops' })
 end
 
 --- Yank file(s) to clipboard for sharing
@@ -480,7 +480,7 @@ function M.yank_file_sharing()
     if #items == 1 then
         target_path = items[1]
         if vim.fn.filereadable(target_path) == 0 then
-            vim.notify('File does not exist: ' .. target_path, vim.log.levels.ERROR, { title = 'Keymap' })
+            vim.notify('File does not exist: ' .. target_path, vim.log.levels.ERROR, { title = 'yank-system-ops' })
             return
         end
     else
@@ -491,7 +491,7 @@ function M.yank_file_sharing()
     end
 
     os_module.add_files_to_clipboard(target_path)
-    vim.notify(string.format('%s\n  Added to clipboard', vim.fn.fnamemodify(target_path, ':t')), vim.log.levels.INFO, { title = 'Keymap' })
+    vim.notify(string.format('%s\n  Added to clipboard', vim.fn.fnamemodify(target_path, ':t')), vim.log.levels.INFO, { title = 'yank-system-ops' })
 end
 
 --- Extract compressed file from clipboard
@@ -499,29 +499,29 @@ end
 function M.extract_compressed_file()
     local zip_path = vim.fn.getreg '+'
     if zip_path == '' then
-        vim.notify('Clipboard is empty', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify('Clipboard is empty', vim.log.levels.WARN, { title = 'yank-system-ops' })
         return
     end
     if not zip_path:match '%.nvim%.zip$' then
-        vim.notify('Clipboard does not contain a .nvim.zip file', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify('Clipboard does not contain a .nvim.zip file', vim.log.levels.WARN, { title = 'yank-system-ops' })
         return
     end
 
     local _, target_dir, _ = __get_buffer_context()
     if not target_dir or vim.fn.isdirectory(target_dir) == 0 then
-        vim.notify('Target directory not found', vim.log.levels.ERROR, { title = 'Keymap' })
+        vim.notify('Target directory not found', vim.log.levels.ERROR, { title = 'yank-system-ops' })
         return
     end
 
     local file_count, err = __extract_zip(zip_path, target_dir)
     if not file_count then
-        vim.notify(err or 'Unknown error extracting zip', vim.log.levels.ERROR, { title = 'Keymap' })
+        vim.notify(err or 'Unknown error extracting zip', vim.log.levels.ERROR, { title = 'yank-system-ops' })
         return
     end
 
     __refresh_after_extract()
 
-    vim.notify(string.format('%s\n  Extracted %d file(s)', zip_path:match '([^/]+)$', file_count), vim.log.levels.INFO, { title = 'Keymap' })
+    vim.notify(string.format('%s\n  Extracted %d file(s)', zip_path:match '([^/]+)$', file_count), vim.log.levels.INFO, { title = 'yank-system-ops' })
 end
 
 --- Yank relative path of current file
@@ -533,7 +533,7 @@ function M.yank_relative_path()
     local relpath = vim.fn.fnamemodify(filename, ':.' .. cwd)
 
     vim.fn.setreg('+', relpath)
-    vim.notify('Yanked relative path', vim.log.levels.INFO, { title = 'Keymap' })
+    vim.notify('Yanked relative path', vim.log.levels.INFO, { title = 'yank-system-ops' })
 end
 
 --- Yank absolute path of current file
@@ -543,7 +543,7 @@ function M.yank_absolute_path()
     local filename = vim.api.nvim_buf_get_name(bufnr)
 
     vim.fn.setreg('+', filename)
-    vim.notify('Yanked absolute path', vim.log.levels.INFO, { title = 'Keymap' })
+    vim.notify('Yanked absolute path', vim.log.levels.INFO, { title = 'yank-system-ops' })
 end
 
 -- Explorer Functions ---------------------------------------------------------
@@ -564,7 +564,7 @@ function M.open_buffer_in_file_manager()
     end
 
     if not target or vim.fn.empty(target) == 1 then
-        vim.notify('No file or directory found', vim.log.levels.WARN, { title = 'Keymap' })
+        vim.notify('No file or directory found', vim.log.levels.WARN, { title = 'yank-system-ops' })
         return
     end
 

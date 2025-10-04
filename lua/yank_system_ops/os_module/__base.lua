@@ -11,7 +11,7 @@ function Base.add_files_to_clipboard(files)
     vim.notify(
         "add_files_to_clipboard not implemented for this OS",
         vim.log.levels.WARN,
-        { title = "Keymap" }
+        { title = "yank-system-ops" }
     )
 end
 
@@ -23,7 +23,7 @@ function Base.open_file_browser(path)
     vim.notify(
         "open_file_browser not implemented for this OS",
         vim.log.levels.WARN,
-        { title = "Keymap" }
+        { title = "yank-system-ops" }
     )
 end
 

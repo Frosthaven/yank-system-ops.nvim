@@ -28,14 +28,14 @@ function Linux.add_files_to_clipboard(files)
         vim.notify(
             'xsel does not support text/uri-list — copying as plain text instead',
             vim.log.levels.WARN,
-            { title = 'Keymap' }
+            { title = 'yank-system-ops' }
         )
         cmd = string.format([[bash -c 'printf "%%s" "%s" | xsel --clipboard --input']], uris_str)
     else
         vim.notify(
             'No supported clipboard utility found (wl-copy, xclip, xsel)',
             vim.log.levels.WARN,
-            { title = 'Keymap' }
+            { title = 'yank-system-ops' }
         )
         return false
     end
@@ -45,7 +45,7 @@ function Linux.add_files_to_clipboard(files)
         vim.notify(
             'Failed to copy file(s) to clipboard: ' .. result,
             vim.log.levels.ERROR,
-            { title = 'Keymap' }
+            { title = 'yank-system-ops' }
         )
         return false
     end
@@ -66,7 +66,7 @@ function Linux.open_file_browser(path)
         vim.notify(
             'No supported file browser opener found (xdg-open, gio)',
             vim.log.levels.WARN,
-            { title = 'Keymap' }
+            { title = 'yank-system-ops' }
         )
         return false
     end
@@ -76,7 +76,7 @@ function Linux.open_file_browser(path)
         vim.notify(
             'Failed to open file browser: ' .. result,
             vim.log.levels.ERROR,
-            { title = 'Keymap' }
+            { title = 'yank-system-ops' }
         )
         return false
     end
