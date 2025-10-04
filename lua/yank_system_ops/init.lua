@@ -1,16 +1,26 @@
 -- Yank System Ops ------------------------------------------------------------
 -------------------------------------------------------------------------------
 
+--- Yank System Ops
+-- Core functionality for yank-system-ops.nvim
+-- @module yank_system_ops
 local M = {}
 
+--- Default configuration
+-- @table config
 M.config = {
     storage_path = vim.fn.stdpath 'data' .. '/yank-more',
     files_to_keep = 3,
     debug = false,
 }
 
+--- Internal flag to prevent multiple setup calls
+-- @boolean
 M._loaded = false
 
+--- Setup yank-system-ops
+-- Initializes module and applies configuration
+-- @param opts table Optional configuration overrides
 function M.setup(opts)
     if M._loaded then
         vim.notify('yank-system-ops is already loaded!', vim.log.levels.WARN, { title = 'yank-system-ops' })
@@ -34,11 +44,17 @@ end
 -- Include OS Specific Module -------------------------------------------------
 -------------------------------------------------------------------------------
 
+--- OS name detected by vim
+-- @string
 local os_name = vim.loop.os_uname().sysname
+
+--- OS-specific module (Darwin/Linux/Windows)
+-- @table
 local os_module_ok, os_module = pcall(
     require,
     "yank_system_ops.os_module." .. os_name
 )
+
 if not os_module_ok then
     vim.notify(
         "yank-system-ops: Unsupported OS: " .. os_name, vim.log.levels.WARN,
@@ -50,10 +66,14 @@ end
 -- Flash Highlight Helper -----------------------------------------------------
 -------------------------------------------------------------------------------
 
+--- Namespace used for flash highlights
+-- @number
 local ns = vim.api.nvim_create_namespace 'yank_system_ops_yank_flash'
 
--- this function highlights lines from start_line to end_line (0-indexed) in the
--- given buffer for a short duration
+--- Flash-highlight lines in a buffer
+-- @param bufnr number Buffer handle
+-- @param start_line number Start line (0-indexed)
+-- @param end_line number End line (0-indexed)
 function M.flash_highlight(bufnr, start_line, end_line)
     local hl_group = 'IncSearch'
     local duration = 200 -- ms
@@ -71,101 +91,10 @@ function M.flash_highlight(bufnr, start_line, end_line)
     end, duration)
 end
 
-
--- OS-Specific ----------------------------------------------------------------
--------------------------------------------------------------------------------
-
-local os_functions = {}
-
-os_functions.add_files_to_clipboard = {}
-function os_functions.add_files_to_clipboard.Darwin (files)
-    -- handle single file by wrapping in array
-    if type(files) == 'string' then
-        files = { files }
-    end
-
-    local osa_files = {}
-    for _, f in ipairs(files) do
-        table.insert(osa_files, 'POSIX file "' .. f .. '"')
-    end
-
-    local osa_cmd = 'osascript -e \'set the clipboard to {' .. table.concat(osa_files, ', ') .. '}\''
-    local result = vim.fn.system(osa_cmd)
-    if vim.v.shell_error ~= 0 then
-        vim.notify('Failed to copy file to clipboard: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
-        return false
-    end
-    return true
-end
-
-function os_functions.add_files_to_clipboard.Linux(files)
-    -- Handle single file input
-    if type(files) == 'string' then
-        files = { files }
-    end
-
-    -- Build URI list
-    local uri_list = {}
-    for _, f in ipairs(files) do
-        local abs_path = vim.fn.fnamemodify(f, ':p')
-        table.insert(uri_list, 'file://' .. abs_path)
-    end
-
-    -- Join URIs and escape quotes for shell safety
-    local uris_str = table.concat(uri_list, '\n'):gsub('"', '\\"')
-
-    local cmd
-    if vim.fn.executable('wl-copy') == 1 then
-        -- Wayland
-        cmd = string.format([[bash -c 'printf "%%s" "%s" | wl-copy -t text/uri-list']], uris_str)
-    elseif vim.fn.executable('xclip') == 1 then
-        -- X11
-        cmd = string.format([[bash -c 'printf "%%s" "%s" | xclip -selection clipboard -t text/uri-list']], uris_str)
-    elseif vim.fn.executable('xsel') == 1 then
-        -- Fallback: plain text only
-        vim.notify('xsel does not support text/uri-list — copying as plain text instead', vim.log.levels.WARN, { title = 'Keymap' })
-        cmd = string.format([[bash -c 'printf "%%s" "%s" | xsel --clipboard --input']], uris_str)
-    else
-        vim.notify('No supported clipboard utility found (wl-copy, xclip, xsel)', vim.log.levels.WARN, { title = 'Keymap' })
-        return false
-    end
-
-    -- Run the command
-    local result = vim.fn.system(cmd)
-    if vim.v.shell_error ~= 0 then
-        vim.notify('Failed to copy file(s) to clipboard: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
-        return false
-    end
-
-    return true
-end
-
-function os_functions.add_files_to_clipboard.Windows_NT (files)
-    -- handle single file by wrapping in array
-    if type(files) == 'string' then
-        files = { files }
-    end
-
-    local ps_files = {}
-    for _, f in ipairs(files) do
-        table.insert(ps_files, '\'' .. f .. '\'')
-    end
-
-    local ps_cmd = 'powershell -Command "[System.Windows.Forms.Clipboard]::SetFileDropList((New-Object System.Collections.Specialized.StringCollection; ' .. table.concat(ps_files, '; $_.Add(') .. ')))"'
-    local result = vim.fn.system(ps_cmd)
-    if vim.v.shell_error ~= 0 then
-        vim.notify('Failed to copy file to clipboard: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
-        return false
-    end
-    return true
-end
-
 -- Yank Functions -------------------------------------------------------------
 -------------------------------------------------------------------------------
 
--- Yanks the selected line(s) as a GitHub URL to the clipboard. If the user
--- has unsaved changes or unpushed commits, it will not yank the URL and will
--- notify the user instead.
+--- Yank GitHub URL for selected lines
 function M.yank_github_url()
     local bufnr = vim.api.nvim_get_current_buf()
     local filename = vim.api.nvim_buf_get_name(bufnr)
@@ -240,9 +169,7 @@ function M.yank_github_url()
     vim.notify('Yanked GitHub URL', vim.log.levels.INFO, { title = 'Keymap' })
 end
 
--- Yanks the selected line(s) and collects any diagnostics (errors, warnings,
--- etc.) in those lines. After formatting into markdown code blocks, it copies
--- the result to the clipboard.
+--- Yank diagnostics in selection as a markdown code block
 function M.yank_diagnostics()
     local bufnr = vim.api.nvim_get_current_buf()
     local mode = vim.fn.mode()
@@ -323,8 +250,7 @@ function M.yank_diagnostics()
     vim.notify('Yanked diagnostic code block', vim.log.levels.INFO, { title = 'Keymap', render = 'compact' })
 end
 
--- Yanks the selected line(s) and formats them into a markdown code block,
--- copying the result to the clipboard.
+--- Yank selected lines as markdown code block
 function M.yank_codeblock()
     local bufnr = vim.api.nvim_get_current_buf()
     local mode = vim.fn.mode()
@@ -355,6 +281,8 @@ end
 
 -- Yank compressed file functions ---------------------------------------------
 
+--- Get available 7z binary
+-- @return string|nil Returns binary name or nil if not found
 function __get_7zip_binary()
     local possible_binaries = { '7z', '7zz' }
     for _, b in ipairs(possible_binaries) do
@@ -367,8 +295,11 @@ function __get_7zip_binary()
     return nil
 end
 
--- mode = "compress" | "extract"
--- returns items, base_dir, filetype
+--- Get buffer context for compress/extract operations
+-- @param mode string "compress" or "extract"
+-- @return table items List of files
+-- @return string base_dir Base directory for operation
+-- @return string filetype Buffer filetypee
 local function __get_buffer_context(mode)
     local items = {}
     local base_dir
@@ -420,6 +351,11 @@ local function __get_buffer_context(mode)
     return items, base_dir, filetype
 end
 
+--- Compress files into a zip archive
+-- @param items table List of file paths
+-- @param base_dir string Base directory
+-- @param filetype string Filetype context
+-- @return string|nil Path to zip file
 local function __compress_file(items, base_dir, filetype)
     if not items or #items == 0 then
         vim.notify('No files/folders to compress', vim.log.levels.WARN, { title = 'Keymap' })
@@ -490,7 +426,11 @@ local function __compress_file(items, base_dir, filetype)
     return zip_path
 end
 
--- Extract a zip archive into target_dir, return file_count or error
+--- Extract a zip archive
+-- @param zip_path string Path to zip file
+-- @param target_dir string Target extraction directory
+-- @return number|nil file_count Number of files extracted
+-- @return string|nil error_message Error string if extraction fails
 local function __extract_zip(zip_path, target_dir)
     local binary = __get_7zip_binary()
 
@@ -514,7 +454,8 @@ local function __extract_zip(zip_path, target_dir)
     return file_count
 end
 
--- Refresh explorers and buffers after extraction
+--- Refresh explorers and buffers after extraction
+-- @param filetype string Buffer filetype to determine explorer refresh
 local function __refresh_after_extract(filetype)
     if filetype == 'minifiles' then
         require('mini.files').open()
@@ -534,6 +475,7 @@ local function __refresh_after_extract(filetype)
     end
 end
 
+--- Yank compressed file from current buffer
 function M.yank_compressed_file()
     local items, base_dir, filetype = __get_buffer_context 'compress'
     if not base_dir or #items == 0 then
@@ -550,8 +492,8 @@ function M.yank_compressed_file()
     vim.notify(string.format('%s\n  Yanked path', zip_name), vim.log.levels.INFO, { title = 'Keymap' })
 end
 
--- puts the entire binary content of the compressed file into the clipboard
--- for pasting into other applications that accept binary data
+--- Yank file(s) to clipboard for sharing
+-- Handles both single files and compressed multiple files
 function M.yank_file_sharing()
     local items, base_dir, filetype = __get_buffer_context 'compress'
     if not base_dir or #items == 0 then
@@ -579,6 +521,7 @@ function M.yank_file_sharing()
     os_module.add_files_to_clipboard(target_path)
 end
 
+--- Extract compressed file from clipboard
 function M.extract_compressed_file()
     local zip_path = vim.fn.getreg '+'
     if zip_path == '' then
@@ -607,7 +550,7 @@ function M.extract_compressed_file()
     vim.notify(string.format('%s\n  Extracted %d file(s)', zip_path:match '([^/]+)$', file_count), vim.log.levels.INFO, { title = 'Keymap' })
 end
 
--- Yanks the relative path of the current file to the clipboard
+--- Yank relative path of current file
 function M.yank_relative_path()
     local bufnr = vim.api.nvim_get_current_buf()
     local filename = vim.api.nvim_buf_get_name(bufnr)
@@ -619,7 +562,7 @@ function M.yank_relative_path()
     vim.notify('Yanked relative path', vim.log.levels.INFO, { title = 'Keymap' })
 end
 
--- Yanks the absolute path of the current file to the clipboard
+--- Yank absolute path of current file
 function M.yank_absolute_path()
     local bufnr = vim.api.nvim_get_current_buf()
     local filename = vim.api.nvim_buf_get_name(bufnr)
@@ -632,7 +575,7 @@ end
 -- Explorer Functions ---------------------------------------------------------
 -------------------------------------------------------------------------------
 
--- Opens the file manager at the current buffer's file or directory
+--- Open file manager at current buffer's file or directory
 function M.open_buffer_in_file_manager()
     local items, base_dir, _ = __get_buffer_context 'compress'
 
