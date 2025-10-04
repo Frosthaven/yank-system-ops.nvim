@@ -386,11 +386,11 @@ are planned to be supported.
 
 ### Operating Systems Supperted
 
-| Operating System | Write Archive (Path Text) | Write Archive (OS URI) | Read Archive (Path Text) | Read Archive (OS URI) | Write File(s) (OS URI) | Read File(s) (OS URI) | Open in File Explorer |
-|------------------|---------------------------|------------------------|--------------------------|-----------------------|------------------------|-----------------------|-----------------------|
-| Windows          | ⚠️                        | ⚠️                     | ⚠️                       | ❌                    | ⚠️                     | ❌                    | ⚠️                    |
-| MacOS            | ✅                        | ✅                     | ✅                       | ❌                    | ✅                     | ❌                    | ✅                    |
-| Linux            | ✅                        | ✅                     | ✅                       | ❌                    | ✅                     | ❌                    | ✅                    |
+| Operating System | Write Archive (Path Text) | Write Archive (URI) | Read Archive (Path Text) | Read Archive (URI) | Write File (URI)    | Read File (URI)    | Open in File Explorer |
+|------------------|---------------------------|---------------------|--------------------------|--------------------|---------------------|--------------------|-----------------------|
+| Windows          | ⚠️                        | ⚠️                  | ⚠️                       | ❌                 | ⚠️                  | ❌                 | ⚠️                    |
+| MacOS            | ✅                        | ✅                  | ✅                       | ❌                 | ✅                  | ❌                 | ✅                    |
+| Linux            | ✅                        | ✅                  | ✅                       | ❌                 | ✅                  | ❌                 | ✅                    |
 
 ### Buffer Types Supported
 
