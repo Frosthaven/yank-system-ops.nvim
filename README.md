@@ -394,12 +394,12 @@ are planned to be supported.
 
 ### Buffer Type Support
 
-| Buffer Type | Yank Path Text        | Yank File/Folder Zip | Extract Zip Here  | Easy Paste Sharing |
-|-------------|-----------------------|----------------------|-------------------|--------------------|
-| File        | ✅                    | ✅                   | ✅                | ✅                 |
-| Netrw       | ✅                    | ✅                   | ✅                | ✅                 |
-| Mini.files  | ✅                    | ✅                   | ✅                | ✅                 |
-| Oil         | ❌                    | ❌                   | ❌                | ❌                 |
+| Buffer Type | Supported |
+|-------------|-----------|
+| File        | ✅        |
+| Netrw       | ✅        |
+| Mini.files  | ✅        |
+| Oil         | ❌        |
 
 ---
 
