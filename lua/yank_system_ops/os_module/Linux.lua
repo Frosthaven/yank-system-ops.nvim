@@ -2,27 +2,6 @@
 local Base = require("yank_system_ops.os_module.__base")
 local Linux = Base:extend()
 
-function Linux.add_text_to_clipboard(text)
-    local cmd
-    if vim.fn.executable('wl-copy') == 1 then
-        cmd = string.format([[bash -c 'printf "%%s" "%s" | wl-copy']], text)
-    elseif vim.fn.executable('xclip') == 1 then
-        cmd = string.format([[bash -c 'printf "%%s" "%s" | xclip -selection clipboard']], text)
-    elseif vim.fn.executable('xsel') == 1 then
-        cmd = string.format([[bash -c 'printf "%%s" "%s" | xsel --clipboard --input']], text)
-    else
-        vim.notify('No supported clipboard utility found (wl-copy, xclip, xsel)', vim.log.levels.WARN, { title = 'Keymap' })
-        return false
-    end
-
-    local result = vim.fn.system(cmd)
-    if vim.v.shell_error ~= 0 then
-        vim.notify('Failed to copy text to clipboard: ' .. result, vim.log.levels.ERROR, { title = 'Keymap' })
-        return false
-    end
-    return true
-end
-
 function Linux.add_files_to_clipboard(files)
     if type(files) == 'string' then files = { files } end
     local uri_list = {}

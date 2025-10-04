@@ -233,7 +233,7 @@ function M.yank_github_url()
         url = url .. '#L' .. start_line .. '-L' .. end_line
     end
 
-    os_module.add_text_to_clipboard(url)
+    vim.fn.setreg('+', url)
     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'nx', false)
     M.flash_highlight(bufnr, start_line - 1, end_line - 1)
 
@@ -315,7 +315,7 @@ function M.yank_diagnostics()
     local out = string.format('Diagnostic:\n\n%s\n\n`%s`:\n```%s\n%s\n```', all_messages, line_info, lang, code_text)
 
     -- clipboard copy
-    os_module.add_text_to_clipboard(out)
+    vim.fn.setreg('+', out)
     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'nx', false)
     M.flash_highlight(bufnr, start_line, end_line)
 
@@ -346,7 +346,7 @@ function M.yank_codeblock()
     local filetype = vim.bo.filetype ~= '' and vim.bo.filetype or 'txt'
     local out = string.format('```%s\n%s\n```', filetype, table.concat(lines, '\n'))
 
-    os_module.add_text_to_clipboard(out)
+    vim.fn.setreg('+', out)
     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'nx', false)
     M.flash_highlight(bufnr, start_line - 1, end_line - 1)
 
@@ -476,7 +476,7 @@ local function __compress_file(items, base_dir, filetype)
     end
 
     -- Yank zip path
-    os_module.add_text_to_clipboard(zip_path)
+    vim.fn.setreg('+', zip_path)
 
     -- Keep latest files only
     local existing = vim.fn.globpath(downloads, '*.nvim.zip', true, true)
@@ -614,7 +614,7 @@ function M.yank_relative_path()
     local cwd = vim.fn.getcwd()
     local relpath = vim.fn.fnamemodify(filename, ':.' .. cwd)
 
-    os_module.add_text_to_clipboard(relpath)
+    vim.fn.setreg('+', relpath)
 
     vim.notify('Yanked relative path', vim.log.levels.INFO, { title = 'Keymap' })
 end
@@ -624,7 +624,7 @@ function M.yank_absolute_path()
     local bufnr = vim.api.nvim_get_current_buf()
     local filename = vim.api.nvim_buf_get_name(bufnr)
 
-    os_module.add_text_to_clipboard(filename)
+    vim.fn.setreg('+', filename)
 
     vim.notify('Yanked absolute path', vim.log.levels.INFO, { title = 'Keymap' })
 end

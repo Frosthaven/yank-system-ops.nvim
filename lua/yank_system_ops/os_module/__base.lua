@@ -1,10 +1,6 @@
 -- yank_system_ops/os_module/base.lua
 local Base = {}
 
-function Base.add_text_to_clipboard(text)
-    error("add_text_to_clipboard not implemented for this OS")
-end
-
 function Base.add_files_to_clipboard(files)
     error("add_files_to_clipboard not implemented for this OS")
 end
