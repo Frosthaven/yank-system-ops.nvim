@@ -9,8 +9,8 @@
 - [⚡️ Requirements](#️-requirements)
 - [🔍️ How It Works](#%EF%B8%8F-how-it-works)
 - [📊 Support Matrix](#-support-matrix)
-  - [Operating Systems Supported](#operating-systems-supperted)
-  - [Buffer Types Supported](#buffer-types-supported)
+  - [Operating System Support](#operating-system-support)
+  - [Buffer Type Support](#buffer-type-support)
 - [🚀 Usage](#-usage)
 
 ---
@@ -384,7 +384,7 @@ cli tools, and active neovim buffers to provide its functionality. Below is a
 support matrix for various operating systems and buffer types. All listed items
 are planned to be supported.
 
-### Operating Systems Supperted
+### Operating System Support
 
 | Operating System | Write Archive (Path Text) | Write Archive (URI) | Read Archive (Path Text) | Read Archive (URI) | Write File (URI)    | Read File (URI)    | Open in File Explorer |
 |------------------|---------------------------|---------------------|--------------------------|--------------------|---------------------|--------------------|-----------------------|
@@ -392,7 +392,7 @@ are planned to be supported.
 | MacOS            | ✅                        | ✅                  | ✅                       | ❌                 | ✅                  | ❌                 | ✅                    |
 | Linux            | ✅                        | ✅                  | ✅                       | ❌                 | ✅                  | ❌                 | ✅                    |
 
-### Buffer Types Supported
+### Buffer Type Support
 
 | Buffer Type | Yank Path Text        | Yank File/Folder Zip | Extract Zip Here  | Easy Paste Sharing |
 |-------------|-----------------------|----------------------|-------------------|--------------------|
