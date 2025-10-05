@@ -42,7 +42,7 @@ Slack, email clients, etc.).
 ```
 
 Put file(s) from your system clipboard into the current supported buffer's
-directory.
+directory. This also supports web URIs by downloading via `curl` or `wget`.
 
 </details>
 
