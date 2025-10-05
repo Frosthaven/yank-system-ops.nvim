@@ -406,6 +406,63 @@ local function __compress_file(items, base_dir, filetype)
     return zip_path
 end
 
+--- Put clipboard content into the current buffer's directory
+-- Detects the clipboard type and delegates to the appropriate handler.
+-- Supported types:
+--   • File path(s) copied from system file browser
+--   • URL (HTTP/HTTPS) – stub for future download handling
+--   • .nvim.zip archives are ignored here (handled separately)
+-- @return nil
+function M.put_from_clipboard()
+    local clip = vim.fn.getreg('+') or ''
+    if clip == '' then
+        vim.notify(
+            'Clipboard is empty',
+            vim.log.levels.WARN,
+            { title = 'yank-system-ops' }
+        )
+        return
+    end
+
+    local _, target_dir, _ = __get_buffer_context()
+    if not target_dir or vim.fn.isdirectory(target_dir) == 0 then
+        vim.notify(
+            'Target directory not found',
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
+        return
+    end
+
+    -- Case 1: Delegate to OS-specific clipboard put handler
+    local ok, err = pcall(os_module.put_files_from_clipboard, target_dir)
+    if ok and not err then
+        vim.notify(
+            'Clipboard files put successfully',
+            vim.log.levels.INFO,
+            { title = 'yank-system-ops' }
+        )
+        return
+    end
+
+    -- Case 2: Detect URLs for future download support
+    if clip:match('^https?://') then
+        vim.notify(
+            'URL detected in clipboard — download support coming soon',
+            vim.log.levels.INFO,
+            { title = 'yank-system-ops' }
+        )
+        return
+    end
+
+    -- Fallback
+    vim.notify(
+        'Clipboard content type not recognized',
+        vim.log.levels.WARN,
+        { title = 'yank-system-ops' }
+    )
+end
+
 --- Extract a zip archive
 -- @param zip_path string Path to zip file
 -- @param target_dir string Target extraction directory

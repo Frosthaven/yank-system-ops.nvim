@@ -418,34 +418,41 @@ return {
         debug = false,
     },
     keys = {
-        -- yf : yank file(s) --------------------------------------------------
+        -- yank file(s) -------------------------------------------------------
         {
-            '<leader>yfz', function()
+            '<leader>yz', function()
                 require('yank_system_ops').yank_compressed_file()
             end, desc = 'Yank file(s) as compressed file path',
             mode = { 'n', 'v' }
         },
         {
-            '<leader>yfs', function()
+            '<leader>yy', function()
                 require('yank_system_ops').yank_file_sharing()
             end, desc = 'Yank file(s) to system clipboard for sharing',
             mode = { 'n', 'v' }
         },
+        -- put files ----------------------------------------------------------
         {
-            '<leader>yfe', function()
+            '<leader>ye', function()
                 require('yank_system_ops').extract_compressed_file()
             end, desc = 'Extract compressed file(s) here',
             mode = { 'n', 'v' }
         },
+        {
+            '<leader>yp', function()
+                require('yank_system_ops').put_from_clipboard()
+            end, desc = 'Put clipboard files here',
+            mode = { 'n', 'v' }
+        },
         -- yp : yank path info ------------------------------------------------
         {
-            '<leader>ypr', function()
+            '<leader>yr', function()
                 require('yank_system_ops').yank_relative_path()
             end, desc = 'Yank relative path to file(s)',
             mode = { 'n', 'v' }
         },
         {
-            '<leader>ypa', function()
+            '<leader>ya', function()
                 require('yank_system_ops').yank_absolute_path()
             end, desc = 'Yank absolute path to file(s)',
             mode = { 'n', 'v' }

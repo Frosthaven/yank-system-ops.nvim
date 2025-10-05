@@ -33,12 +33,13 @@ function Darwin.add_files_to_clipboard(files)
     end
 end
 
---- Paste file(s) from the macOS clipboard into a target directory
+--- Put file(s) from the macOS clipboard into a target directory
 -- Reads file paths from the clipboard using AppleScript and copies them into
--- the specified target directory. @param target_dir string Absolute path to the
--- directory where files will be pasted @return boolean True if paste operation
--- succeeded, false otherwise
-function Darwin.paste_files_from_clipboard(target_dir)
+-- the specified target directory.
+-- @param target_dir string Absolute path to the directory where files will be
+-- put
+-- @return boolean True if put operation succeeded, false otherwise
+function Darwin.put_files_from_clipboard(target_dir)
     if not target_dir or target_dir == '' then
         vim.notify('No target directory specified', vim.log.levels.ERROR, { title = 'yank-system-ops' })
         return false
@@ -69,7 +70,7 @@ function Darwin.paste_files_from_clipboard(target_dir)
         vim.fn.system(cmd)
     end
 
-    vim.notify('Pasted ' .. #files .. ' file(s) from clipboard', vim.log.levels.INFO, { title = 'yank-system-ops' })
+    vim.notify('Put ' .. #files .. ' file(s) from clipboard', vim.log.levels.INFO, { title = 'yank-system-ops' })
     return true
 end
 

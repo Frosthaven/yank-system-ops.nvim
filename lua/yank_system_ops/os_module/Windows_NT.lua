@@ -33,13 +33,13 @@ function Windows.add_files_to_clipboard(files)
     return true
 end
 
---- Paste file(s) from the Windows clipboard into a target directory
+--- Put file(s) from the Windows clipboard into a target directory
 -- Uses PowerShell to access clipboard contents via the
 -- `System.Windows.Forms.Clipboard` .NET class and copy them into the target
--- directory. @param target_dir string Absolute path to directory where files
--- will be pasted @return boolean True if paste operation succeeded, false
--- otherwise
-function Windows.paste_files_from_clipboard(target_dir)
+-- directory.
+-- @param target_dir string Absolute path to directory where files will be put
+-- @return boolean True if put operation succeeded, false otherwise
+function Windows.put_files_from_clipboard(target_dir)
     if not target_dir or target_dir == "" then
         vim.notify("No target directory specified", vim.log.levels.ERROR, { title = "yank-system-ops" })
         return false
@@ -58,11 +58,11 @@ function Windows.paste_files_from_clipboard(target_dir)
 
     local result = vim.fn.system(ps_cmd)
     if vim.v.shell_error ~= 0 then
-        vim.notify("Failed to paste files from clipboard: " .. result, vim.log.levels.ERROR, { title = "yank-system-ops" })
+        vim.notify("Failed to put files from clipboard: " .. result, vim.log.levels.ERROR, { title = "yank-system-ops" })
         return false
     end
 
-    vim.notify("Pasted files from clipboard successfully", vim.log.levels.INFO, { title = "yank-system-ops" })
+    vim.notify("Put files from clipboard successfully", vim.log.levels.INFO, { title = "yank-system-ops" })
     return true
 end
 

@@ -15,13 +15,13 @@ function Base.add_files_to_clipboard(files)
     )
 end
 
---- Past file(s) from the system clipboard to a target directory
+--- Put file(s) from the system clipboard to a target directory
 -- Abstract method. Must be implemented in subclass.
 -- @param target_dir string Absolute path to target directory
-function Base.paste_files_from_clipboard(target_dir)
+function Base.put_files_from_clipboard(target_dir)
     target_dir = target_dir or ""
     vim.notify(
-        "paste_files_from_clipboard not implemented for this OS",
+        "put_files_from_clipboard not implemented for this OS",
         vim.log.levels.WARN,
         { title = "yank-system-ops" }
     )
