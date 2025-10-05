@@ -52,6 +52,56 @@ function Linux.add_files_to_clipboard(files)
     return true
 end
 
+--- Paste file(s) from the system clipboard into a target directory
+-- Attempts to read `text/uri-list` data using wl-paste, xclip, or xsel.
+-- Converts URIs to local file paths and copies them into the given directory.
+-- @param target_dir string Absolute path to directory where files will be
+-- pasted @return boolean True if paste operation succeeded, false otherwise
+function Linux.paste_files_from_clipboard(target_dir)
+    if not target_dir or target_dir == "" then
+        vim.notify("No target directory specified", vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return false
+    end
+
+    local cmd
+    if vim.fn.executable("wl-paste") == 1 then
+        cmd = "wl-paste -t text/uri-list"
+    elseif vim.fn.executable("xclip") == 1 then
+        cmd = "xclip -o -selection clipboard -t text/uri-list"
+    elseif vim.fn.executable("xsel") == 1 then
+        cmd = "xsel --clipboard --output"
+    else
+        vim.notify("No supported clipboard reader found", vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return false
+    end
+
+    local output = vim.fn.systemlist(cmd)
+    if vim.v.shell_error ~= 0 or #output == 0 then
+        vim.notify("Clipboard is empty or unreadable", vim.log.levels.WARN, { title = "yank-system-ops" })
+        return false
+    end
+
+    local files = {}
+    for _, line in ipairs(output) do
+        local path = line:gsub("^file://", "")
+        if vim.loop.fs_stat(path) then
+            table.insert(files, path)
+        end
+    end
+
+    if #files == 0 then
+        vim.notify("No valid file URIs found", vim.log.levels.WARN, { title = "yank-system-ops" })
+        return false
+    end
+
+    for _, f in ipairs(files) do
+        vim.fn.system(string.format('cp -R "%s" "%s/"', f, target_dir))
+    end
+
+    vim.notify("Pasted " .. #files .. " file(s) from clipboard", vim.log.levels.INFO, { title = "yank-system-ops" })
+    return true
+end
+
 --- Open a file or directory in the system's file browser
 -- Uses `xdg-open` or `gio` if available.
 -- @param path string Absolute path to file or directory
