@@ -16,8 +16,6 @@
 
 ## ✨ Features
 
-## ✨ Features
-
 <details>
 <summary><strong>🧷 Yank & Put File(s)</strong></summary>
 
@@ -171,6 +169,8 @@ git-tracked repository and hosted on GitHub. This will also not copy URLs for
 which there are pending commits/changes._
 
 </details>
+
+---
 
 ## 📊 Support Matrix
 
