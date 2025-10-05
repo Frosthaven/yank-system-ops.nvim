@@ -309,6 +309,25 @@ function M.yank_codeblock()
     vim.notify('Yanked code block', vim.log.levels.INFO, { title = 'yank-system-ops' })
 end
 
+--- Refresh explorers and buffers after extraction
+-- @param bufnr number Optional buffer handle
+local function __refresh_buffer_view(bufnr)
+    bufnr = bufnr or vim.api.nvim_get_current_buf()
+    local mod = get_buffer_module(bufnr)
+    mod.refresh_view()
+
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        local buf_name = vim.api.nvim_buf_get_name(buf)
+        if buf_name ~= '' and vim.fn.filereadable(buf_name) == 1 then
+            if vim.api.nvim_buf_is_loaded(buf) and not vim.bo[buf].modified then
+                vim.api.nvim_buf_call(buf, function()
+                    vim.cmd 'checktime'
+                end)
+            end
+        end
+    end
+end
+
 -- Yank compressed file functions ---------------------------------------------
 
 --- Get available 7z binary
@@ -345,7 +364,7 @@ end
 -- @param base_dir string Base directory
 -- @param filetype string Filetype context
 -- @return string|nil Path to zip file
-local function __compress_file(items, base_dir, filetype)
+local function __create_zip(items, base_dir, filetype)
     if not items or #items == 0 then
         vim.notify('No files/folders to compress', vim.log.levels.WARN, { title = 'yank-system-ops' })
         return
@@ -406,122 +425,99 @@ local function __compress_file(items, base_dir, filetype)
     return zip_path
 end
 
---- Extract a zip archive
--- @param zip_path string Path to zip file
--- @param target_dir string Target extraction directory
--- @return number|nil file_count Number of files extracted
--- @return string|nil error_message Error string if extraction fails
-local function __extract_zip(zip_path, target_dir)
-    local binary = __get_7zip_binary()
-    local list_cmd = string.format('%s l -ba "%s"', binary, zip_path)
-    local zip_list = vim.fn.split(vim.fn.system(list_cmd), '\n')
-    local file_count = 0
-    for _, f in ipairs(zip_list) do
-        if f ~= '' then
-            file_count = file_count + 1
-        end
-    end
-
-    local extract_cmd = string.format('%s x "%s" -o"%s" -aoa', binary, zip_path, target_dir)
-    local result = vim.fn.system(extract_cmd)
-    if vim.v.shell_error ~= 0 then
-        return nil, 'Failed to extract zip: ' .. result
-    end
-
-    return file_count
-end
-
---- Refresh explorers and buffers after extraction
--- @param bufnr number Optional buffer handle
-local function __refresh_after_extract(bufnr)
-    bufnr = bufnr or vim.api.nvim_get_current_buf()
-    local mod = get_buffer_module(bufnr)
-    mod.refresh_view()
-
-    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-        local buf_name = vim.api.nvim_buf_get_name(buf)
-        if buf_name ~= '' and vim.fn.filereadable(buf_name) == 1 then
-            if vim.api.nvim_buf_is_loaded(buf) and not vim.bo[buf].modified then
-                vim.api.nvim_buf_call(buf, function()
-                    vim.cmd 'checktime'
-                end)
-            end
-        end
-    end
-end
-
---- Yank compressed file from current buffer
+--- Copy selected files to system clipboard
 -- @return nil
-function M.yank_compressed_file()
-    local items, base_dir, filetype = __get_buffer_context()
-    if not base_dir or #items == 0 then
+function M.yank_files_to_clipboard()
+    local items, _ = __get_buffer_context()
+    if not items or #items == 0 then
+        vim.notify("No files selected to yank", vim.log.levels.WARN, { title = "yank-system-ops" })
         return
     end
 
-    local zip_path = __compress_file(items, base_dir, filetype)
-    if not zip_path then
-        vim.notify('Failed to create zip file', vim.log.levels.ERROR, { title = 'yank-system-ops' })
+    local ok, err = pcall(os_module.add_files_to_clipboard, items)
+    if not ok then
+        vim.notify("Failed to copy files to clipboard: " .. tostring(err), vim.log.levels.ERROR, { title = "yank-system-ops" })
         return
     end
 
-    local zip_name = vim.fn.fnamemodify(zip_path, ':t')
-    vim.notify(string.format('%s\n  Yanked path', zip_name), vim.log.levels.INFO, { title = 'yank-system-ops' })
+    vim.notify("Files copied to system clipboard", vim.log.levels.INFO, { title = "yank-system-ops" })
 end
 
---- Yank file(s) to clipboard for sharing
+
+--- Paste/put files from system clipboard into current buffer directory
 -- @return nil
-function M.yank_file_sharing()
-    local items, base_dir, filetype = __get_buffer_context()
-    if not base_dir or #items == 0 then
-        return
-    end
-
-    local target_path
-    if #items == 1 then
-        target_path = items[1]
-        if vim.fn.filereadable(target_path) == 0 then
-            vim.notify('File does not exist: ' .. target_path, vim.log.levels.ERROR, { title = 'yank-system-ops' })
-            return
-        end
-    else
-        target_path = __compress_file(items, base_dir, filetype)
-        if not target_path or vim.fn.filereadable(target_path) == 0 then
-            return
-        end
-    end
-
-    os_module.add_files_to_clipboard(target_path)
-    vim.notify(string.format('%s\n  Added to clipboard', vim.fn.fnamemodify(target_path, ':t')), vim.log.levels.INFO, { title = 'yank-system-ops' })
-end
-
---- Extract compressed file from clipboard
--- @return nil
-function M.extract_compressed_file()
-    local zip_path = vim.fn.getreg '+'
-    if zip_path == '' then
-        vim.notify('Clipboard is empty', vim.log.levels.WARN, { title = 'yank-system-ops' })
-        return
-    end
-    if not zip_path:match '%.nvim%.zip$' then
-        vim.notify('Clipboard does not contain a .nvim.zip file', vim.log.levels.WARN, { title = 'yank-system-ops' })
-        return
-    end
-
-    local _, target_dir, _ = __get_buffer_context()
+function M.put_files_from_clipboard()
+    local _, target_dir = __get_buffer_context()
     if not target_dir or vim.fn.isdirectory(target_dir) == 0 then
-        vim.notify('Target directory not found', vim.log.levels.ERROR, { title = 'yank-system-ops' })
+        vim.notify("Target directory not found", vim.log.levels.ERROR, { title = "yank-system-ops" })
         return
     end
 
-    local file_count, err = __extract_zip(zip_path, target_dir)
-    if not file_count then
-        vim.notify(err or 'Unknown error extracting zip', vim.log.levels.ERROR, { title = 'yank-system-ops' })
+    local success = os_module.put_files_from_clipboard(target_dir)
+    if success then
+        __refresh_buffer_view()
+        vim.notify("Clipboard files put successfully", vim.log.levels.INFO, { title = "yank-system-ops" })
+    else
+        vim.notify("No valid files found in clipboard", vim.log.levels.WARN, { title = "yank-system-ops" })
+    end
+end
+
+
+--- Compress selected files into a .nvim.zip and copy to clipboard
+-- @return nil
+function M.zip_files_to_clipboard()
+    local items, base_dir, filetype = __get_buffer_context()
+    if not items or #items == 0 then
+        vim.notify("No files selected to compress", vim.log.levels.WARN, { title = "yank-system-ops" })
         return
     end
 
-    __refresh_after_extract()
+    local zip_path, err = __create_zip(items, base_dir, filetype)
+    if not zip_path then
+        vim.notify("Compression failed: " .. tostring(err), vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return
+    end
 
-    vim.notify(string.format('%s\n  Extracted %d file(s)', zip_path:match '([^/]+)$', file_count), vim.log.levels.INFO, { title = 'yank-system-ops' })
+    os_module.add_files_to_clipboard(zip_path)
+    vim.notify("Compressed archive added to clipboard", vim.log.levels.INFO, { title = "yank-system-ops" })
+end
+
+
+--- Extract an archive from clipboard into the current buffer directory
+-- Supports: .zip, .tar, .tar.gz, .tgz, .7z, .rar, and others supported by 7z
+-- @return nil
+function M.extract_files_from_clipboard()
+    local _, target_dir = __get_buffer_context()
+    local clip = vim.fn.getreg("+") or ""
+
+    -- Normalize clipboard path (handle file:// URIs and trim)
+    clip = vim.trim(clip):gsub("^file://", "")
+    clip = vim.fn.fnamemodify(clip, ":p")
+
+    -- Ensure file exists
+    if clip == "" or vim.fn.filereadable(clip) == 0 then
+        vim.notify("Clipboard does not contain a valid archive file", vim.log.levels.WARN, { title = "yank-system-ops" })
+        return
+    end
+
+    -- Validate extension (basic heuristic)
+    local ext = clip:match("%.([^.]+)$")
+    if not ext or not ext:match("zip") and not ext:match("tar") and not ext:match("gz")
+        and not ext:match("bz2") and not ext:match("xz") and not ext:match("7z") and not ext:match("rar") then
+        vim.notify("Clipboard file is not a recognized archive type", vim.log.levels.WARN, { title = "yank-system-ops" })
+        return
+    end
+
+    -- Extract using 7z (handles most formats)
+    local cmd = string.format('7z x -y "%s" -o"%s"', clip, target_dir)
+    local result = vim.fn.system(cmd)
+    if vim.v.shell_error ~= 0 then
+        vim.notify("Extraction failed:\n" .. result, vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return
+    end
+
+    __refresh_buffer_view()
+    vim.notify("Archive extracted successfully into: " .. target_dir, vim.log.levels.INFO, { title = "yank-system-ops" })
 end
 
 --- Yank relative path of current file

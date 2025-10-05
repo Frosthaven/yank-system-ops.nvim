@@ -52,6 +52,68 @@ function Linux.add_files_to_clipboard(files)
     return true
 end
 
+--- Put file(s) from system clipboard into target directory
+-- Supports multiple files copied from Linux file managers.
+-- @param target_dir string Absolute path
+-- @return boolean True if at least one file was copied, false otherwise
+function Linux.put_files_from_clipboard(target_dir)
+    --- Parse clipboard content into valid file paths
+    -- @param clip string Clipboard text
+    -- @return table List of absolute file paths
+    local function parse_clipboard_files(clip)
+        local items = {}
+        for part in clip:gmatch("[^\r\n%s]+") do
+            local path = part:gsub("^file://", "")
+            if vim.fn.filereadable(path) == 1 or vim.fn.isdirectory(path) == 1 then
+                table.insert(items, path)
+            end
+        end
+        return items
+    end
+
+    local items = {}
+
+    -- Attempt to get clipboard content via vim register
+    local clip = vim.fn.getreg('+') or ''
+    if clip ~= '' then
+        items = parse_clipboard_files(clip)
+    end
+
+    -- Fallback: wl-paste / xclip / xsel for multiple files
+    if #items == 0 then
+        local cmd
+        if vim.fn.executable('wl-paste') == 1 then
+            cmd = 'wl-paste -n -t text/uri-list'
+        elseif vim.fn.executable('xclip') == 1 then
+            cmd = 'xclip -selection clipboard -o'
+        elseif vim.fn.executable('xsel') == 1 then
+            cmd = 'xsel --clipboard --output'
+        end
+
+        if cmd then
+            local output = vim.fn.system(cmd)
+            items = parse_clipboard_files(output)
+        end
+    end
+
+    if #items == 0 then
+        vim.notify('No valid file URIs found in clipboard', vim.log.levels.WARN, { title = 'yank-system-ops' })
+        return false
+    end
+
+    -- Copy all files/directories to target_dir
+    for _, f in ipairs(items) do
+        local dest = target_dir .. '/' .. vim.fn.fnamemodify(f, ':t')
+        if vim.fn.isdirectory(f) == 1 then
+            vim.fn.system(string.format('cp -r "%s" "%s"', f, dest))
+        else
+            vim.fn.system(string.format('cp "%s" "%s"', f, dest))
+        end
+    end
+
+    return true
+end
+
 --- Open a file or directory in the system's file browser
 -- Uses `xdg-open` or `gio` if available.
 -- @param path string Absolute path to file or directory

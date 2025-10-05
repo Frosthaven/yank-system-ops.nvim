@@ -33,6 +33,47 @@ function Darwin.add_files_to_clipboard(files)
     end
 end
 
+--- Put file(s) from the macOS clipboard into a target directory
+-- Reads file paths from the clipboard using AppleScript and copies them into
+-- the specified target directory.
+-- @param target_dir string Absolute path to the directory where files will be
+-- put
+-- @return boolean True if put operation succeeded, false otherwise
+function Darwin.put_files_from_clipboard(target_dir)
+    if not target_dir or target_dir == '' then
+        vim.notify('No target directory specified', vim.log.levels.ERROR, { title = 'yank-system-ops' })
+        return false
+    end
+
+    local osa_cmd = [[osascript -e 'get the clipboard as text']]
+    local result = vim.fn.system(osa_cmd)
+    if vim.v.shell_error ~= 0 or result == '' then
+        vim.notify('Clipboard is empty or unreadable', vim.log.levels.WARN, { title = 'yank-system-ops' })
+        return false
+    end
+
+    local files = {}
+    for line in result:gmatch('[^\r\n]+') do
+        local path = line:gsub('^file://', '')
+        if vim.loop.fs_stat(path) then
+            table.insert(files, path)
+        end
+    end
+
+    if #files == 0 then
+        vim.notify('No valid file paths found in clipboard', vim.log.levels.WARN, { title = 'yank-system-ops' })
+        return false
+    end
+
+    for _, f in ipairs(files) do
+        local cmd = string.format('cp -R "%s" "%s/"', f, target_dir)
+        vim.fn.system(cmd)
+    end
+
+    vim.notify('Put ' .. #files .. ' file(s) from clipboard', vim.log.levels.INFO, { title = 'yank-system-ops' })
+    return true
+end
+
 --- Open a file or folder in Finder (or ForkLift if installed)
 -- @param path string Absolute path to file or directory
 -- @return boolean success

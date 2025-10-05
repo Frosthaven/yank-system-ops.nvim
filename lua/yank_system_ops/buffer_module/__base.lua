@@ -9,15 +9,11 @@ local Base = {}
 -- Abstract method. Must be implemented in subclass.
 -- @return table List of full file paths
 function Base.get_files()
-    local items = {}
-    local curr_path = vim.fn.expand('%:p')
-    local stat = vim.loop.fs_stat(curr_path)
-
-    if stat and stat.type == 'file' then
-        table.insert(items, curr_path)
+    local path = vim.fn.expand('%:p')
+    if path == '' or vim.fn.filereadable(path) == 0 then
+        return nil
     end
-
-    return #items > 0 and items or nil
+    return { path }
 end
 
 --- Get the active directory for the buffer context
