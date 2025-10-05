@@ -443,7 +443,6 @@ function M.yank_files_to_clipboard()
     vim.notify("Files copied to system clipboard", vim.log.levels.INFO, { title = "yank-system-ops" })
 end
 
-
 --- Paste/put files from system clipboard into current buffer directory
 -- @return nil
 function M.put_files_from_clipboard()
@@ -461,7 +460,6 @@ function M.put_files_from_clipboard()
         vim.notify("No valid files found in clipboard", vim.log.levels.WARN, { title = "yank-system-ops" })
     end
 end
-
 
 --- Compress selected files into a .nvim.zip and copy to clipboard
 -- @return nil
@@ -482,10 +480,53 @@ function M.zip_files_to_clipboard()
     vim.notify("Compressed archive added to clipboard", vim.log.levels.INFO, { title = "yank-system-ops" })
 end
 
+--- Recursively extract an archive into a target directory
+-- Handles nested archives like .tar.gz, .tgz, .tar.bz2, .tar.xz
+-- @param archive_path string Full path to archive
+-- @param target_dir string Directory to extract into
+-- @return boolean success
+local function __extract_archive_recursive(archive_path, target_dir)
+    if vim.fn.filereadable(archive_path) == 0 then
+        vim.notify("Archive not found: " .. archive_path, vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return false
+    end
+
+    -- Record files before extraction
+    local before = vim.fn.glob(target_dir .. "/*", false, true)
+
+    -- Extract with 7z
+    local cmd = string.format('7z x -y "%s" -o"%s"', archive_path, target_dir)
+    local result = vim.fn.system(cmd)
+    if vim.v.shell_error ~= 0 then
+        vim.notify("Extraction failed:\n" .. result, vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return false
+    end
+
+    -- Record files after extraction
+    local after = vim.fn.glob(target_dir .. "/*", false, true)
+
+    -- Determine new files created by this extraction
+    local new_files = {}
+    local before_set = {}
+    for _, f in ipairs(before) do before_set[f] = true end
+    for _, f in ipairs(after) do
+        if not before_set[f] then table.insert(new_files, f) end
+    end
+
+    -- Recursively extract any new .tar files
+    for _, f in ipairs(new_files) do
+        if f:match("%.tar$") then
+            local ok = __extract_archive_recursive(f, target_dir)
+            os.remove(f)  -- remove intermediate .tar
+            if not ok then return false end
+        end
+    end
+
+    return true
+end
 
 --- Extract an archive from clipboard into the current buffer directory
--- Supports: .zip, .tar, .tar.gz, .tgz, .7z, .rar, and others supported by 7z
--- @return nil
+-- Supports nested archives like .tar.gz, .tar.bz2, .tgz, etc.
 function M.extract_files_from_clipboard()
     local _, target_dir = __get_buffer_context()
     local clip = vim.fn.getreg("+") or ""
@@ -494,13 +535,16 @@ function M.extract_files_from_clipboard()
     clip = vim.trim(clip):gsub("^file://", "")
     clip = vim.fn.fnamemodify(clip, ":p")
 
+    -- Attempt download if URL (optional helper can go here)
+    -- clip = maybe_download_url(clip, target_dir) 
+
     -- Ensure file exists
     if clip == "" or vim.fn.filereadable(clip) == 0 then
         vim.notify("Clipboard does not contain a valid archive file", vim.log.levels.WARN, { title = "yank-system-ops" })
         return
     end
 
-    -- Validate extension (basic heuristic)
+    -- Validate extension
     local ext = clip:match("%.([^.]+)$")
     if not ext or not ext:match("zip") and not ext:match("tar") and not ext:match("gz")
         and not ext:match("bz2") and not ext:match("xz") and not ext:match("7z") and not ext:match("rar") then
@@ -508,16 +552,12 @@ function M.extract_files_from_clipboard()
         return
     end
 
-    -- Extract using 7z (handles most formats)
-    local cmd = string.format('7z x -y "%s" -o"%s"', clip, target_dir)
-    local result = vim.fn.system(cmd)
-    if vim.v.shell_error ~= 0 then
-        vim.notify("Extraction failed:\n" .. result, vim.log.levels.ERROR, { title = "yank-system-ops" })
-        return
+    -- Recursively extract archives
+    local ok = __extract_archive_recursive(clip, target_dir)
+    if ok then
+        __refresh_buffer_view()
+        vim.notify("Archive extracted successfully into: " .. target_dir, vim.log.levels.INFO, { title = "yank-system-ops" })
     end
-
-    __refresh_buffer_view()
-    vim.notify("Archive extracted successfully into: " .. target_dir, vim.log.levels.INFO, { title = "yank-system-ops" })
 end
 
 --- Yank relative path of current file
