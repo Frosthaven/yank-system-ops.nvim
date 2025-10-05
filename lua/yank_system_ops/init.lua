@@ -443,7 +443,49 @@ function M.yank_files_to_clipboard()
     vim.notify("Files copied to system clipboard", vim.log.levels.INFO, { title = "yank-system-ops" })
 end
 
+--- Download a URI into the target directory
+-- @param uri string URL or FTP link
+-- @param target_dir string Directory to save the file
+-- @return boolean success
+local function __download_uri(uri, target_dir)
+    if not uri or uri == "" then
+        vim.notify("No URI provided to download", vim.log.levels.WARN, { title = "yank-system-ops" })
+        return false
+    end
+
+    -- Extract the last path segment
+    local filename = uri:match(".+/([^/]+)$") or "downloaded_file"
+
+    -- Remove query parameters and hash fragments
+    filename = filename:gsub("%?.*$", ""):gsub("#.*$", "")
+    if filename == "" then
+        filename = "downloaded_file"
+    end
+
+    local cmd
+    if vim.fn.executable("curl") == 1 then
+        cmd = string.format(
+            'curl -fL -A "Mozilla/5.0 (X11; Linux x86_64)" -o "%s/%s" "%s"',
+            target_dir, filename, uri
+        )
+    elseif vim.fn.executable("wget") == 1 then
+        cmd = string.format('wget -O "%s/%s" "%s"', target_dir, filename, uri)
+    else
+        vim.notify("Neither curl nor wget is available to download the URI", vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return false
+    end
+
+    local result = vim.fn.system(cmd)
+    if vim.v.shell_error ~= 0 then
+        vim.notify("Download failed:\n" .. result, vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return false
+    end
+
+    return true
+end
+
 --- Paste/put files from system clipboard into current buffer directory
+-- Supports local files or URLs
 -- @return nil
 function M.put_files_from_clipboard()
     local _, target_dir = __get_buffer_context()
@@ -452,6 +494,21 @@ function M.put_files_from_clipboard()
         return
     end
 
+    local clip = vim.fn.getreg("+") or ""
+    clip = vim.trim(clip)
+
+    -- Detect URL
+    local is_url = clip:match("^https?://") or clip:match("^ftp://")
+    if is_url then
+        local ok = __download_uri(clip, target_dir)
+        if ok then
+            __refresh_buffer_view()
+            vim.notify("URL downloaded successfully into: " .. target_dir, vim.log.levels.INFO, { title = "yank-system-ops" })
+        end
+        return
+    end
+
+    -- Otherwise, treat clipboard as local files
     local success = os_module.put_files_from_clipboard(target_dir)
     if success then
         __refresh_buffer_view()
