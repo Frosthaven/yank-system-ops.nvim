@@ -9,12 +9,17 @@ local Base = {}
 -- Abstract method. Must be implemented in subclass.
 -- @return table List of full file paths
 function Base.get_files()
-    local items = {}
-    local curr_path = vim.fn.expand('%:p')
-    local stat = vim.loop.fs_stat(curr_path)
+    local dir = Base.get_active_dir()
+    if not dir or vim.fn.isdirectory(dir) == 0 then
+        return nil
+    end
 
-    if stat and stat.type == 'file' then
-        table.insert(items, curr_path)
+    local items = {}
+    local scan = vim.fn.globpath(dir, '*', true, true)
+    for _, f in ipairs(scan) do
+        if vim.loop.fs_stat(f) then
+            table.insert(items, f)
+        end
     end
 
     return #items > 0 and items or nil

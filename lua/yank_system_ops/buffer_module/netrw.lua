@@ -8,13 +8,13 @@ local M = Base:extend()
 -- Returns all files in the current Netrw directory
 -- @return table|nil List of full file paths, or nil if none found
 function M.get_files()
-    local base_dir = vim.b.netrw_curdir or vim.fn.getcwd()
-    if not base_dir or vim.fn.isdirectory(base_dir) == 0 then
+    local dir = M.get_active_dir()
+    if not dir or vim.fn.isdirectory(dir) == 0 then
         return nil
     end
 
     local items = {}
-    local scan = vim.fn.globpath(base_dir, '*', true, true)
+    local scan = vim.fn.globpath(dir, '*', true, true)
     for _, f in ipairs(scan) do
         if vim.loop.fs_stat(f) then
             table.insert(items, f)

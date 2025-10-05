@@ -11,20 +11,16 @@ local minifile = require('mini.files')
 -- or the single file if buffer points to a file
 -- @return table|nil List of full file paths, or nil if none found
 function M.get_files()
-    local items = {}
-    local curr_path = vim.fn.expand('%:p'):gsub('^minifiles://%d+//', '/')
-    local stat = vim.loop.fs_stat(curr_path)
+    local dir = M.get_active_dir()
+    if not dir or vim.fn.isdirectory(dir) == 0 then
+        return nil
+    end
 
-    if stat then
-        if stat.type == 'directory' then
-            local scan = vim.fn.globpath(curr_path, '*', true, true)
-            for _, f in ipairs(scan) do
-                if vim.loop.fs_stat(f) then
-                    table.insert(items, f)
-                end
-            end
-        else
-            table.insert(items, curr_path)
+    local items = {}
+    local scan = vim.fn.globpath(dir, '*', true, true)
+    for _, f in ipairs(scan) do
+        if vim.loop.fs_stat(f) then
+            table.insert(items, f)
         end
     end
 
