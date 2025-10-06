@@ -10,6 +10,7 @@
 - [📊 Support Matrix](#-support-matrix)
   - [Operating System Support](#operating-system-support)
   - [Buffer Type Support](#buffer-type-support)
+  - [File Browser Support](#file-browser-support)
 - [🚀 Usage](#-usage)
 
 <br>
