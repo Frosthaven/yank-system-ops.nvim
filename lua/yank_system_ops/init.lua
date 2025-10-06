@@ -365,6 +365,16 @@ end
 -- @param filetype string Filetype context
 -- @return string|nil Path to zip file
 local function __create_zip(items, base_dir, filetype)
+
+    -- filter out any items ending with /. or /..
+    local filtered_items = {}
+    for _, f in ipairs(items) do
+        if not f:match('/%.$') and not f:match('/%.$%.') then
+            table.insert(filtered_items, f)
+        end
+    end
+    items = filtered_items
+
     if not items or #items == 0 then
         vim.notify('No files/folders to compress', vim.log.levels.WARN, { title = 'yank-system-ops' })
         return

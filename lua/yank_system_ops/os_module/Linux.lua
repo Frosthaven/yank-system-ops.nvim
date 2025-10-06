@@ -10,7 +10,6 @@ local Linux = Base:extend()
 -- @param files string|table A file path or list of file paths
 -- @return boolean True if copied successfully, false otherwise
 function Linux.add_files_to_clipboard(files, base_dir)
-
     -- filter out any files that end in /. or /..
     local filtered_files = {}
     for _, f in ipairs(type(files) == "string" and { files } or files) do
@@ -19,8 +18,6 @@ function Linux.add_files_to_clipboard(files, base_dir)
         end
     end
     files = filtered_files
-
-    vim.notify(vim.inspect(files), vim.log.levels.DEBUG, { title = "yank-system-ops" })
 
     -- Ensure base_dir is an absolute path and ends with /
     if base_dir then
@@ -46,8 +43,6 @@ function Linux.add_files_to_clipboard(files, base_dir)
         -- Skip if file does not exist
         if vim.loop.fs_stat(abs_path) then
             table.insert(uri_list, "file://" .. abs_path)
-        else
-            vim.notify("Skipping missing file: " .. abs_path, vim.log.levels.DEBUG, { title = "yank-system-ops" })
         end
     end
 
@@ -195,8 +190,10 @@ function Linux:extract_files_from_clipboard(target_dir)
 
     local ok = extract_archive_recursive(clip, target_dir)
     if ok then
-        vim.notify("Archive extracted successfully into: " .. target_dir, vim.log.levels.INFO, { title = "yank-system-ops" })
+        return true
     end
+
+    return false
 end
 
 --- Open a file or directory in the system's file browser
