@@ -14,9 +14,21 @@ function M.get_files()
     end
 
     local items = {}
-    local scan = vim.fn.globpath(dir, '*', true, true)
-    for _, f in ipairs(scan) do
+
+    -- Include normal files/folders
+    local visible = vim.fn.globpath(dir, '*', true, true)
+    for _, f in ipairs(visible) do
         if vim.loop.fs_stat(f) then
+            table.insert(items, f)
+        end
+    end
+
+    -- Include hidden files/folders (dotfiles)
+    local hidden = vim.fn.globpath(dir, '.*', true, true)
+    for _, f in ipairs(hidden) do
+        -- skip '.' and '..'
+        local base = vim.fn.fnamemodify(f, ':t')
+        if base ~= '.' and base ~= '..' and vim.loop.fs_stat(f) then
             table.insert(items, f)
         end
     end
