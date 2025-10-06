@@ -27,6 +27,20 @@ function Base.put_files_from_clipboard(target_dir)
     )
 end
 
+--- Extract files from clipboard into a target directory
+-- Abstract method. Must be implemented by OS-specific modules.
+-- @param target_dir string Absolute path
+-- @return table List of extracted file paths or nil on failure
+function Base:extract_files_from_clipboard(target_dir)
+    target_dir = target_dir or ""
+    vim.notify(
+        "extract_files_from_clipboard not implemented for this OS",
+        vim.log.levels.WARN,
+        { title = "yank-system-ops" }
+    )
+    return nil
+end
+
 --- Open a file or directory in the system's file browser
 -- Abstract method. Must be implemented in subclass.
 -- @param path string Absolute path to file or directory

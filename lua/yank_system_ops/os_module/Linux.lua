@@ -114,6 +114,63 @@ function Linux.put_files_from_clipboard(target_dir)
     return true
 end
 
+local function extract_archive_recursive(archive_path, target_dir)
+    if vim.fn.filereadable(archive_path) == 0 then
+        vim.notify("Archive not found: " .. archive_path, vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return false
+    end
+
+    -- Record files before extraction
+    local before = vim.fn.glob(target_dir .. "/*", false, true)
+
+    -- Extract archive with 7z (supports most formats)
+    local cmd = string.format('7z x -y "%s" -o"%s"', archive_path, target_dir)
+    local result = vim.fn.system(cmd)
+    if vim.v.shell_error ~= 0 then
+        vim.notify("Extraction failed:\n" .. result, vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return false
+    end
+
+    -- Record files after extraction
+    local after = vim.fn.glob(target_dir .. "/*", false, true)
+
+    -- Determine new files created by this extraction
+    local new_files = {}
+    local before_set = {}
+    for _, f in ipairs(before) do before_set[f] = true end
+    for _, f in ipairs(after) do
+        if not before_set[f] then table.insert(new_files, f) end
+    end
+
+    -- Recursively extract new .tar files only
+    for _, f in ipairs(new_files) do
+        if f:match("%.tar$") then
+            local ok = extract_archive_recursive(f, target_dir)
+            os.remove(f)  -- remove intermediate .tar
+            if not ok then return false end
+        end
+    end
+
+    return true
+end
+
+function Linux:extract_files_from_clipboard(target_dir)
+    target_dir = target_dir or vim.fn.getcwd()
+    local clip = vim.fn.getreg("+") or ""
+    clip = vim.trim(clip):gsub("^file://", "")
+    clip = vim.fn.fnamemodify(clip, ":p")
+
+    if clip == "" or vim.fn.filereadable(clip) == 0 then
+        vim.notify("Clipboard does not contain a valid archive file", vim.log.levels.WARN, { title = "yank-system-ops" })
+        return
+    end
+
+    local ok = extract_archive_recursive(clip, target_dir)
+    if ok then
+        vim.notify("Archive extracted successfully into: " .. target_dir, vim.log.levels.INFO, { title = "yank-system-ops" })
+    end
+end
+
 --- Open a file or directory in the system's file browser
 -- Uses `xdg-open` or `gio` if available.
 -- @param path string Absolute path to file or directory
