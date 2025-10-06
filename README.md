@@ -186,10 +186,12 @@ which there are pending commits/changes._
 
 ## ⚡️ Requirements
 
-- Neovim 0.10+
-- [Git](https://git-scm.com/) - for GitHub URL support
-- [Curl](https://curl.se/) or [Wget](https://www.gnu.org/software/wget/) for
-  putting URI(s) from the web
+- All Platforms:
+    - Neovim 0.10+
+    - [Git](https://git-scm.com/) - for GitHub URL support
+    - [Curl](https://curl.se/) or [Wget](https://www.gnu.org/software/wget/) for
+      putting URI(s) from the web
+
 - Windows:
     - tbd
 - MacOS: 
