@@ -47,10 +47,9 @@ function Darwin.add_files_to_clipboard(files)
     -- Build bash command with $@ to safely handle spaces
     local cmd_tbl = { "bash", "-c", "swift \"$@\"", "dummy", swift_file }
     for _, f in ipairs(files) do
-        if vim.loop.fs_stat(f) then
-            table.insert(cmd_tbl, f)  -- each path is a separate argument
-        else
-            vim.notify("File not found: " .. f, vim.log.levels.WARN, { title = "yank-system-ops" })
+        local name = vim.fn.fnamemodify(f, ":t")  -- get basename
+        if name ~= "." and name ~= ".." and vim.loop.fs_stat(f) then
+            table.insert(cmd_tbl, f)  -- valid file
         end
     end
 
