@@ -58,7 +58,7 @@ directory. This also supports:
 </details>
 
 <details>
-<summary><strong>📥 Zip & Extract File(s)</strong></summary>
+<summary><strong>📥 Create & Extract Archives</strong></summary>
 
 ```lua
 {
@@ -264,7 +264,7 @@ return {
             end, desc = 'Put clipboard file(s) here',
             mode = { 'n', 'v' }
         },
-        -- 📥 Put / Extract files -------------------------------------------------
+        -- 📥 create & extract archives ---------------------------------------
         {
             '<leader>yz', function()
                 require('yank_system_ops').zip_files_to_clipboard()
@@ -277,7 +277,7 @@ return {
             end, desc = 'Extract clipboard file here',
             mode = { 'n', 'v' }
         },
-        -- 📂 Path info -----------------------------------------------------------
+        -- 📂 path info -------------------------------------------------------
         {
             '<leader>yr', function()
                 require('yank_system_ops').yank_relative_path()
@@ -291,7 +291,7 @@ return {
             mode = { 'n', 'v' }
         },
 
-        -- 🌐 Open in file browser ------------------------------------------------
+        -- 🌐 open in file browser --------------------------------------------
         {
             '<leader>yo', function()
                 require('yank_system_ops').open_buffer_in_file_manager()
@@ -299,7 +299,7 @@ return {
             mode = { 'n', 'v' }
         },
 
-        -- 🪄 Markdown codeblocks -------------------------------------------------
+        -- 🪄 markdown codeblocks ---------------------------------------------
         {
             '<leader>ymc', function()
                 require('yank_system_ops').yank_codeblock()
@@ -313,7 +313,7 @@ return {
             mode = { 'n', 'v' }
         },
 
-        -- 🧭 GitHub URL ----------------------------------------------------------
+        -- 🧭 gitHub url ------------------------------------------------------
         {
             '<leader>ygl', function()
                 require('yank_system_ops').yank_github_url()
