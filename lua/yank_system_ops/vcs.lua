@@ -121,7 +121,6 @@ function M.yank_github_url()
         false
     )
 
-    -- Flash highlight (now imported)
     ui.flash_highlight(bufnr, start_line - 1, end_line - 1)
 
     vim.notify(
