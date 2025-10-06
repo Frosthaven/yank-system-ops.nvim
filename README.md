@@ -42,7 +42,15 @@ Slack, email clients, etc.).
 ```
 
 Put file(s) from your system clipboard into the current supported buffer's
-directory. This also supports web URIs by downloading via `curl` or `wget`.
+directory. This also supports:
+
+- Putting URI(s) from the web (using `curl` or `wget`)
+
+_Example: https://example.com/image.png_
+
+- Putting Image data from the clipboard using your OS's clipboard manager
+
+_Example: Right clicking an image in a web browser and selecting "Copy Image"_
 
 </details>
 
