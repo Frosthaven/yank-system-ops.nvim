@@ -9,16 +9,14 @@ local function shell_quote(str)
     return "'" .. str:gsub("'", "'\\''") .. "'"
 end
 
---- Find repo root by looking for .git folder upwards
-local function find_repo_root(start_path)
-    local path = vim.fn.fnamemodify(start_path or vim.fn.expand("<sfile>"), ":p") -- absolute path of current file
-    while path ~= "/" do
-        if vim.fn.isdirectory(path .. "/.git") == 1 then
-            return path
-        end
-        path = vim.fn.fnamemodify(path, ":h") -- go up
+local function get_plugin_root()
+    -- Resolve to absolute path of this Lua file
+    local source = debug.getinfo(1, "S").source
+    if source:sub(1, 1) == "@" then
+        source = source:sub(2)
     end
-    return nil
+    -- Move up to the plugin root
+    return vim.fn.fnamemodify(source, ":h:h:h:h") -- adjust depth as needed
 end
 
 --- Copy a single file (or multiple files) to macOS clipboard using Swift
@@ -32,13 +30,8 @@ function Darwin.add_files_to_clipboard(files)
         return false
     end
 
-    local repo_root = find_repo_root()  -- automatically uses <sfile>
-    if not repo_root then
-        vim.notify("Could not find repo root with .git", vim.log.levels.ERROR, { title = "yank-system-ops" })
-        return false
-    end
-
-    local swift_file = repo_root .. "bin/copyfiles.swift"
+    local plugin_root = get_plugin_root()
+    local swift_file = plugin_root .. "/lua/yank_system_ops/os_module/Darwin_copyfiles.swift"
     if not vim.loop.fs_stat(swift_file) then
         vim.notify("Swift file not found: " .. swift_file, vim.log.levels.ERROR, { title = "yank-system-ops" })
         return false
