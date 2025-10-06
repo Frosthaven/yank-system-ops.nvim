@@ -39,6 +39,18 @@ function Base.open_file_browser(path)
     )
 end
 
+--- Default stub for saving clipboard images
+-- @param target_dir string Directory to save image
+-- @return string|nil Path to saved image or nil if unsupported
+function Base:save_clipboard_image(target_dir)
+    vim.notify(
+        "save_clipboard_image not implemented for this OS",
+        vim.log.levels.WARN,
+        { title = "yank-system-ops" }
+    )
+    return nil
+end
+
 --- Helper for inheritance
 -- @param subclass table Optional table to extend from this base
 -- @return table Subclass table with metatable set for inheritance

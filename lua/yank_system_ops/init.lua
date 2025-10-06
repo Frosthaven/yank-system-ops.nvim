@@ -447,48 +447,112 @@ end
 -- @param uri string URL or FTP link
 -- @param target_dir string Directory to save the file
 -- @return boolean success
+--- Download a URI into the target directory with proper extension detection
+-- @param uri string URL or FTP link
+-- @param target_dir string Directory to save the file
+-- @return string|nil Path to downloaded file, or nil on failure
 local function __download_uri(uri, target_dir)
     if not uri or uri == "" then
         vim.notify("No URI provided to download", vim.log.levels.WARN, { title = "yank-system-ops" })
-        return false
+        return nil
     end
 
-    -- Extract the last path segment
     local filename = uri:match(".+/([^/]+)$") or "downloaded_file"
-
-    -- Remove query parameters and hash fragments
     filename = filename:gsub("%?.*$", ""):gsub("#.*$", "")
-    if filename == "" then
-        filename = "downloaded_file"
+
+    -- If filename has no extension, try to detect from headers or content
+    local ext = filename:match("%.([^.]+)$")
+    if not ext then
+        -- Try Content-Type header
+        local mime
+        if vim.fn.executable("curl") == 1 then
+            mime = vim.fn.system(string.format('curl -sI "%s" | grep -i Content-Type | awk \'{print $2}\' | tr -d "\r"', uri))
+        elseif vim.fn.executable("wget") == 1 then
+            mime = vim.fn.system(string.format('wget --spider --server-response "%s" 2>&1 | grep -i Content-Type | awk \'{print $2}\' | tr -d "\r"', uri))
+        end
+        mime = vim.trim(mime or "")
+
+        local mime_map = {
+            ["image/png"] = "png",
+            ["image/jpeg"] = "jpg",
+            ["image/jpg"] = "jpg",
+            ["image/gif"] = "gif",
+            ["image/webp"] = "webp",
+            ["application/zip"] = "zip",
+            ["application/pdf"] = "pdf",
+        }
+
+        ext = mime_map[mime]
+        if not ext then
+            -- Fallback: fetch first bytes and detect via magic numbers
+            local tmpfile = vim.fn.tempname()
+            local cmd
+            if vim.fn.executable("curl") == 1 then
+                cmd = string.format('curl -sL -o "%s" "%s"', tmpfile, uri)
+            elseif vim.fn.executable("wget") == 1 then
+                cmd = string.format('wget -q -O "%s" "%s"', tmpfile, uri)
+            else
+                vim.notify("Neither curl nor wget is available", vim.log.levels.ERROR, { title = "yank-system-ops" })
+                return nil
+            end
+            vim.fn.system(cmd)
+
+            local f = io.open(tmpfile, "rb")
+            if f then
+                local bytes = f:read(8) or ""
+                f:close()
+                local hex = bytes:gsub('.', function(c) return string.format('%02X', c:byte()) end)
+                local magic_map = {
+                    ["89504E470D0A1A0A"] = "png",
+                    ["FFD8FF"] = "jpg",
+                    ["47494638"] = "gif",
+                    ["504B0304"] = "zip",
+                    ["25504446"] = "pdf",
+                    ["52494646"] = "webp",
+                }
+                for sig, mx_ext in pairs(magic_map) do
+                    if hex:find(sig, 1, true) then
+                        ext = mx_ext
+                        break
+                    end
+                end
+                os.remove(tmpfile)
+            end
+        end
     end
 
-    local cmd
+    if not ext then ext = "bin" end
+    if not filename:match("%." .. ext .. "$") then
+        filename = filename .. "." .. ext
+    end
+
+    local final_path = target_dir .. "/" .. filename
+    local download_cmd
     if vim.fn.executable("curl") == 1 then
-        cmd = string.format(
-            'curl -fL -A "Mozilla/5.0 (X11; Linux x86_64)" -o "%s/%s" "%s"',
-            target_dir, filename, uri
-        )
+        download_cmd = string.format('curl -fL -A "Mozilla/5.0" -o "%s" "%s"', final_path, uri)
     elseif vim.fn.executable("wget") == 1 then
-        cmd = string.format('wget -O "%s/%s" "%s"', target_dir, filename, uri)
+        download_cmd = string.format('wget -O "%s" "%s"', final_path, uri)
     else
         vim.notify("Neither curl nor wget is available to download the URI", vim.log.levels.ERROR, { title = "yank-system-ops" })
-        return false
+        return nil
     end
 
-    local result = vim.fn.system(cmd)
+    local result = vim.fn.system(download_cmd)
     if vim.v.shell_error ~= 0 then
         vim.notify("Download failed:\n" .. result, vim.log.levels.ERROR, { title = "yank-system-ops" })
-        return false
+        return nil
     end
 
-    return true
+    return final_path
 end
 
 --- Paste/put files from system clipboard into current buffer directory
--- Supports local files or URLs
+-- Supports local files, URLs, or images from clipboard
 -- @return nil
 function M.put_files_from_clipboard()
-    local _, target_dir = __get_buffer_context()
+    local ctx_items, target_dir = __get_buffer_context()
+    target_dir = target_dir or vim.fn.getcwd() -- ensure it's a string
+
     if not target_dir or vim.fn.isdirectory(target_dir) == 0 then
         vim.notify("Target directory not found", vim.log.levels.ERROR, { title = "yank-system-ops" })
         return
@@ -497,18 +561,35 @@ function M.put_files_from_clipboard()
     local clip = vim.fn.getreg("+") or ""
     clip = vim.trim(clip)
 
-    -- Detect URL
+    if clip == "" then
+        vim.notify("Clipboard is empty", vim.log.levels.WARN, { title = "yank-system-ops" })
+        return
+    end
+
+    -- Is it a URL we can curl/wget?
     local is_url = clip:match("^https?://") or clip:match("^ftp://")
     if is_url then
         local ok = __download_uri(clip, target_dir)
         if ok then
             __refresh_buffer_view()
             vim.notify("URL downloaded successfully into: " .. target_dir, vim.log.levels.INFO, { title = "yank-system-ops" })
+        else
+            vim.notify("Failed to download URL", vim.log.levels.ERROR, { title = "yank-system-ops" })
         end
         return
     end
 
-    -- Otherwise, treat clipboard as local files
+    -- Is it an image in clipboard we can save?
+    if os_module.save_clipboard_image then
+        local img_path = os_module:save_clipboard_image(target_dir)
+        if img_path then
+            __refresh_buffer_view()
+            vim.notify("Image saved from clipboard: " .. img_path, vim.log.levels.INFO, { title = "yank-system-ops" })
+            return
+        end
+    end
+
+    -- Treat as local file paths
     local success = os_module.put_files_from_clipboard(target_dir)
     if success then
         __refresh_buffer_view()

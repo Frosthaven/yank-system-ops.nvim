@@ -84,4 +84,39 @@ function Windows.open_file_browser(path)
     return true
 end
 
+--- Save image from Windows clipboard to target_dir
+-- Uses PowerShell
+-- @param target_dir string Directory to save the image
+-- @return string|nil Path to saved file or nil if no image found
+function Windows:save_clipboard_image(target_dir)
+    target_dir = target_dir or vim.fn.getcwd()
+    if vim.fn.isdirectory(target_dir) == 0 then
+        vim.notify("Target directory not found: " .. tostring(target_dir), vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return nil
+    end
+
+    local filename = "clipboard_image_" .. os.date("%Y%m%d_%H%M%S") .. ".png"
+    local out_path = target_dir .. "\\" .. filename
+
+    local ps_script = string.format([[
+        Add-Type -AssemblyName System.Windows.Forms
+        Add-Type -AssemblyName System.Drawing
+        if ([System.Windows.Forms.Clipboard]::ContainsImage()) {
+            $img = [System.Windows.Forms.Clipboard]::GetImage()
+            $img.Save("%s", [System.Drawing.Imaging.ImageFormat]::Png)
+        } else {
+            exit 1
+        }
+    ]], out_path)
+
+    local cmd = string.format('powershell -NoProfile -Command "%s"', ps_script:gsub('"', '\\"'))
+    local result = vim.fn.system(cmd)
+    if vim.v.shell_error ~= 0 then
+        vim.notify("Failed to save clipboard image:\n" .. result, vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return nil
+    end
+
+    return out_path
+end
+
 return Windows
