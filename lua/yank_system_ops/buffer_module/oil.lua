@@ -1,9 +1,8 @@
 --- Oil.nvim buffer module for yank_system_ops
 -- Implements the buffer interface for oil.nvim
 -- @module oil
-local Base = require('yank_system_ops.buffer_module.__base')
+local Base = require 'yank_system_ops.buffer_module.__base'
 local M = Base:extend()
-local oil = require('oil')
 
 --- Get list of files in the current buffer
 -- Returns all files in the current oil.nvim directory
@@ -44,7 +43,8 @@ function M.get_active_dir()
     local path = vim.fn.expand('%:p'):gsub('^oil:///', '/')
     local stat = vim.loop.fs_stat(path)
     if stat then
-        return stat.type == 'directory' and path or vim.fn.fnamemodify(path, ':h')
+        return stat.type == 'directory' and path
+            or vim.fn.fnamemodify(path, ':h')
     end
     return nil
 end
@@ -58,7 +58,9 @@ function M.refresh_view()
     else
         -- fallback: open a new oil buffer at current dir
         local dir = M.get_active_dir()
-        if dir then require('oil').open(dir) end
+        if dir then
+            require('oil').open(dir)
+        end
     end
 end
 

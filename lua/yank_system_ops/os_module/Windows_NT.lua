@@ -1,7 +1,7 @@
 --- Windows-specific OS module for yank_system_ops
 -- Implements abstract methods from Base for Windows environments
 -- @module yank_system_ops.os_module.Windows_NT
-local Base = require("yank_system_ops.os_module.__base")
+local Base = require 'yank_system_ops.os_module.__base'
 local Windows = Base:extend()
 
 --- Copy file(s) to the system clipboard
@@ -18,8 +18,9 @@ function Windows.add_files_to_clipboard(files)
         table.insert(ps_files, "'" .. f .. "'")
     end
 
-    local ps_cmd = 'powershell -Command "[System.Windows.Forms.Clipboard]::SetFileDropList((New-Object System.Collections.Specialized.StringCollection; ' ..
-                   table.concat(ps_files, '; $_.Add(') .. ')))"'
+    local ps_cmd = 'powershell -Command "[System.Windows.Forms.Clipboard]::SetFileDropList((New-Object System.Collections.Specialized.StringCollection; '
+        .. table.concat(ps_files, '; $_.Add(')
+        .. ')))"'
 
     local result = vim.fn.system(ps_cmd)
     if vim.v.shell_error ~= 0 then
@@ -40,8 +41,12 @@ end
 -- @param target_dir string Absolute path to directory where files will be put
 -- @return boolean True if put operation succeeded, false otherwise
 function Windows.put_files_from_clipboard(target_dir)
-    if not target_dir or target_dir == "" then
-        vim.notify("No target directory specified", vim.log.levels.ERROR, { title = "yank-system-ops" })
+    if not target_dir or target_dir == '' then
+        vim.notify(
+            'No target directory specified',
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
         return false
     end
 
@@ -58,11 +63,19 @@ function Windows.put_files_from_clipboard(target_dir)
 
     local result = vim.fn.system(ps_cmd)
     if vim.v.shell_error ~= 0 then
-        vim.notify("Failed to put files from clipboard: " .. result, vim.log.levels.ERROR, { title = "yank-system-ops" })
+        vim.notify(
+            'Failed to put files from clipboard: ' .. result,
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
         return false
     end
 
-    vim.notify("Put files from clipboard successfully", vim.log.levels.INFO, { title = "yank-system-ops" })
+    vim.notify(
+        'Put files from clipboard successfully',
+        vim.log.levels.INFO,
+        { title = 'yank-system-ops' }
+    )
     return true
 end
 
@@ -91,7 +104,10 @@ function Windows:clipboard_has_image()
         Add-Type -AssemblyName System.Windows.Forms
         if ([System.Windows.Forms.Clipboard]::ContainsImage()) { exit 0 } else { exit 1 }
     ]]
-    local cmd = string.format('powershell -NoProfile -Command "%s"', ps_script:gsub('"', '\\"'))
+    local cmd = string.format(
+        'powershell -NoProfile -Command "%s"',
+        ps_script:gsub('"', '\\"')
+    )
     vim.fn.system(cmd)
     return vim.v.shell_error == 0
 end
@@ -103,14 +119,19 @@ end
 function Windows:save_clipboard_image(target_dir)
     target_dir = target_dir or vim.fn.getcwd()
     if vim.fn.isdirectory(target_dir) == 0 then
-        vim.notify("Target directory not found: " .. tostring(target_dir), vim.log.levels.ERROR, { title = "yank-system-ops" })
+        vim.notify(
+            'Target directory not found: ' .. tostring(target_dir),
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
         return nil
     end
 
-    local filename = "clipboard_image_" .. os.date("%Y%m%d_%H%M%S") .. ".png"
-    local out_path = target_dir .. "\\" .. filename
+    local filename = 'clipboard_image_' .. os.date '%Y%m%d_%H%M%S' .. '.png'
+    local out_path = target_dir .. '\\' .. filename
 
-    local ps_script = string.format([[
+    local ps_script = string.format(
+        [[
         Add-Type -AssemblyName System.Windows.Forms
         Add-Type -AssemblyName System.Drawing
         if ([System.Windows.Forms.Clipboard]::ContainsImage()) {
@@ -119,12 +140,21 @@ function Windows:save_clipboard_image(target_dir)
         } else {
             exit 1
         }
-    ]], out_path)
+    ]],
+        out_path
+    )
 
-    local cmd = string.format('powershell -NoProfile -Command "%s"', ps_script:gsub('"', '\\"'))
+    local cmd = string.format(
+        'powershell -NoProfile -Command "%s"',
+        ps_script:gsub('"', '\\"')
+    )
     local result = vim.fn.system(cmd)
     if vim.v.shell_error ~= 0 then
-        vim.notify("Failed to save clipboard image:\n" .. result, vim.log.levels.ERROR, { title = "yank-system-ops" })
+        vim.notify(
+            'Failed to save clipboard image:\n' .. result,
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
         return nil
     end
 

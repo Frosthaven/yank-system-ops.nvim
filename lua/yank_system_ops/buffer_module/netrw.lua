@@ -1,7 +1,7 @@
 --- Netrw buffer module for yank_system_ops
 -- Implements the buffer interface for Netrw file explorer
 -- @module netrw
-local Base = require('yank_system_ops.buffer_module.__base')
+local Base = require 'yank_system_ops.buffer_module.__base'
 local M = Base:extend()
 
 --- Get list of files in the current buffer
@@ -49,7 +49,7 @@ end
 
 --- Refresh the Netrw view
 function M.refresh_view()
-    vim.cmd('Explore')
+    vim.cmd 'Explore'
 end
 
 return M

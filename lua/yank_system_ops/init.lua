@@ -26,7 +26,11 @@ M._loaded = false
 -- @param opts table Optional configuration overrides
 function M.setup(opts)
     if M._loaded then
-        vim.notify('yank-system-ops is already loaded!', vim.log.levels.WARN, { title = 'yank-system-ops' })
+        vim.notify(
+            'yank-system-ops is already loaded!',
+            vim.log.levels.WARN,
+            { title = 'yank-system-ops' }
+        )
         return
     end
     M._loaded = true
@@ -40,7 +44,11 @@ function M.setup(opts)
     end
 
     if M.config.debug then
-        vim.notify('Setup with config:\n' .. vim.inspect(M.config), vim.log.levels.DEBUG, { title = 'yank-system-ops' })
+        vim.notify(
+            'Setup with config:\n' .. vim.inspect(M.config),
+            vim.log.levels.DEBUG,
+            { title = 'yank-system-ops' }
+        )
     end
 end
 
@@ -53,14 +61,13 @@ local os_name = vim.loop.os_uname().sysname
 
 --- OS-specific module (Darwin/Linux/Windows)
 -- @table os_module
-local os_module_ok, os_module = pcall(
-    require,
-    "yank_system_ops.os_module." .. os_name
-)
+local os_module_ok, os_module =
+    pcall(require, 'yank_system_ops.os_module.' .. os_name)
 
 if not os_module_ok then
     vim.notify(
-        "yank-system-ops: Unsupported OS: " .. os_name, vim.log.levels.WARN,
+        'yank-system-ops: Unsupported OS: ' .. os_name,
+        vim.log.levels.WARN,
         { title = 'yank-system-ops' }
     )
     return
@@ -75,11 +82,11 @@ end
 -- @return table Buffer module
 local function get_buffer_module(bufnr)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
-    local ft = vim.bo[bufnr].filetype or ""
+    local ft = vim.bo[bufnr].filetype or ''
 
-    local ok, mod = pcall(require, "yank_system_ops.buffer_module." .. ft)
-    if not ok or type(mod) ~= "table" then
-        mod = require("yank_system_ops.buffer_module.__base")
+    local ok, mod = pcall(require, 'yank_system_ops.buffer_module.' .. ft)
+    if not ok or type(mod) ~= 'table' then
+        mod = require 'yank_system_ops.buffer_module.__base'
     end
 
     return mod
@@ -124,19 +131,32 @@ function M.yank_github_url()
 
     local repo_root = vim.fn.systemlist('git rev-parse --show-toplevel')[1]
     if repo_root == '' or vim.fn.isdirectory(repo_root) == 0 then
-        vim.notify('Not inside a Git repository', vim.log.levels.WARN, { title = 'yank-system-ops' })
+        vim.notify(
+            'Not inside a Git repository',
+            vim.log.levels.WARN,
+            { title = 'yank-system-ops' }
+        )
         return
     end
 
     local branch = vim.fn.systemlist('git rev-parse --abbrev-ref HEAD')[1]
     if branch == '' or branch == 'HEAD' then
-        vim.notify('Could not determine Git branch', vim.log.levels.WARN, { title = 'yank-system-ops' })
+        vim.notify(
+            'Could not determine Git branch',
+            vim.log.levels.WARN,
+            { title = 'yank-system-ops' }
+        )
         return
     end
 
-    local remote_url = vim.fn.systemlist('git config --get remote.origin.url')[1]
+    local remote_url =
+        vim.fn.systemlist('git config --get remote.origin.url')[1]
     if not remote_url or remote_url == '' then
-        vim.notify('No Git remote found', vim.log.levels.WARN, { title = 'yank-system-ops' })
+        vim.notify(
+            'No Git remote found',
+            vim.log.levels.WARN,
+            { title = 'yank-system-ops' }
+        )
         return
     end
 
@@ -161,8 +181,16 @@ function M.yank_github_url()
         end_line = start_line
     end
 
-    local unpushed = vim.fn.systemlist(string.format('git log %s --not --remotes -- %s', branch, vim.fn.shellescape(relpath)))
-    local status = vim.fn.systemlist(string.format('git status --porcelain %s', vim.fn.shellescape(relpath)))
+    local unpushed = vim.fn.systemlist(
+        string.format(
+            'git log %s --not --remotes -- %s',
+            branch,
+            vim.fn.shellescape(relpath)
+        )
+    )
+    local status = vim.fn.systemlist(
+        string.format('git status --porcelain %s', vim.fn.shellescape(relpath))
+    )
 
     if #unpushed > 0 or #status > 0 then
         local msg_parts = {}
@@ -172,7 +200,13 @@ function M.yank_github_url()
         if #status > 0 then
             table.insert(msg_parts, 'uncommitted changes')
         end
-        vim.notify('Cannot copy GitHub URL: file has ' .. table.concat(msg_parts, '/') .. '!', vim.log.levels.WARN, { title = 'yank-system-ops' })
+        vim.notify(
+            'Cannot copy GitHub URL: file has '
+                .. table.concat(msg_parts, '/')
+                .. '!',
+            vim.log.levels.WARN,
+            { title = 'yank-system-ops' }
+        )
         return
     end
 
@@ -186,10 +220,18 @@ function M.yank_github_url()
     end
 
     vim.fn.setreg('+', url)
-    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'nx', false)
+    vim.api.nvim_feedkeys(
+        vim.api.nvim_replace_termcodes('<Esc>', true, false, true),
+        'nx',
+        false
+    )
     M.flash_highlight(bufnr, start_line - 1, end_line - 1)
 
-    vim.notify('Yanked GitHub URL', vim.log.levels.INFO, { title = 'yank-system-ops' })
+    vim.notify(
+        'Yanked GitHub URL',
+        vim.log.levels.INFO,
+        { title = 'yank-system-ops' }
+    )
 end
 
 --- Yank diagnostics in selection as a markdown code block
@@ -226,17 +268,25 @@ function M.yank_diagnostics()
     else
         for _, diag in ipairs(selected_diags) do
             local line_num = diag.lnum + 1
-            table.insert(messages, string.format('`%d`: %s', line_num, diag.message))
+            table.insert(
+                messages,
+                string.format('`%d`: %s', line_num, diag.message)
+            )
             table.insert(messages, '')
         end
     end
 
-    local code_lines = vim.api.nvim_buf_get_lines(bufnr, start_line, end_line + 1, false)
+    local code_lines =
+        vim.api.nvim_buf_get_lines(bufnr, start_line, end_line + 1, false)
 
     -- Ensure all lines are strings and valid text
     for _, line in ipairs(code_lines) do
         if type(line) ~= 'string' then
-            vim.notify('Cannot yank: selection contains non-text content', vim.log.levels.WARN, { title = 'yank-system-ops' })
+            vim.notify(
+                'Cannot yank: selection contains non-text content',
+                vim.log.levels.WARN,
+                { title = 'yank-system-ops' }
+            )
             return
         end
     end
@@ -250,22 +300,41 @@ function M.yank_diagnostics()
 
     local ext = filename:match '^.+%.(.+)$' or ''
     local lang_map = {
-        ts = 'ts', tsx = 'ts', js = 'js', jsx = 'js',
-        lua = 'lua', php = 'php', rs = 'rs',
+        ts = 'ts',
+        tsx = 'ts',
+        js = 'js',
+        jsx = 'js',
+        lua = 'lua',
+        php = 'php',
+        rs = 'rs',
     }
     local lang = lang_map[ext] or ext or ''
 
     local code_text = table.concat(code_lines, '\n')
-    local out = string.format('Diagnostic:\n\n%s\n\n`%s`:\n```%s\n%s\n```', table.concat(messages, '\n'), line_info, lang, code_text)
+    local out = string.format(
+        'Diagnostic:\n\n%s\n\n`%s`:\n```%s\n%s\n```',
+        table.concat(messages, '\n'),
+        line_info,
+        lang,
+        code_text
+    )
 
     local ok, _ = pcall(vim.fn.setreg, '+', out)
     if not ok then
-        vim.notify('Cannot yank: selection contains non-text content', vim.log.levels.WARN, { title = 'yank-system-ops' })
+        vim.notify(
+            'Cannot yank: selection contains non-text content',
+            vim.log.levels.WARN,
+            { title = 'yank-system-ops' }
+        )
         return
     end
 
     M.flash_highlight(bufnr, start_line, end_line)
-    vim.notify('Yanked diagnostic code block', vim.log.levels.INFO, { title = 'yank-system-ops', render = 'compact' })
+    vim.notify(
+        'Yanked diagnostic code block',
+        vim.log.levels.INFO,
+        { title = 'yank-system-ops', render = 'compact' }
+    )
 end
 
 --- Yank selected lines as markdown code block
@@ -286,27 +355,41 @@ function M.yank_codeblock()
         end_line = start_line
     end
 
-    local lines = vim.api.nvim_buf_get_lines(bufnr, start_line - 1, end_line, false)
+    local lines =
+        vim.api.nvim_buf_get_lines(bufnr, start_line - 1, end_line, false)
 
     -- Ensure all lines are strings and valid text
     for _, line in ipairs(lines) do
         if type(line) ~= 'string' then
-            vim.notify('Cannot yank: selection contains non-text content', vim.log.levels.WARN, { title = 'yank-system-ops' })
+            vim.notify(
+                'Cannot yank: selection contains non-text content',
+                vim.log.levels.WARN,
+                { title = 'yank-system-ops' }
+            )
             return
         end
     end
 
     local filetype = vim.bo.filetype ~= '' and vim.bo.filetype or 'txt'
-    local out = string.format('```%s\n%s\n```', filetype, table.concat(lines, '\n'))
+    local out =
+        string.format('```%s\n%s\n```', filetype, table.concat(lines, '\n'))
 
     local ok, _ = pcall(vim.fn.setreg, '+', out)
     if not ok then
-        vim.notify('Cannot yank: selection contains non-text content', vim.log.levels.WARN, { title = 'yank-system-ops' })
+        vim.notify(
+            'Cannot yank: selection contains non-text content',
+            vim.log.levels.WARN,
+            { title = 'yank-system-ops' }
+        )
         return
     end
 
     M.flash_highlight(bufnr, start_line - 1, end_line - 1)
-    vim.notify('Yanked code block', vim.log.levels.INFO, { title = 'yank-system-ops' })
+    vim.notify(
+        'Yanked code block',
+        vim.log.levels.INFO,
+        { title = 'yank-system-ops' }
+    )
 end
 
 --- Refresh explorers and buffers after extraction
@@ -340,7 +423,13 @@ function __get_7zip_binary()
         end
     end
 
-    vim.notify('No 7z binary found in PATH (tried: ' .. table.concat(possible_binaries, ', ') .. ')', vim.log.levels.ERROR, { title = 'yank-system-ops' })
+    vim.notify(
+        'No 7z binary found in PATH (tried: '
+            .. table.concat(possible_binaries, ', ')
+            .. ')',
+        vim.log.levels.ERROR,
+        { title = 'yank-system-ops' }
+    )
     return nil
 end
 
@@ -365,24 +454,27 @@ end
 -- @param filetype string Filetype context
 -- @return string|nil Path to zip file
 local function __create_zip(items, base_dir, filetype)
-
     -- filter out any items ending with /. or /..
     local filtered_items = {}
     for _, f in ipairs(items) do
-        if not f:match('/%.$') and not f:match('/%.$%.') then
+        if not f:match '/%.$' and not f:match '/%.$%.' then
             table.insert(filtered_items, f)
         end
     end
     items = filtered_items
 
     if not items or #items == 0 then
-        vim.notify('No files/folders to compress', vim.log.levels.WARN, { title = 'yank-system-ops' })
+        vim.notify(
+            'No files/folders to compress',
+            vim.log.levels.WARN,
+            { title = 'yank-system-ops' }
+        )
         return
     end
 
     -- Ensure base_dir ends with /
-    if base_dir:sub(-1) ~= "/" then
-        base_dir = base_dir .. "/"
+    if base_dir:sub(-1) ~= '/' then
+        base_dir = base_dir .. '/'
     end
 
     -- Optional project prefix if .git exists
@@ -402,8 +494,9 @@ local function __create_zip(items, base_dir, filetype)
         base_name = 'project'
     end
 
-    local timestamp = os.date('%Y%m%d_%H%M%S')
-    local zip_name = string.format('%s%s__%s.nvim.zip', project_prefix, base_name, timestamp)
+    local timestamp = os.date '%Y%m%d_%H%M%S'
+    local zip_name =
+        string.format('%s%s__%s.nvim.zip', project_prefix, base_name, timestamp)
 
     local downloads = M.config.storage_path
     if vim.fn.isdirectory(downloads) == 0 then
@@ -416,10 +509,10 @@ local function __create_zip(items, base_dir, filetype)
     for _, f in ipairs(items) do
         local st = vim.loop.fs_stat(f)
         if st then
-            local full = vim.fn.fnamemodify(f, ":p")
+            local full = vim.fn.fnamemodify(f, ':p')
             if full:sub(1, #base_dir) == base_dir then
                 local rel = full:sub(#base_dir + 1)
-                if rel ~= "." and rel ~= ".." then
+                if rel ~= '.' and rel ~= '..' then
                     table.insert(rel_items, string.format('"%s"', rel))
                 end
             end
@@ -427,17 +520,30 @@ local function __create_zip(items, base_dir, filetype)
     end
 
     if #rel_items == 0 then
-        vim.notify('No valid files to compress in base_dir', vim.log.levels.WARN, { title = 'yank-system-ops' })
+        vim.notify(
+            'No valid files to compress in base_dir',
+            vim.log.levels.WARN,
+            { title = 'yank-system-ops' }
+        )
         return
     end
 
     local binary = __get_7zip_binary()
-    local cmd = string.format('%s a -tzip "%s" %s -r', binary, zip_path, table.concat(rel_items, ' '))
+    local cmd = string.format(
+        '%s a -tzip "%s" %s -r',
+        binary,
+        zip_path,
+        table.concat(rel_items, ' ')
+    )
     local full_cmd = string.format('cd "%s" ; %s', base_dir, cmd)
 
     local result = vim.fn.system(full_cmd)
     if vim.v.shell_error ~= 0 then
-        vim.notify('Failed to create zip: ' .. result, vim.log.levels.ERROR, { title = 'yank-system-ops' })
+        vim.notify(
+            'Failed to create zip: ' .. result,
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
         return
     end
 
@@ -460,17 +566,29 @@ end
 function M.yank_files_to_clipboard()
     local items, _ = __get_buffer_context()
     if not items or #items == 0 then
-        vim.notify("No files selected to yank", vim.log.levels.WARN, { title = "yank-system-ops" })
+        vim.notify(
+            'No files selected to yank',
+            vim.log.levels.WARN,
+            { title = 'yank-system-ops' }
+        )
         return
     end
 
     local ok, err = pcall(os_module.add_files_to_clipboard, items)
     if not ok then
-        vim.notify("Failed to copy files to clipboard: " .. tostring(err), vim.log.levels.ERROR, { title = "yank-system-ops" })
+        vim.notify(
+            'Failed to copy files to clipboard: ' .. tostring(err),
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
         return
     end
 
-    vim.notify("Files copied to system clipboard", vim.log.levels.INFO, { title = "yank-system-ops" })
+    vim.notify(
+        'Files copied to system clipboard',
+        vim.log.levels.INFO,
+        { title = 'yank-system-ops' }
+    )
 end
 
 --- Download a URI into the target directory with automatic extension detection.
@@ -483,78 +601,106 @@ end
 -- @param target_dir string Directory to save the downloaded file
 -- @return string|nil Absolute path to the downloaded file, or nil on failure
 local function __download_uri(uri, target_dir)
-    if not uri or uri == "" then
-        vim.notify("No URI provided to download", vim.log.levels.WARN, { title = "yank-system-ops" })
+    if not uri or uri == '' then
+        vim.notify(
+            'No URI provided to download',
+            vim.log.levels.WARN,
+            { title = 'yank-system-ops' }
+        )
         return nil
     end
 
     -- Extract filename from URI
-    local filename = uri:match(".+/([^/]+)$") or "downloaded_file"
-    filename = filename:gsub("%?.*$", ""):gsub("#.*$", "")
-    local url_ext = filename:match("%.([^.]+)$")
+    local filename = uri:match '.+/([^/]+)$' or 'downloaded_file'
+    filename = filename:gsub('%?.*$', ''):gsub('#.*$', '')
+    local url_ext = filename:match '%.([^.]+)$'
 
     -- Temp path to download first
     local tmpfile = vim.fn.tempname()
     local download_cmd
-    if vim.fn.executable("curl") == 1 then
-        download_cmd = string.format('curl -fL -A "Mozilla/5.0" -o "%s" "%s"', tmpfile, uri)
-    elseif vim.fn.executable("wget") == 1 then
+    if vim.fn.executable 'curl' == 1 then
+        download_cmd = string.format(
+            'curl -fL -A "Mozilla/5.0" -o "%s" "%s"',
+            tmpfile,
+            uri
+        )
+    elseif vim.fn.executable 'wget' == 1 then
         download_cmd = string.format('wget -q -O "%s" "%s"', tmpfile, uri)
     else
-        vim.notify("Neither curl nor wget is available to download the URI", vim.log.levels.ERROR, { title = "yank-system-ops" })
+        vim.notify(
+            'Neither curl nor wget is available to download the URI',
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
         return nil
     end
 
     local result = vim.fn.system(download_cmd)
     if vim.v.shell_error ~= 0 then
-        vim.notify("Download failed:\n" .. result, vim.log.levels.ERROR, { title = "yank-system-ops" })
+        vim.notify(
+            'Download failed:\n' .. result,
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
         return nil
     end
 
     -- Step 1: Try Content-Type header
-    local mime = ""
-    if vim.fn.executable("curl") == 1 then
-        mime = vim.fn.system(string.format('curl -sI "%s" | grep -i Content-Type | awk \'{print $2}\' | tr -d "\r"', uri))
-    elseif vim.fn.executable("wget") == 1 then
-        mime = vim.fn.system(string.format('wget --spider --server-response "%s" 2>&1 | grep -i Content-Type | awk \'{print $2}\' | tr -d "\r"', uri))
+    local mime = ''
+    if vim.fn.executable 'curl' == 1 then
+        mime = vim.fn.system(
+            string.format(
+                'curl -sI "%s" | grep -i Content-Type | awk \'{print $2}\' | tr -d "\r"',
+                uri
+            )
+        )
+    elseif vim.fn.executable 'wget' == 1 then
+        mime = vim.fn.system(
+            string.format(
+                'wget --spider --server-response "%s" 2>&1 | grep -i Content-Type | awk \'{print $2}\' | tr -d "\r"',
+                uri
+            )
+        )
     end
-    mime = vim.trim(mime or "")
+    mime = vim.trim(mime or '')
 
     local mime_map = {
-        ["image/png"] = "png",
-        ["image/jpeg"] = "jpg",
-        ["image/jpg"] = "jpg",
-        ["image/gif"] = "gif",
-        ["image/webp"] = "webp",
-        ["application/zip"] = "zip",
-        ["application/pdf"] = "pdf",
-        ["text/html"] = "html",
-        ["application/xhtml+xml"] = "html",
-        ["application/xml"] = "xml",
-        ["text/xml"] = "xml",
-        ["application/json"] = "json",
-        ["text/json"] = "json",
+        ['image/png'] = 'png',
+        ['image/jpeg'] = 'jpg',
+        ['image/jpg'] = 'jpg',
+        ['image/gif'] = 'gif',
+        ['image/webp'] = 'webp',
+        ['application/zip'] = 'zip',
+        ['application/pdf'] = 'pdf',
+        ['text/html'] = 'html',
+        ['application/xhtml+xml'] = 'html',
+        ['application/xml'] = 'xml',
+        ['text/xml'] = 'xml',
+        ['application/json'] = 'json',
+        ['text/json'] = 'json',
     }
 
     local ext = mime_map[mime]
 
     -- Step 2: Fallback to content sniffing / magic numbers
     if not ext then
-        local f = io.open(tmpfile, "rb")
+        local f = io.open(tmpfile, 'rb')
         if f then
-            local bytes = f:read(1024) or ""
+            local bytes = f:read(1024) or ''
             f:close()
 
-            local hex = bytes:gsub('.', function(c) return string.format('%02X', c:byte()) end)
+            local hex = bytes:gsub('.', function(c)
+                return string.format('%02X', c:byte())
+            end)
 
             -- Magic numbers for binaries
             local magic_map = {
-                ["89504E470D0A1A0A"] = "png",
-                ["FFD8FF"] = "jpg",
-                ["47494638"] = "gif",
-                ["504B0304"] = "zip",
-                ["25504446"] = "pdf",
-                ["52494646"] = "webp",
+                ['89504E470D0A1A0A'] = 'png',
+                ['FFD8FF'] = 'jpg',
+                ['47494638'] = 'gif',
+                ['504B0304'] = 'zip',
+                ['25504446'] = 'pdf',
+                ['52494646'] = 'webp',
             }
             for sig, mx_ext in pairs(magic_map) do
                 if hex:find(sig, 1, true) then
@@ -565,12 +711,15 @@ local function __download_uri(uri, target_dir)
 
             -- Text-based sniffing
             if not ext then
-                if bytes:match("^%s*<%?xml") then
-                    ext = "xml"
-                elseif bytes:match("^%s*{") or bytes:match("^%s*%[") then
-                    ext = "json"
-                elseif bytes:match("^%s*<!DOCTYPE html>") or bytes:match("^%s*<html") then
-                    ext = "html"
+                if bytes:match '^%s*<%?xml' then
+                    ext = 'xml'
+                elseif bytes:match '^%s*{' or bytes:match '^%s*%[' then
+                    ext = 'json'
+                elseif
+                    bytes:match '^%s*<!DOCTYPE html>'
+                    or bytes:match '^%s*<html'
+                then
+                    ext = 'html'
                 end
             end
         end
@@ -582,28 +731,38 @@ local function __download_uri(uri, target_dir)
     end
 
     -- Step 4: Fallback default
-    if not ext then ext = "bin" end
-    if not filename:match("%." .. ext .. "$") then
-        filename = filename .. "." .. ext
+    if not ext then
+        ext = 'bin'
+    end
+    if not filename:match('%.' .. ext .. '$') then
+        filename = filename .. '.' .. ext
     end
 
-    local final_path = target_dir .. "/" .. filename
+    local final_path = target_dir .. '/' .. filename
 
     -- Cross-device-safe copy from temp to target
-    local fsrc = io.open(tmpfile, "rb")
+    local fsrc = io.open(tmpfile, 'rb')
     if not fsrc then
-        vim.notify("Failed to open temp file for copying", vim.log.levels.ERROR, { title = "yank-system-ops" })
+        vim.notify(
+            'Failed to open temp file for copying',
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
         return nil
     end
 
-    local fdst = io.open(final_path, "wb")
+    local fdst = io.open(final_path, 'wb')
     if not fdst then
         fsrc:close()
-        vim.notify("Failed to create target file", vim.log.levels.ERROR, { title = "yank-system-ops" })
+        vim.notify(
+            'Failed to create target file',
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
         return nil
     end
 
-    fdst:write(fsrc:read("*a"))
+    fdst:write(fsrc:read '*a')
     fsrc:close()
     fdst:close()
     os.remove(tmpfile)
@@ -619,22 +778,34 @@ function M.put_files_from_clipboard()
     target_dir = target_dir or vim.fn.getcwd() -- ensure it's a string
 
     if not target_dir or vim.fn.isdirectory(target_dir) == 0 then
-        vim.notify("Target directory not found", vim.log.levels.ERROR, { title = "yank-system-ops" })
+        vim.notify(
+            'Target directory not found',
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
         return
     end
 
-    local clip = vim.fn.getreg("+") or ""
+    local clip = vim.fn.getreg '+' or ''
     clip = vim.trim(clip)
 
     -- Is it a URL we can curl/wget?
-    local is_url = clip:match("^https?://") or clip:match("^ftp://")
+    local is_url = clip:match '^https?://' or clip:match '^ftp://'
     if is_url then
         local ok = __download_uri(clip, target_dir)
         if ok then
             __refresh_buffer_view()
-            vim.notify("URL downloaded successfully into: " .. target_dir, vim.log.levels.INFO, { title = "yank-system-ops" })
+            vim.notify(
+                'URL downloaded successfully into: ' .. target_dir,
+                vim.log.levels.INFO,
+                { title = 'yank-system-ops' }
+            )
         else
-            vim.notify("Failed to download URL", vim.log.levels.ERROR, { title = "yank-system-ops" })
+            vim.notify(
+                'Failed to download URL',
+                vim.log.levels.ERROR,
+                { title = 'yank-system-ops' }
+            )
         end
         return
     end
@@ -645,9 +816,9 @@ function M.put_files_from_clipboard()
         if img_path then
             __refresh_buffer_view()
             vim.notify(
-                "Image saved from clipboard: " .. img_path,
+                'Image saved from clipboard: ' .. img_path,
                 vim.log.levels.INFO,
-                { title = "yank-system-ops" }
+                { title = 'yank-system-ops' }
             )
             return
         end
@@ -657,9 +828,17 @@ function M.put_files_from_clipboard()
     local success = os_module.put_files_from_clipboard(target_dir)
     if success then
         __refresh_buffer_view()
-        vim.notify("Clipboard files put successfully", vim.log.levels.INFO, { title = "yank-system-ops" })
+        vim.notify(
+            'Clipboard files put successfully',
+            vim.log.levels.INFO,
+            { title = 'yank-system-ops' }
+        )
     else
-        vim.notify("No valid files found in clipboard", vim.log.levels.WARN, { title = "yank-system-ops" })
+        vim.notify(
+            'No valid files found in clipboard',
+            vim.log.levels.WARN,
+            { title = 'yank-system-ops' }
+        )
     end
 end
 
@@ -668,18 +847,30 @@ end
 function M.zip_files_to_clipboard()
     local items, base_dir, filetype = __get_buffer_context()
     if not items or #items == 0 then
-        vim.notify("No files selected to compress", vim.log.levels.WARN, { title = "yank-system-ops" })
+        vim.notify(
+            'No files selected to compress',
+            vim.log.levels.WARN,
+            { title = 'yank-system-ops' }
+        )
         return
     end
 
     local zip_path, err = __create_zip(items, base_dir, filetype)
     if not zip_path then
-        vim.notify("Compression failed: " .. tostring(err), vim.log.levels.ERROR, { title = "yank-system-ops" })
+        vim.notify(
+            'Compression failed: ' .. tostring(err),
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
         return
     end
 
     os_module.add_files_to_clipboard(zip_path)
-    vim.notify("Compressed archive added to clipboard", vim.log.levels.INFO, { title = "yank-system-ops" })
+    vim.notify(
+        'Compressed archive added to clipboard',
+        vim.log.levels.INFO,
+        { title = 'yank-system-ops' }
+    )
 end
 
 --- Extract an archive from clipboard into the current buffer directory
@@ -690,9 +881,17 @@ function M.extract_files_from_clipboard()
     local ok = os_module:extract_files_from_clipboard(target_dir)
     if ok then
         __refresh_buffer_view()
-        vim.notify("Archive extracted successfully into: " .. target_dir, vim.log.levels.INFO, { title = "yank-system-ops" })
+        vim.notify(
+            'Archive extracted successfully into: ' .. target_dir,
+            vim.log.levels.INFO,
+            { title = 'yank-system-ops' }
+        )
     else
-        vim.notify("No valid archive found in clipboard", vim.log.levels.WARN, { title = "yank-system-ops" })
+        vim.notify(
+            'No valid archive found in clipboard',
+            vim.log.levels.WARN,
+            { title = 'yank-system-ops' }
+        )
     end
 end
 
@@ -705,7 +904,11 @@ function M.yank_relative_path()
     local relpath = vim.fn.fnamemodify(filename, ':.' .. cwd)
 
     vim.fn.setreg('+', relpath)
-    vim.notify('Yanked relative path', vim.log.levels.INFO, { title = 'yank-system-ops' })
+    vim.notify(
+        'Yanked relative path',
+        vim.log.levels.INFO,
+        { title = 'yank-system-ops' }
+    )
 end
 
 --- Yank absolute path of current file
@@ -715,7 +918,11 @@ function M.yank_absolute_path()
     local filename = vim.api.nvim_buf_get_name(bufnr)
 
     vim.fn.setreg('+', filename)
-    vim.notify('Yanked absolute path', vim.log.levels.INFO, { title = 'yank-system-ops' })
+    vim.notify(
+        'Yanked absolute path',
+        vim.log.levels.INFO,
+        { title = 'yank-system-ops' }
+    )
 end
 
 -- Explorer Functions ---------------------------------------------------------
@@ -736,7 +943,11 @@ function M.open_buffer_in_file_manager()
     end
 
     if not target or vim.fn.empty(target) == 1 then
-        vim.notify('No file or directory found', vim.log.levels.WARN, { title = 'yank-system-ops' })
+        vim.notify(
+            'No file or directory found',
+            vim.log.levels.WARN,
+            { title = 'yank-system-ops' }
+        )
         return
     end
 

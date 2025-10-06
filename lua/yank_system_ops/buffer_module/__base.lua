@@ -9,7 +9,7 @@ local Base = {}
 -- Abstract method. Must be implemented in subclass.
 -- @return table List of full file paths
 function Base.get_files()
-    local path = vim.fn.expand('%:p')
+    local path = vim.fn.expand '%:p'
     if path == '' or vim.fn.filereadable(path) == 0 then
         return nil
     end
@@ -20,10 +20,11 @@ end
 -- Abstract method. Must be implemented in subclass.
 -- @return string Path to active directory
 function Base.get_active_dir()
-    local path = vim.fn.expand('%:p')
+    local path = vim.fn.expand '%:p'
     local stat = vim.loop.fs_stat(path)
     if stat then
-        return stat.type == 'directory' and path or vim.fn.fnamemodify(path, ':h')
+        return stat.type == 'directory' and path
+            or vim.fn.fnamemodify(path, ':h')
     end
     return vim.fn.getcwd()
 end
