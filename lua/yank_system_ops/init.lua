@@ -610,12 +610,12 @@ local function __download_uri(uri, target_dir)
         return nil
     end
 
-    -- Extract filename from URI
+    -- Extract base filename from URI
     local filename = uri:match '.+/([^/]+)$' or 'downloaded_file'
     filename = filename:gsub('%?.*$', ''):gsub('#.*$', '')
     local url_ext = filename:match '%.([^.]+)$'
 
-    -- Temp path to download first
+    -- Temp file for download
     local tmpfile = vim.fn.tempname()
     local download_cmd
     if vim.fn.executable 'curl' == 1 then
@@ -645,7 +645,7 @@ local function __download_uri(uri, target_dir)
         return nil
     end
 
-    -- Step 1: Try Content-Type header
+    -- Step 1: Check MIME type
     local mime = ''
     if vim.fn.executable 'curl' == 1 then
         mime = vim.fn.system(
@@ -678,22 +678,22 @@ local function __download_uri(uri, target_dir)
         ['text/xml'] = 'xml',
         ['application/json'] = 'json',
         ['text/json'] = 'json',
+        ['image/svg+xml'] = 'svg', -- SVG support
     }
 
     local ext = mime_map[mime]
 
-    -- Step 2: Fallback to content sniffing / magic numbers
+    -- Step 2: Content sniffing / magic numbers
     if not ext then
         local f = io.open(tmpfile, 'rb')
         if f then
             local bytes = f:read(1024) or ''
             f:close()
 
+            -- Binary magic numbers
             local hex = bytes:gsub('.', function(c)
                 return string.format('%02X', c:byte())
             end)
-
-            -- Magic numbers for binaries
             local magic_map = {
                 ['89504E470D0A1A0A'] = 'png',
                 ['FFD8FF'] = 'jpg',
@@ -709,15 +709,16 @@ local function __download_uri(uri, target_dir)
                 end
             end
 
-            -- Text-based sniffing
+            -- Text sniffing
             if not ext then
-                if bytes:match '^%s*<%?xml' then
+                if bytes:match '^%s*<svg' then
+                    ext = 'svg'
+                elseif bytes:match '^%s*<%?xml' then
                     ext = 'xml'
                 elseif bytes:match '^%s*{' or bytes:match '^%s*%[' then
                     ext = 'json'
                 elseif
-                    bytes:match '^%s*<!DOCTYPE html>'
-                    or bytes:match '^%s*<html'
+                    bytes:match '^%s*<!DOCTYPE html>' or bytes:match '^%s*<html'
                 then
                     ext = 'html'
                 end
@@ -725,22 +726,29 @@ local function __download_uri(uri, target_dir)
         end
     end
 
-    -- Step 3: Fallback to URL extension if nothing else
+    -- Step 3: Fallback to URL extension
     if not ext and url_ext then
         ext = url_ext
     end
 
-    -- Step 4: Fallback default
+    -- Step 4: Default to bin
     if not ext then
         ext = 'bin'
     end
-    if not filename:match('%.' .. ext .. '$') then
-        filename = filename .. '.' .. ext
+
+    -- Step 5: Add timestamp only if filename is generic
+    local base_name = filename:gsub('%.' .. ext .. '$', '')
+
+    if base_name == 'downloaded_file' or base_name == '' then
+        local timestamp = os.date '%Y%m%d_%H%M%S'
+        filename = string.format('%s__%s.%s', base_name, timestamp, ext)
+    else
+        filename = base_name .. '.' .. ext
     end
 
     local final_path = target_dir .. '/' .. filename
 
-    -- Cross-device-safe copy from temp to target
+    -- Cross-device-safe copy
     local fsrc = io.open(tmpfile, 'rb')
     if not fsrc then
         vim.notify(
@@ -750,7 +758,6 @@ local function __download_uri(uri, target_dir)
         )
         return nil
     end
-
     local fdst = io.open(final_path, 'wb')
     if not fdst then
         fsrc:close()
@@ -761,7 +768,6 @@ local function __download_uri(uri, target_dir)
         )
         return nil
     end
-
     fdst:write(fsrc:read '*a')
     fsrc:close()
     fdst:close()
