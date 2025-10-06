@@ -200,9 +200,11 @@ which there are pending commits/changes._
     - `xcode-select --install` for swift command support
 - Linux:
     - Wayland:
-        - [wl-clipboard](https://github.com/bugaevc/wl-clipboard)
+        - [wl-clipboard](https://github.com/bugaevc/wl-clipboard) clipboard
+        manager
     - X11:
         - [xclip](https://github.com/astrand/xclip) or [xsel](https://github.com/kfish/xsel)
+        clipboard manager
 
 <br>
 
