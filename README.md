@@ -220,33 +220,33 @@ are planned to be supported.
 
 ### Buffer Type Support
 
-| Buffer Type | Supported |
-|-------------|-----------|
-| File        | ✅        |
-| Netrw       | ✅        |
-| Mini.files  | ✅        |
-| Oil         | ❌        |
+| Buffer Type | Supported | Notes                                                      |
+|-------------|-----------|------------------------------------------------------------|
+| default     | ✅        | Operates on the open file and it's directory               |
+| Netrw       | ✅        | Operates on all files and folders in the current directory |
+| Mini.files  | ✅        | Operates on all files and folders in the current directory |
+| Oil         | ❌        | Operates on all files and folders in the current directory |
 
 ### File Browser Support
 
-| File Browser           | Can Open Directory | Can Highlight File |
-|------------------------|--------------------|--------------------|
-| explorer.exe (Windows) | ⚠️                 | ✅                 |
-| ForkLift (MacOS)       | ⚠️                 | ✅                 |
-| Finder (MacOS)         | ⚠️                 | ✅                 |
-| cosmic-files           | ✅                 | ✅                 |
-| nautilus               | ⚠️                 | ✅                 |
-| nemo                   | ⚠️                 | ✅                 |
-| caja                   | ⚠️                 | ✅                 |
-| dolphin                | ⚠️                 | ✅                 |
-| spacefm                | ⚠️                 | ✅                 |
-| thunar                 | ⚠️                 | ❌                 |
-| pcmanfm                | ⚠️                 | ❌                 |
-| io.elementary.files    | ⚠️                 | ❌                 |
-| krusader               | ⚠️                 | ❌                 |
-| doublecmd              | ⚠️                 | ❌                 |
-| xdg-open               | ⚠️                 | ❌                 |
-| gio                    | ⚠️                 | ❌                 |
+| File Browser           | Can Open Directory |
+|------------------------|--------------------|
+| explorer.exe (Windows) | ⚠️                 |
+| ForkLift (MacOS)       | ⚠️                 |
+| Finder (MacOS)         | ⚠️                 |
+| cosmic-files           | ✅                 |
+| nautilus               | ⚠️                 |
+| nemo                   | ⚠️                 |
+| caja                   | ⚠️                 |
+| dolphin                | ⚠️                 |
+| spacefm                | ⚠️                 |
+| thunar                 | ⚠️                 |
+| pcmanfm                | ⚠️                 |
+| io.elementary.files    | ⚠️                 |
+| krusader               | ⚠️                 |
+| doublecmd              | ⚠️                 |
+| xdg-open (fallback)    | ⚠️                 |
+| gio (fallback)         | ⚠️                 |
 
 <br>
 
