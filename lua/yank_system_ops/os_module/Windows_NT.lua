@@ -50,6 +50,36 @@ function Windows.put_files_from_clipboard(target_dir)
         return false
     end
 
+    -- Step 1: Attempt to read clipboard text
+    local clip = vim.fn.getreg '+' or ''
+    clip = vim.trim(clip)
+
+    -- Step 2: Handle SVG content
+    if clip:match '^<svg' then
+        local timestamp = os.date '%Y%m%d_%H%M%S'
+        local svg_file =
+            string.format('%s\\clipboard_%s.svg', target_dir, timestamp)
+        local f = io.open(svg_file, 'w')
+        if f then
+            f:write(clip)
+            f:close()
+            vim.notify(
+                'SVG content saved to: ' .. svg_file,
+                vim.log.levels.INFO,
+                { title = 'yank-system-ops' }
+            )
+            return true
+        else
+            vim.notify(
+                'Failed to write SVG to: ' .. svg_file,
+                vim.log.levels.ERROR,
+                { title = 'yank-system-ops' }
+            )
+            return false
+        end
+    end
+
+    -- Step 3: Fallback to file-drop from Windows clipboard
     local ps_cmd = [[
         powershell -Command "
             Add-Type -AssemblyName System.Windows.Forms
