@@ -17,9 +17,20 @@ function M.get_files()
     end
 
     local items = {}
-    local scan = vim.fn.globpath(dir, '*', true, true)
-    for _, f in ipairs(scan) do
+
+    -- Get visible files/folders
+    local visible = vim.fn.globpath(dir, '*', true, true)
+    for _, f in ipairs(visible) do
         if vim.loop.fs_stat(f) then
+            table.insert(items, f)
+        end
+    end
+
+    -- Get hidden files/folders (starting with .)
+    local hidden = vim.fn.globpath(dir, '.*', true, true)
+    for _, f in ipairs(hidden) do
+        -- Skip '.' and '..' entries
+        if f:match("[^/%.]+") and vim.loop.fs_stat(f) then
             table.insert(items, f)
         end
     end
