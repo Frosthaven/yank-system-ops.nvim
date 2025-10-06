@@ -238,12 +238,41 @@ function Darwin.put_files_from_clipboard(target_dir)
         return false
     end
 
-    -- Resolve the Swift helper relative to this Lua file
+    -- Step 1: Check clipboard for SVG content
+    local clip = vim.fn.getreg '+' or ''
+    clip = vim.trim(clip)
+    if clip:match '^<svg' then
+        -- Add timestamp to filename
+        local timestamp = os.date '%Y%m%d_%H%M%S'
+        local svg_file =
+            string.format('%s/clipboard_%s.svg', target_dir, timestamp)
+
+        local f = io.open(svg_file, 'w')
+        if f then
+            f:write(clip)
+            f:close()
+            vim.notify(
+                'SVG content saved to: ' .. svg_file,
+                vim.log.levels.INFO,
+                { title = 'yank-system-ops' }
+            )
+            return true
+        else
+            vim.notify(
+                'Failed to write SVG to: ' .. svg_file,
+                vim.log.levels.ERROR,
+                { title = 'yank-system-ops' }
+            )
+            return false
+        end
+    end
+
+    -- Step 2: Call existing Swift helper for files
     local this_path = debug.getinfo(1, 'S').source
     if this_path:sub(1, 1) == '@' then
         this_path = this_path:sub(2)
     end
-    local plugin_root = vim.fn.fnamemodify(this_path, ':h:h:h:h') -- adjust depth as needed
+    local plugin_root = vim.fn.fnamemodify(this_path, ':h:h:h:h')
     local swift_file = plugin_root
         .. '/lua/yank_system_ops/os_module/Darwin_pastefiles.swift'
 
@@ -256,7 +285,6 @@ function Darwin.put_files_from_clipboard(target_dir)
         return false
     end
 
-    -- Build the command: swift <swift_file> <target_dir>
     local cmd = { 'bash', '-c', 'swift "$@"', 'dummy', swift_file, target_dir }
     local result = vim.fn.system(cmd)
 
@@ -269,7 +297,6 @@ function Darwin.put_files_from_clipboard(target_dir)
         return false
     end
 
-    -- Report success (Swift prints the message)
     vim.notify(
         result:gsub('\n$', ''),
         vim.log.levels.INFO,
