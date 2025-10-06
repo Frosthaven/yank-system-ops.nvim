@@ -202,7 +202,7 @@ which there are pending commits/changes._
 
 ## 📊 Support Matrix
 
-✅️ = Supported | ❌ = Not Supported | ⚠️ = Untested
+✅️ = Supported | ❌ = Not Yet Supported | ⚠️ = Untested
 
 `yank-system-ops.nvim` needs to interact with your operating system clipboard,
 cli tools, and active neovim buffers to provide its functionality. Below is a
