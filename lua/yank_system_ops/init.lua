@@ -443,16 +443,153 @@ function M.yank_files_to_clipboard()
     vim.notify("Files copied to system clipboard", vim.log.levels.INFO, { title = "yank-system-ops" })
 end
 
+--- Download a URI into the target directory
+-- @param uri string URL or FTP link
+-- @param target_dir string Directory to save the file
+-- @return boolean success
+--- Download a URI into the target directory with proper extension detection
+-- @param uri string URL or FTP link
+-- @param target_dir string Directory to save the file
+-- @return string|nil Path to downloaded file, or nil on failure
+local function __download_uri(uri, target_dir)
+    if not uri or uri == "" then
+        vim.notify("No URI provided to download", vim.log.levels.WARN, { title = "yank-system-ops" })
+        return nil
+    end
+
+    local filename = uri:match(".+/([^/]+)$") or "downloaded_file"
+    filename = filename:gsub("%?.*$", ""):gsub("#.*$", "")
+
+    -- If filename has no extension, try to detect from headers or content
+    local ext = filename:match("%.([^.]+)$")
+    if not ext then
+        -- Try Content-Type header
+        local mime
+        if vim.fn.executable("curl") == 1 then
+            mime = vim.fn.system(string.format('curl -sI "%s" | grep -i Content-Type | awk \'{print $2}\' | tr -d "\r"', uri))
+        elseif vim.fn.executable("wget") == 1 then
+            mime = vim.fn.system(string.format('wget --spider --server-response "%s" 2>&1 | grep -i Content-Type | awk \'{print $2}\' | tr -d "\r"', uri))
+        end
+        mime = vim.trim(mime or "")
+
+        local mime_map = {
+            ["image/png"] = "png",
+            ["image/jpeg"] = "jpg",
+            ["image/jpg"] = "jpg",
+            ["image/gif"] = "gif",
+            ["image/webp"] = "webp",
+            ["application/zip"] = "zip",
+            ["application/pdf"] = "pdf",
+        }
+
+        ext = mime_map[mime]
+        if not ext then
+            -- Fallback: fetch first bytes and detect via magic numbers
+            local tmpfile = vim.fn.tempname()
+            local cmd
+            if vim.fn.executable("curl") == 1 then
+                cmd = string.format('curl -sL -o "%s" "%s"', tmpfile, uri)
+            elseif vim.fn.executable("wget") == 1 then
+                cmd = string.format('wget -q -O "%s" "%s"', tmpfile, uri)
+            else
+                vim.notify("Neither curl nor wget is available", vim.log.levels.ERROR, { title = "yank-system-ops" })
+                return nil
+            end
+            vim.fn.system(cmd)
+
+            local f = io.open(tmpfile, "rb")
+            if f then
+                local bytes = f:read(8) or ""
+                f:close()
+                local hex = bytes:gsub('.', function(c) return string.format('%02X', c:byte()) end)
+                local magic_map = {
+                    ["89504E470D0A1A0A"] = "png",
+                    ["FFD8FF"] = "jpg",
+                    ["47494638"] = "gif",
+                    ["504B0304"] = "zip",
+                    ["25504446"] = "pdf",
+                    ["52494646"] = "webp",
+                }
+                for sig, mx_ext in pairs(magic_map) do
+                    if hex:find(sig, 1, true) then
+                        ext = mx_ext
+                        break
+                    end
+                end
+                os.remove(tmpfile)
+            end
+        end
+    end
+
+    if not ext then ext = "bin" end
+    if not filename:match("%." .. ext .. "$") then
+        filename = filename .. "." .. ext
+    end
+
+    local final_path = target_dir .. "/" .. filename
+    local download_cmd
+    if vim.fn.executable("curl") == 1 then
+        download_cmd = string.format('curl -fL -A "Mozilla/5.0" -o "%s" "%s"', final_path, uri)
+    elseif vim.fn.executable("wget") == 1 then
+        download_cmd = string.format('wget -O "%s" "%s"', final_path, uri)
+    else
+        vim.notify("Neither curl nor wget is available to download the URI", vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return nil
+    end
+
+    local result = vim.fn.system(download_cmd)
+    if vim.v.shell_error ~= 0 then
+        vim.notify("Download failed:\n" .. result, vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return nil
+    end
+
+    return final_path
+end
 
 --- Paste/put files from system clipboard into current buffer directory
+-- Supports local files, URLs, or images from clipboard
 -- @return nil
 function M.put_files_from_clipboard()
-    local _, target_dir = __get_buffer_context()
+    local ctx_items, target_dir = __get_buffer_context()
+    target_dir = target_dir or vim.fn.getcwd() -- ensure it's a string
+
     if not target_dir or vim.fn.isdirectory(target_dir) == 0 then
         vim.notify("Target directory not found", vim.log.levels.ERROR, { title = "yank-system-ops" })
         return
     end
 
+    local clip = vim.fn.getreg("+") or ""
+    clip = vim.trim(clip)
+
+    if clip == "" then
+        vim.notify("Clipboard is empty", vim.log.levels.WARN, { title = "yank-system-ops" })
+        return
+    end
+
+    -- Is it a URL we can curl/wget?
+    local is_url = clip:match("^https?://") or clip:match("^ftp://")
+    if is_url then
+        local ok = __download_uri(clip, target_dir)
+        if ok then
+            __refresh_buffer_view()
+            vim.notify("URL downloaded successfully into: " .. target_dir, vim.log.levels.INFO, { title = "yank-system-ops" })
+        else
+            vim.notify("Failed to download URL", vim.log.levels.ERROR, { title = "yank-system-ops" })
+        end
+        return
+    end
+
+    -- Is it an image in clipboard we can save?
+    if os_module.save_clipboard_image then
+        local img_path = os_module:save_clipboard_image(target_dir)
+        if img_path then
+            __refresh_buffer_view()
+            vim.notify("Image saved from clipboard: " .. img_path, vim.log.levels.INFO, { title = "yank-system-ops" })
+            return
+        end
+    end
+
+    -- Treat as local file paths
     local success = os_module.put_files_from_clipboard(target_dir)
     if success then
         __refresh_buffer_view()
@@ -461,7 +598,6 @@ function M.put_files_from_clipboard()
         vim.notify("No valid files found in clipboard", vim.log.levels.WARN, { title = "yank-system-ops" })
     end
 end
-
 
 --- Compress selected files into a .nvim.zip and copy to clipboard
 -- @return nil
@@ -482,10 +618,53 @@ function M.zip_files_to_clipboard()
     vim.notify("Compressed archive added to clipboard", vim.log.levels.INFO, { title = "yank-system-ops" })
 end
 
+--- Recursively extract an archive into a target directory
+-- Handles nested archives like .tar.gz, .tgz, .tar.bz2, .tar.xz
+-- @param archive_path string Full path to archive
+-- @param target_dir string Directory to extract into
+-- @return boolean success
+local function __extract_archive_recursive(archive_path, target_dir)
+    if vim.fn.filereadable(archive_path) == 0 then
+        vim.notify("Archive not found: " .. archive_path, vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return false
+    end
+
+    -- Record files before extraction
+    local before = vim.fn.glob(target_dir .. "/*", false, true)
+
+    -- Extract with 7z
+    local cmd = string.format('7z x -y "%s" -o"%s"', archive_path, target_dir)
+    local result = vim.fn.system(cmd)
+    if vim.v.shell_error ~= 0 then
+        vim.notify("Extraction failed:\n" .. result, vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return false
+    end
+
+    -- Record files after extraction
+    local after = vim.fn.glob(target_dir .. "/*", false, true)
+
+    -- Determine new files created by this extraction
+    local new_files = {}
+    local before_set = {}
+    for _, f in ipairs(before) do before_set[f] = true end
+    for _, f in ipairs(after) do
+        if not before_set[f] then table.insert(new_files, f) end
+    end
+
+    -- Recursively extract any new .tar files
+    for _, f in ipairs(new_files) do
+        if f:match("%.tar$") then
+            local ok = __extract_archive_recursive(f, target_dir)
+            os.remove(f)  -- remove intermediate .tar
+            if not ok then return false end
+        end
+    end
+
+    return true
+end
 
 --- Extract an archive from clipboard into the current buffer directory
--- Supports: .zip, .tar, .tar.gz, .tgz, .7z, .rar, and others supported by 7z
--- @return nil
+-- Supports nested archives like .tar.gz, .tar.bz2, .tgz, etc.
 function M.extract_files_from_clipboard()
     local _, target_dir = __get_buffer_context()
     local clip = vim.fn.getreg("+") or ""
@@ -494,13 +673,16 @@ function M.extract_files_from_clipboard()
     clip = vim.trim(clip):gsub("^file://", "")
     clip = vim.fn.fnamemodify(clip, ":p")
 
+    -- Attempt download if URL (optional helper can go here)
+    -- clip = maybe_download_url(clip, target_dir) 
+
     -- Ensure file exists
     if clip == "" or vim.fn.filereadable(clip) == 0 then
         vim.notify("Clipboard does not contain a valid archive file", vim.log.levels.WARN, { title = "yank-system-ops" })
         return
     end
 
-    -- Validate extension (basic heuristic)
+    -- Validate extension
     local ext = clip:match("%.([^.]+)$")
     if not ext or not ext:match("zip") and not ext:match("tar") and not ext:match("gz")
         and not ext:match("bz2") and not ext:match("xz") and not ext:match("7z") and not ext:match("rar") then
@@ -508,16 +690,12 @@ function M.extract_files_from_clipboard()
         return
     end
 
-    -- Extract using 7z (handles most formats)
-    local cmd = string.format('7z x -y "%s" -o"%s"', clip, target_dir)
-    local result = vim.fn.system(cmd)
-    if vim.v.shell_error ~= 0 then
-        vim.notify("Extraction failed:\n" .. result, vim.log.levels.ERROR, { title = "yank-system-ops" })
-        return
+    -- Recursively extract archives
+    local ok = __extract_archive_recursive(clip, target_dir)
+    if ok then
+        __refresh_buffer_view()
+        vim.notify("Archive extracted successfully into: " .. target_dir, vim.log.levels.INFO, { title = "yank-system-ops" })
     end
-
-    __refresh_buffer_view()
-    vim.notify("Archive extracted successfully into: " .. target_dir, vim.log.levels.INFO, { title = "yank-system-ops" })
 end
 
 --- Yank relative path of current file
