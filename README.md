@@ -243,6 +243,8 @@ are planned to be supported.
 Once you've installed the [⚡️ Requirements](#️-requirements), you can use the
 example below to configure `yank-system-ops.nvim`:
 
+### Lazy.nvim
+
 ```lua
 return {
     'frosthaven/yank-system-ops.nvim',
