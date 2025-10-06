@@ -46,7 +46,7 @@ directory. This also supports:
 
 - Putting URI(s) from the web (using `curl` or `wget`)
 
-    - _Example: https://example.com/image.png_
+    - _Example: `https://example.com/image.png`_
 
 - Putting Image data from the clipboard using your OS's clipboard manager
 
@@ -177,6 +177,22 @@ git-tracked repository and hosted on GitHub. This will also not copy URLs for
 which there are pending commits/changes._
 
 </details>
+
+---
+
+## ⚡️ Requirements
+
+- Neovim 0.10+
+- [Git](https://git-scm.com/) - for GitHub URL support
+- [Curl](https://curl.se/) or [Wget](https://www.gnu.org/software/wget/) - for
+  putting URI(s) from the web
+- Clipboard Management - for putting image data from the clipboard
+  - Windows: builtin
+  - MacOS: [pngpaste](https://github.com/jcsalterego/pngpaste) - for better
+    clipboard image support
+  - Linux:
+    - Wayland: [wl-clipboard](https://github.com/bugaevc/wl-clipboard)
+    - X11: [xclip](https://github.com/astrand/xclip) or [xsel](https://github.com/kfish/xsel)
 
 ---
 

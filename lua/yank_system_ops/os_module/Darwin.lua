@@ -116,6 +116,7 @@ function Darwin.open_file_browser(path)
 end
 
 --- Save image from macOS clipboard to target_dir
+-- Uses pngpaste if available, otherwise falls back to AppleScript
 -- @param target_dir string Directory to save the image
 -- @return string|nil Path to saved file or nil if no image found
 function Darwin:save_clipboard_image(target_dir)
@@ -132,7 +133,7 @@ function Darwin:save_clipboard_image(target_dir)
     if vim.fn.executable("pngpaste") == 1 then
         cmd = string.format('pngpaste "%s"', out_path)
     else
-        -- Fallback using osascript to save clipboard image
+        -- AppleScript fallback
         local script = [[
             set theFile to POSIX file "%s"
             try
@@ -147,7 +148,9 @@ function Darwin:save_clipboard_image(target_dir)
                 error errMsg
             end try
         ]]
-        cmd = string.format('osascript -e \'%s\'', script:format(out_path))
+        -- Escape quotes in path for AppleScript
+        local safe_path = out_path:gsub('"', '\\"')
+        cmd = string.format('osascript -e \'%s\'', script:format(safe_path))
     end
 
     local result = vim.fn.system(cmd)
