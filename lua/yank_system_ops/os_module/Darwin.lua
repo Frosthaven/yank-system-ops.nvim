@@ -36,7 +36,7 @@ function Darwin.add_files_to_clipboard(files)
 
     local plugin_root = get_plugin_root()
     local swift_file = plugin_root
-        .. '/lua/yank_system_ops/os_module/Darwin_copyfiles.swift'
+        .. '/lua/yank_system_ops/os_module/Darwin/Darwin_copyfiles.swift'
     if not vim.loop.fs_stat(swift_file) then
         vim.notify(
             'Swift file not found: ' .. swift_file,
@@ -177,7 +177,7 @@ function Darwin:extract_files_from_clipboard(target_dir)
     end
     local plugin_root = vim.fn.fnamemodify(this_path, ':h:h:h:h') -- adjust depth as needed
     local swift_file = plugin_root
-        .. '/lua/yank_system_ops/os_module/Darwin_extractarchive.swift'
+        .. '/lua/yank_system_ops/os_module/Darwin/Darwin_extractarchive.swift'
 
     if not vim.loop.fs_stat(swift_file) then
         vim.notify(
@@ -269,7 +269,7 @@ function Darwin.put_files_from_clipboard(target_dir)
     end
     local plugin_root = vim.fn.fnamemodify(this_path, ':h:h:h:h')
     local swift_file = plugin_root
-        .. '/lua/yank_system_ops/os_module/Darwin_pastefiles.swift'
+        .. '/lua/yank_system_ops/os_module/Darwin/Darwin_pastefiles.swift'
 
     if not vim.loop.fs_stat(swift_file) then
         vim.notify(
