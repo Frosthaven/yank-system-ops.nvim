@@ -282,7 +282,7 @@ return {
             end, desc = 'Extract clipboard file here',
             mode = { 'n', 'v' }
         },
-        -- 📂 yank path info --------------------------------------------------
+        -- 📂 yank file path --------------------------------------------------
         {
             '<leader>yr', function()
                 require('yank_system_ops').yank_relative_path()
