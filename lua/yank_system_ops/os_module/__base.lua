@@ -9,9 +9,9 @@ local Base = {}
 function Base.add_files_to_clipboard(files)
     files = files or {}
     vim.notify(
-        "add_files_to_clipboard not implemented for this OS",
+        'add_files_to_clipboard not implemented for this OS',
         vim.log.levels.WARN,
-        { title = "yank-system-ops" }
+        { title = 'yank-system-ops' }
     )
 end
 
@@ -19,11 +19,11 @@ end
 -- Abstract method. Must be implemented in subclass.
 -- @param target_dir string Absolute path to target directory
 function Base.put_files_from_clipboard(target_dir)
-    target_dir = target_dir or ""
+    target_dir = target_dir or ''
     vim.notify(
-        "put_files_from_clipboard not implemented for this OS",
+        'put_files_from_clipboard not implemented for this OS',
         vim.log.levels.WARN,
-        { title = "yank-system-ops" }
+        { title = 'yank-system-ops' }
     )
 end
 
@@ -32,11 +32,11 @@ end
 -- @param target_dir string Absolute path
 -- @return table List of extracted file paths or nil on failure
 function Base:extract_files_from_clipboard(target_dir)
-    target_dir = target_dir or ""
+    target_dir = target_dir or ''
     vim.notify(
-        "extract_files_from_clipboard not implemented for this OS",
+        'extract_files_from_clipboard not implemented for this OS',
         vim.log.levels.WARN,
-        { title = "yank-system-ops" }
+        { title = 'yank-system-ops' }
     )
     return nil
 end
@@ -45,11 +45,11 @@ end
 -- Abstract method. Must be implemented in subclass.
 -- @param path string Absolute path to file or directory
 function Base.open_file_browser(path)
-    path = path or ""
+    path = path or ''
     vim.notify(
-        "open_file_browser not implemented for this OS",
+        'open_file_browser not implemented for this OS',
         vim.log.levels.WARN,
-        { title = "yank-system-ops" }
+        { title = 'yank-system-ops' }
     )
 end
 
@@ -58,9 +58,9 @@ end
 -- @return boolean True if clipboard has image data, false otherwise
 function Base.clipboard_has_image()
     vim.notify(
-        "clipboard_has_image not implemented for this OS",
+        'clipboard_has_image not implemented for this OS',
         vim.log.levels.WARN,
-        { title = "yank-system-ops" }
+        { title = 'yank-system-ops' }
     )
     return false
 end
@@ -70,9 +70,9 @@ end
 -- @return string|nil Path to saved image or nil if unsupported
 function Base:save_clipboard_image(target_dir)
     vim.notify(
-        "save_clipboard_image not implemented for this OS",
+        'save_clipboard_image not implemented for this OS',
         vim.log.levels.WARN,
-        { title = "yank-system-ops" }
+        { title = 'yank-system-ops' }
     )
     return nil
 end
@@ -87,4 +87,3 @@ function Base:extend(subclass)
 end
 
 return Base
-

@@ -1,10 +1,10 @@
 --- Minifiles buffer module for yank_system_ops
 -- Implements the buffer interface for mini.files
 -- @module minifiles
-local Base = require('yank_system_ops.buffer_module.__base')
+local Base = require 'yank_system_ops.buffer_module.__base'
 local M = Base:extend()
 
-local minifile = require('mini.files')
+local minifile = require 'mini.files'
 
 --- Get list of files in the current buffer
 -- Returns all files in the directory if buffer points to a directory,
@@ -30,7 +30,7 @@ function M.get_files()
     local hidden = vim.fn.globpath(dir, '.*', true, true)
     for _, f in ipairs(hidden) do
         -- Skip '.' and '..' entries
-        if f:match("[^/%.]+") and vim.loop.fs_stat(f) then
+        if f:match '[^/%.]+' and vim.loop.fs_stat(f) then
             table.insert(items, f)
         end
     end
@@ -45,7 +45,8 @@ function M.get_active_dir()
     local path = vim.fn.expand('%:p'):gsub('^minifiles://%d+//', '/')
     local stat = vim.loop.fs_stat(path)
     if stat then
-        return stat.type == 'directory' and path or vim.fn.fnamemodify(path, ':h')
+        return stat.type == 'directory' and path
+            or vim.fn.fnamemodify(path, ':h')
     end
     return nil
 end
