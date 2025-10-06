@@ -184,11 +184,11 @@ which there are pending commits/changes._
 
 - Neovim 0.10+
 - [Git](https://git-scm.com/) - for GitHub URL support
-- [Curl](https://curl.se/) or [Wget](https://www.gnu.org/software/wget/) - for
+- [Curl](https://curl.se/) or [Wget](https://www.gnu.org/software/wget/) for
   putting URI(s) from the web
-- Clipboard Management - for putting image data from the clipboard
+- Clipboard Management
   - Windows: builtin
-  - MacOS: [pngpaste](https://github.com/jcsalterego/pngpaste) - for better
+  - MacOS: builtin or [pngpaste](https://github.com/jcsalterego/pngpaste) for better
     clipboard image support
   - Linux:
     - Wayland: [wl-clipboard](https://github.com/bugaevc/wl-clipboard)
@@ -207,11 +207,12 @@ are planned to be supported.
 
 ### Operating System Support
 
-| Operating System | Write Archive (Path Text) | Write Archive (URI) | Read Archive (Path Text) | Read Archive (URI) | Write File (URI)    | Read File (URI)    | Open in File Explorer |
-|------------------|---------------------------|---------------------|--------------------------|--------------------|---------------------|--------------------|-----------------------|
-| Windows          | ⚠️                        | ⚠️                  | ⚠️                       | ❌                 | ⚠️                  | ❌                 | ⚠️                    |
-| MacOS            | ✅                        | ✅                  | ✅                       | ❌                 | ✅                  | ❌                 | ✅                    |
-| Linux            | ✅                        | ✅                  | ✅                       | ❌                 | ✅                  | ❌                 | ✅                    |
+| Operating System | Yank Files | Put Files | Zip Files | Extract Files | Put URI | Put Image Data | Open in File Browser |
+|------------------|------------|-----------|-----------|---------------|---------|----------------|----------------------|
+| Windows          | ⚠️         | ⚠️        | ⚠️        | ⚠️            | ⚠️      | ⚠️             | ⚠️                   |
+| MacOS            | ⚠️         | ⚠️        | ⚠️        | ⚠️            | ⚠️      | ⚠️             | ⚠️                   | 
+| Linux (Wayland)  | ✅         | ✅        | ✅        | ✅            | ✅      | ✅             | ✅                   |
+| Linux (X11)      | ⚠️         | ⚠️        | ⚠️        | ⚠️            | ⚠️      | ⚠️             | ⚠️                   |
 
 ### Buffer Type Support
 
@@ -221,6 +222,27 @@ are planned to be supported.
 | Netrw       | ✅        |
 | Mini.files  | ✅        |
 | Oil         | ❌        |
+
+### File Browser Support
+
+| File Browser           | Can Open Directory | Can Highlight File |
+|------------------------|--------------------|--------------------|
+| explorer.exe (Windows) | ⚠️                 | ✅                 |
+| ForkLift (MacOS)       | ⚠️                 | ✅                 |
+| Finder (MacOS)         | ⚠️                 | ✅                 |
+| cosmic-files           | ✅                 | ✅                 |
+| nautilus               | ⚠️                 | ✅                 |
+| nemo                   | ⚠️                 | ✅                 |
+| caja                   | ⚠️                 | ✅                 |
+| dolphin                | ⚠️                 | ✅                 |
+| spacefm                | ⚠️                 | ✅                 |
+| thunar                 | ⚠️                 | ❌                 |
+| pcmanfm                | ⚠️                 | ❌                 |
+| io.elementary.files    | ⚠️                 | ❌                 |
+| krusader               | ⚠️                 | ❌                 |
+| doublecmd              | ⚠️                 | ❌                 |
+| xdg-open               | ⚠️                 | ❌                 |
+| gio                    | ⚠️                 | ❌                 |
 
 ---
 
