@@ -229,24 +229,24 @@ are planned to be supported.
 
 ### File Browser Support
 
-| File Browser           | Can Open Directory | Can Highlight File |
-|------------------------|--------------------|--------------------|
-| explorer.exe (Windows) | ⚠️                 | ✅                 |
-| ForkLift (MacOS)       | ⚠️                 | ✅                 |
-| Finder (MacOS)         | ⚠️                 | ✅                 |
-| cosmic-files           | ✅                 | ✅                 |
-| nautilus               | ⚠️                 | ✅                 |
-| nemo                   | ⚠️                 | ✅                 |
-| caja                   | ⚠️                 | ✅                 |
-| dolphin                | ⚠️                 | ✅                 |
-| spacefm                | ⚠️                 | ✅                 |
-| thunar                 | ⚠️                 | ❌                 |
-| pcmanfm                | ⚠️                 | ❌                 |
-| io.elementary.files    | ⚠️                 | ❌                 |
-| krusader               | ⚠️                 | ❌                 |
-| doublecmd              | ⚠️                 | ❌                 |
-| xdg-open               | ⚠️                 | ❌                 |
-| gio                    | ⚠️                 | ❌                 |
+| File Browser           | Can Open Directory |
+|------------------------|--------------------|
+| explorer.exe (Windows) | ⚠️                 |
+| ForkLift (MacOS)       | ⚠️                 |
+| Finder (MacOS)         | ⚠️                 |
+| cosmic-files           | ✅                 |
+| nautilus               | ⚠️                 |
+| nemo                   | ⚠️                 |
+| caja                   | ⚠️                 |
+| dolphin                | ⚠️                 |
+| spacefm                | ⚠️                 |
+| thunar                 | ⚠️                 |
+| pcmanfm                | ⚠️                 |
+| io.elementary.files    | ⚠️                 |
+| krusader               | ⚠️                 |
+| doublecmd              | ⚠️                 |
+| xdg-open (fallback)    | ⚠️                 |
+| gio (fallback)         | ⚠️                 |
 
 <br>
 
