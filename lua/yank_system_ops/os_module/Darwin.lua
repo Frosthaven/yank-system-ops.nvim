@@ -59,6 +59,107 @@ function Darwin.add_files_to_clipboard(files)
     return true
 end
 
+--- Recursively extract an archive into a target directory on Darwin
+-- Handles nested archives like .tar inside .zip
+-- @param archive_path string Full path to archive
+-- @param target_dir string Directory to extract into
+-- @return boolean success
+local function extract_archive_recursive(archive_path, target_dir, remove_original)
+    remove_original = remove_original ~= false -- default: remove original after extraction
+
+    if not archive_path or vim.fn.filereadable(archive_path) == 0 then
+        vim.notify("Archive not found: " .. tostring(archive_path), vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return false
+    end
+
+    -- Record files before extraction
+    local before = vim.fn.glob(target_dir .. "/*", false, true)
+
+    -- Extract archive with 7z
+    local cmd = string.format('7z x -y "%s" -o"%s"', archive_path, target_dir)
+    local result = vim.fn.system(cmd)
+    if vim.v.shell_error ~= 0 then
+        vim.notify("Extraction failed:\n" .. result, vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return false
+    end
+
+    -- Record files after extraction
+    local after = vim.fn.glob(target_dir .. "/*", false, true)
+
+    -- Determine new files created by this extraction
+    local new_files = {}
+    local before_set = {}
+    for _, f in ipairs(before) do before_set[f] = true end
+    for _, f in ipairs(after) do
+        if not before_set[f] then
+            table.insert(new_files, f)
+        end
+    end
+
+    -- Recursively extract any nested archives
+    for _, f in ipairs(new_files) do
+        if f:match("%.tar$") or f:match("%.tgz$") or f:match("%.tar%.gz$") or f:match("%.tar%.bz2$") or f:match("%.tar%.xz$") then
+            local ok = extract_archive_recursive(f, target_dir)
+            os.remove(f)  -- remove nested archive
+            if not ok then return false end
+        end
+    end
+
+    -- Remove the original archive if desired
+    if remove_original then
+        os.remove(archive_path)
+    end
+
+    return true
+end
+
+--- Extract archive from clipboard on macOS using Swift helper
+-- @param target_dir string Directory to extract into
+-- @return boolean success
+function Darwin:extract_files_from_clipboard(target_dir)
+    if not target_dir or target_dir == "" then
+        vim.notify("No target directory specified", vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return false
+    end
+
+    if vim.fn.isdirectory(target_dir) == 0 then
+        vim.notify("Target directory not found: " .. target_dir, vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return false
+    end
+
+    -- Resolve the Swift helper relative to this Lua file
+    local this_path = debug.getinfo(1, "S").source
+    if this_path:sub(1,1) == "@" then
+        this_path = this_path:sub(2)
+    end
+    local plugin_root = vim.fn.fnamemodify(this_path, ":h:h:h:h") -- adjust depth as needed
+    local swift_file = plugin_root .. "/lua/yank_system_ops/os_module/Darwin_extractarchive.swift"
+
+    if not vim.loop.fs_stat(swift_file) then
+        vim.notify("Swift file not found: " .. swift_file, vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return false
+    end
+
+    -- Build the command: swift <swift_file> <target_dir>
+    local cmd = { "bash", "-c", "swift \"$@\"", "dummy", swift_file, target_dir }
+    local result = vim.fn.system(cmd)
+
+    if vim.v.shell_error ~= 0 then
+        vim.notify("Failed to extract archive from clipboard:\n" .. result, vim.log.levels.ERROR, { title = "yank-system-ops" })
+        return false
+    end
+
+    -- Swift prints the path of the archive it saved; now recursively extract
+    local archive_path = vim.fn.trim(result)
+    local ok = extract_archive_recursive(archive_path, target_dir)
+    if ok then
+        vim.notify("Archive extracted successfully into: " .. target_dir, vim.log.levels.INFO, { title = "yank-system-ops" })
+        return true
+    else
+        return false
+    end
+end
+
 --- Put files from clipboard into target directory using Swift helper
 -- @param target_dir string Absolute path
 -- @return boolean True on success, false on failure
