@@ -52,7 +52,11 @@ end
 
 --- Refresh the view for the buffer
 function M.refresh_view()
-    minifile.open()
+    local dir = M.get_active_dir()
+    if dir then
+        -- Open mini.files at the current directory, reusing the existing buffer
+        minifile.open(dir)
+    end
 end
 
 return M
