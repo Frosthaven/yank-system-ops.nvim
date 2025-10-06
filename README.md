@@ -190,13 +190,17 @@ which there are pending commits/changes._
 - [Git](https://git-scm.com/) - for GitHub URL support
 - [Curl](https://curl.se/) or [Wget](https://www.gnu.org/software/wget/) for
   putting URI(s) from the web
-- Clipboard Management
-  - Windows: builtin
-  - MacOS: builtin or [pngpaste](https://github.com/jcsalterego/pngpaste) for better
-    clipboard image support
-  - Linux:
-    - Wayland: [wl-clipboard](https://github.com/bugaevc/wl-clipboard)
-    - X11: [xclip](https://github.com/astrand/xclip) or [xsel](https://github.com/kfish/xsel)
+- Windows:
+    - tbd
+- MacOS: 
+    - [pngpaste](https://github.com/jcsalterego/pngpaste) for better clipboard
+      image support
+    - `xcode-select --install` for swift command support
+- Linux:
+    - Wayland:
+        - [wl-clipboard](https://github.com/bugaevc/wl-clipboard)
+    - X11:
+        - [xclip](https://github.com/astrand/xclip) or [xsel](https://github.com/kfish/xsel)
 
 <br>
 
