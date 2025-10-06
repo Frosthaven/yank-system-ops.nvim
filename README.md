@@ -233,7 +233,7 @@ are planned to be supported.
 |-------------|-----------|------------------------------------------------------------|
 | default     | ✅        | Operates on the open file and it's directory               |
 | Netrw       | ✅        | Operates on all files and folders in the current directory |
-| Mini.files  | ✅        | Operates on all files and folders in the current directory. Will re-open at the target directory after put actions. |
+| Mini.files  | ✅        | Operates on all files and folders in the current directory. Will re-open at the target directory after put and extract actions. |
 | Oil         | ✅        | Operates on all files and folders in the current directory |
 
 <br>
