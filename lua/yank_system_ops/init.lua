@@ -77,6 +77,9 @@ function M.setup(opts)
     local file_manager = require 'yank_system_ops.file_manager'
     local archive = require 'yank_system_ops.archive'
 
+    -- Exposed Features -------------------------------------------------------
+    ---------------------------------------------------------------------------
+
     -- 🧷 yank & put file(s) ----------------------------------------
 
     M.yank_files_to_clipboard = function()
