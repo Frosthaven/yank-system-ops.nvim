@@ -247,6 +247,7 @@ example below to configure `yank-system-ops.nvim`:
 return {
     'frosthaven/yank-system-ops.nvim',
     enabled = true,
+    lazy = false, -- currently does not support lazy loading
     opts = {
         storage_path = vim.fn.expand '~/Downloads', -- path to store archives
         files_to_keep = 3, -- automatically delete older *.nvim.zip archives
