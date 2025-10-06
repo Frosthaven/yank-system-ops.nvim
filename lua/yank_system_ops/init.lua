@@ -92,33 +92,10 @@ local function get_buffer_module(bufnr)
     return mod
 end
 
--- Flash Highlight Helper -----------------------------------------------------
+-- Core Modules ---------------------------------------------------------------
 -------------------------------------------------------------------------------
 
---- Namespace used for flash highlights
--- @number
-local ns = vim.api.nvim_create_namespace 'yank_system_ops_yank_flash'
-
---- Flash-highlight lines in a buffer
--- @param bufnr number Buffer handle
--- @param start_line number Start line (0-indexed)
--- @param end_line number End line (0-indexed)
-function M.flash_highlight(bufnr, start_line, end_line)
-    local hl_group = 'IncSearch'
-    local duration = 200 -- ms
-
-    for l = start_line, end_line do
-        vim.api.nvim_buf_set_extmark(bufnr, ns, l, 0, {
-            end_line = l + 1,
-            hl_group = hl_group,
-            hl_eol = true,
-        })
-    end
-
-    vim.defer_fn(function()
-        vim.api.nvim_buf_clear_namespace(bufnr, ns, start_line, end_line + 1)
-    end, duration)
-end
+local ui = require 'yank_system_ops.ui'
 
 -- Yank Functions -------------------------------------------------------------
 -------------------------------------------------------------------------------
@@ -225,7 +202,7 @@ function M.yank_github_url()
         'nx',
         false
     )
-    M.flash_highlight(bufnr, start_line - 1, end_line - 1)
+    ui.flash_highlight(bufnr, start_line - 1, end_line - 1)
 
     vim.notify(
         'Yanked GitHub URL',
@@ -329,7 +306,7 @@ function M.yank_diagnostics()
         return
     end
 
-    M.flash_highlight(bufnr, start_line, end_line)
+    ui.flash_highlight(bufnr, start_line, end_line)
     vim.notify(
         'Yanked diagnostic code block',
         vim.log.levels.INFO,
@@ -384,7 +361,7 @@ function M.yank_codeblock()
         return
     end
 
-    M.flash_highlight(bufnr, start_line - 1, end_line - 1)
+    ui.flash_highlight(bufnr, start_line - 1, end_line - 1)
     vim.notify(
         'Yanked code block',
         vim.log.levels.INFO,
