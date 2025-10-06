@@ -232,8 +232,8 @@ are planned to be supported.
 | File Browser           | Can Open Directory |
 |------------------------|--------------------|
 | explorer.exe (Windows) | ⚠️                 |
-| ForkLift (MacOS)       | ⚠️                 |
-| Finder (MacOS)         | ⚠️                 |
+| ForkLift (MacOS)       | ✅                 |
+| Finder (MacOS)         | ✅                 |
 | cosmic-files           | ✅                 |
 | nautilus               | ⚠️                 |
 | nemo                   | ⚠️                 |
