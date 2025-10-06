@@ -9,16 +9,14 @@ local function shell_quote(str)
     return "'" .. str:gsub("'", "'\\''") .. "'"
 end
 
---- Find repo root by looking for .git folder upwards
-local function find_repo_root(start_path)
-    local path = vim.fn.fnamemodify(start_path or vim.fn.expand("<sfile>"), ":p") -- absolute path of current file
-    while path ~= "/" do
-        if vim.fn.isdirectory(path .. "/.git") == 1 then
-            return path
-        end
-        path = vim.fn.fnamemodify(path, ":h") -- go up
+local function get_plugin_root()
+    -- Resolve to absolute path of this Lua file
+    local source = debug.getinfo(1, "S").source
+    if source:sub(1, 1) == "@" then
+        source = source:sub(2)
     end
-    return nil
+    -- Move up to the plugin root
+    return vim.fn.fnamemodify(source, ":h:h:h:h") -- adjust depth as needed
 end
 
 --- Copy a single file (or multiple files) to macOS clipboard using Swift
@@ -32,13 +30,8 @@ function Darwin.add_files_to_clipboard(files)
         return false
     end
 
-    local repo_root = find_repo_root()  -- automatically uses <sfile>
-    if not repo_root then
-        vim.notify("Could not find repo root with .git", vim.log.levels.ERROR, { title = "yank-system-ops" })
-        return false
-    end
-
-    local swift_file = repo_root .. "bin/copyfiles.swift"
+    local plugin_root = get_plugin_root()
+    local swift_file = plugin_root .. "/lua/yank_system_ops/os_module/Darwin_copyfiles.swift"
     if not vim.loop.fs_stat(swift_file) then
         vim.notify("Swift file not found: " .. swift_file, vim.log.levels.ERROR, { title = "yank-system-ops" })
         return false
@@ -66,54 +59,44 @@ function Darwin.add_files_to_clipboard(files)
     return true
 end
 
---- Put files from clipboard into target directory
+--- Put files from clipboard into target directory using Swift helper
 -- @param target_dir string Absolute path
--- @return boolean success
+-- @return boolean True on success, false on failure
 function Darwin.put_files_from_clipboard(target_dir)
     if not target_dir or target_dir == "" then
         vim.notify("No target directory specified", vim.log.levels.ERROR, { title = "yank-system-ops" })
         return false
     end
 
-    local repo_root = find_repo_root()
-    if not repo_root then
-        vim.notify("Could not find repo root with .git", vim.log.levels.ERROR, { title = "yank-system-ops" })
+    if vim.fn.isdirectory(target_dir) == 0 then
+        vim.notify("Target directory not found: " .. target_dir, vim.log.levels.ERROR, { title = "yank-system-ops" })
         return false
     end
 
-    local swift_cli = repo_root .. "/bin/copyfiles.swift"
-    if vim.loop.fs_stat(swift_cli) == nil then
-        vim.notify("Swift file not found: " .. swift_cli, vim.log.levels.ERROR, { title = "yank-system-ops" })
+    -- Resolve the Swift helper relative to this Lua file
+    local this_path = debug.getinfo(1, "S").source
+    if this_path:sub(1,1) == "@" then
+        this_path = this_path:sub(2)
+    end
+    local plugin_root = vim.fn.fnamemodify(this_path, ":h:h:h:h") -- adjust depth as needed
+    local swift_file = plugin_root .. "/lua/yank_system_ops/os_module/Darwin_pastefiles.swift"
+
+    if not vim.loop.fs_stat(swift_file) then
+        vim.notify("Swift file not found: " .. swift_file, vim.log.levels.ERROR, { title = "yank-system-ops" })
         return false
     end
 
-    -- Use Swift CLI to get file paths from clipboard
-    local cmd = "bash -c " .. shell_quote("swift " .. shell_quote(swift_cli))
+    -- Build the command: swift <swift_file> <target_dir>
+    local cmd = { "bash", "-c", "swift \"$@\"", "dummy", swift_file, target_dir }
     local result = vim.fn.system(cmd)
 
-    if vim.v.shell_error ~= 0 or result == "" then
-        vim.notify("Clipboard is empty or unreadable", vim.log.levels.WARN, { title = "yank-system-ops" })
+    if vim.v.shell_error ~= 0 then
+        vim.notify("Failed to paste from clipboard:\n" .. result, vim.log.levels.ERROR, { title = "yank-system-ops" })
         return false
     end
 
-    local files = {}
-    for line in result:gmatch("[^\r\n]+") do
-        local path = vim.fn.fnamemodify(line, ":p")
-        if vim.loop.fs_stat(path) then
-            table.insert(files, path)
-        end
-    end
-
-    if #files == 0 then
-        vim.notify("No valid file paths found in clipboard", vim.log.levels.WARN, { title = "yank-system-ops" })
-        return false
-    end
-
-    for _, f in ipairs(files) do
-        local cp_cmd = "bash -c " .. shell_quote("cp -R " .. shell_quote(f) .. " " .. shell_quote(target_dir .. "/"))
-        vim.fn.system(cp_cmd)
-    end
-
+    -- Report success (Swift prints the message)
+    vim.notify(result:gsub("\n$", ""), vim.log.levels.INFO, { title = "yank-system-ops" })
     return true
 end
 

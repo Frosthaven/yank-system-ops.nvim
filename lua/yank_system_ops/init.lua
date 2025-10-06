@@ -581,11 +581,6 @@ function M.put_files_from_clipboard()
     local clip = vim.fn.getreg("+") or ""
     clip = vim.trim(clip)
 
-    if clip == "" then
-        vim.notify("Clipboard is empty", vim.log.levels.WARN, { title = "yank-system-ops" })
-        return
-    end
-
     -- Is it a URL we can curl/wget?
     local is_url = clip:match("^https?://") or clip:match("^ftp://")
     if is_url then
