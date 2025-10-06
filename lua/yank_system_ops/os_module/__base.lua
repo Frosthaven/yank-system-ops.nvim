@@ -69,6 +69,7 @@ end
 -- @param target_dir string Directory to save image
 -- @return string|nil Path to saved image or nil if unsupported
 function Base:save_clipboard_image(target_dir)
+    target_dir = target_dir or ''
     vim.notify(
         'save_clipboard_image not implemented for this OS',
         vim.log.levels.WARN,
