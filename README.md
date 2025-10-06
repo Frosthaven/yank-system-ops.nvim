@@ -12,6 +12,8 @@
   - [Buffer Type Support](#buffer-type-support)
 - [🚀 Usage](#-usage)
 
+<br>
+
 ## ✨ Features
 
 <details>
@@ -176,6 +178,8 @@ which there are pending commits/changes._
 
 </details>
 
+<br>
+
 ## ⚡️ Requirements
 
 - Neovim 0.10+
@@ -189,6 +193,8 @@ which there are pending commits/changes._
   - Linux:
     - Wayland: [wl-clipboard](https://github.com/bugaevc/wl-clipboard)
     - X11: [xclip](https://github.com/astrand/xclip) or [xsel](https://github.com/kfish/xsel)
+
+<br>
 
 ## 📊 Support Matrix
 
@@ -237,6 +243,8 @@ are planned to be supported.
 | doublecmd              | ⚠️                 | ❌                 |
 | xdg-open               | ⚠️                 | ❌                 |
 | gio                    | ⚠️                 | ❌                 |
+
+<br>
 
 ## 🚀 Usage
 
