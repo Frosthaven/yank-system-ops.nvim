@@ -188,7 +188,7 @@ which there are pending commits/changes._
 
 - All Platforms:
     - Neovim 0.10+
-    - [Git](https://git-scm.com/) - for GitHub URL support
+    - [Git](https://git-scm.com/) - for GitHub URL and contextual archive naming support
     - [Curl](https://curl.se/) or [Wget](https://www.gnu.org/software/wget/) for
       putting URI(s) from the web
 
