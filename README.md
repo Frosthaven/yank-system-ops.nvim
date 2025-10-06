@@ -5,6 +5,9 @@
 
 ### Share file(s) between other folders, projects, and applications
 
+Have you ever wanted to quickly copy and paste files between the web, file
+explorers, chat apps, email clients, and your neovim projects? Now you can!
+
 - [✨ Features](#-features)
 - [⚡️ Requirements](#️-requirements)
 - [📊 Support Matrix](#-support-matrix)
