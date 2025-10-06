@@ -58,7 +58,7 @@ directory. This also supports:
 </details>
 
 <details>
-<summary><strong>📥 Create & Extract Archives</strong></summary>
+<summary><strong>📥 Yank & Extract Archives</strong></summary>
 
 ```lua
 {
@@ -116,23 +116,6 @@ Yank the full absolute path to the current supported buffer's file(s).
 </details>
 
 <details>
-<summary><strong>🌐 Open in File Browser</strong></summary>
-
-```lua
-{
-    '<leader>yo', function()
-        require('yank_system_ops').open_buffer_in_file_manager()
-    end, desc = 'Open current buffer in system file browser',
-    mode = { 'n', 'v' }
-},
-```
-
-Open the current supported buffer's file(s) in your system's file explorer. The
-explorer used depends on your OS.
-
-</details>
-
-<details>
 <summary><strong>🪄 Yank Markdown Codeblocks</strong></summary>
 
 ```lua
@@ -178,6 +161,23 @@ Yank a GitHub URL for the current line(s) in the current supported buffer. This
 respects the current branch. _Note: This only works for files that are part of a
 git-tracked repository and hosted on GitHub. This will also not copy URLs for
 which there are pending commits/changes._
+
+</details>
+
+<details>
+<summary><strong>🌐 Open in File Browser</strong></summary>
+
+```lua
+{
+    '<leader>yo', function()
+        require('yank_system_ops').open_buffer_in_file_manager()
+    end, desc = 'Open current buffer in system file browser',
+    mode = { 'n', 'v' }
+},
+```
+
+Open the current supported buffer's file(s) in your system's file explorer. The
+explorer used depends on your OS.
 
 </details>
 
@@ -266,7 +266,7 @@ return {
             end, desc = 'Put clipboard file(s) here',
             mode = { 'n', 'v' }
         },
-        -- 📥 create & extract archives ---------------------------------------
+        -- 📥 yank & extract archives -----------------------------------------
         {
             '<leader>yz', function()
                 require('yank_system_ops').zip_files_to_clipboard()
@@ -292,15 +292,6 @@ return {
             end, desc = 'Yank absolute path to file(s)',
             mode = { 'n', 'v' }
         },
-
-        -- 🌐 open in file browser --------------------------------------------
-        {
-            '<leader>yo', function()
-                require('yank_system_ops').open_buffer_in_file_manager()
-            end, desc = 'Open current buffer in system file browser',
-            mode = { 'n', 'v' }
-        },
-
         -- 🪄 yank markdown codeblocks ----------------------------------------
         {
             '<leader>ymc', function()
@@ -314,7 +305,6 @@ return {
             end, desc = 'Yank line(s) as markdown code block w/ diagnostics',
             mode = { 'n', 'v' }
         },
-
         -- 🧭 yank gitHub url -------------------------------------------------
         {
             '<leader>ygl', function()
@@ -322,6 +312,14 @@ return {
             end, desc = 'Yank current line(s) as GitHub URL',
             mode = { 'n', 'v' }
         },
+        -- 🌐 open in file browser --------------------------------------------
+        {
+            '<leader>yo', function()
+                require('yank_system_ops').open_buffer_in_file_manager()
+            end, desc = 'Open current buffer in system file browser',
+            mode = { 'n', 'v' }
+        },
+
     }
 }
 ```
