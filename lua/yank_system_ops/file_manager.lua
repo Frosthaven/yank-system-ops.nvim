@@ -3,7 +3,7 @@
 -- @module yank_system_ops.file_manager
 
 local M = {}
-local loader = require 'yank_system_ops.__module_loader'
+local loader = require 'yank_system_ops.__loader'
 local os_module = loader.get_os_module()
 local vim = vim -- localize for speed
 

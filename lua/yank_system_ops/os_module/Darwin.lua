@@ -205,11 +205,6 @@ function Darwin:extract_files_from_clipboard(target_dir)
     local archive_path = vim.fn.trim(result)
     local ok = extract_archive_recursive(archive_path, target_dir)
     if ok then
-        vim.notify(
-            'Archive extracted successfully into: ' .. target_dir,
-            vim.log.levels.INFO,
-            { title = 'yank-system-ops' }
-        )
         return true
     else
         return false
@@ -297,11 +292,6 @@ function Darwin.put_files_from_clipboard(target_dir)
         return false
     end
 
-    vim.notify(
-        result:gsub('\n$', ''),
-        vim.log.levels.INFO,
-        { title = 'yank-system-ops' }
-    )
     return true
 end
 

@@ -35,5 +35,3 @@ for srcURL in items {
         fputs("Failed to copy \(srcURL.path) → \(destURL.path): \(error)\n", stderr)
     }
 }
-
-print("Pasted \(copiedCount) file(s)/folder(s) → \(targetDir.path)")
