@@ -1,7 +1,7 @@
 --- UI helpers for yank-system-ops
 -- @module yank_system_ops.ui
 local M = {}
-local loader = require 'yank_system_ops.__module_loader'
+local loader = require 'yank_system_ops.__loader'
 
 --- Briefly highlight yanked or selected lines.
 function M.flash_highlight(bufnr, start_line, end_line, opts)

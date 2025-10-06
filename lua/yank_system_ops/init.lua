@@ -60,7 +60,7 @@ function M.setup(opts)
     -- Modules ----------------------------------------------------------------
     ---------------------------------------------------------------------------
 
-    local loader = require 'yank_system_ops.__module_loader'
+    local loader = require 'yank_system_ops.__loader'
     local vcs = require 'yank_system_ops.vcs'
     local markdown = require 'yank_system_ops.markdown'
     local pathinfo = require 'yank_system_ops.pathinfo'

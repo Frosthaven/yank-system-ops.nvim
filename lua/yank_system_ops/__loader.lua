@@ -1,6 +1,6 @@
 --- Internal module loader for yank-system-ops
 -- Handles dynamic resolution of OS and buffer modules.
--- @module yank_system_ops.__module_loader
+-- @module yank_system_ops.__loader
 local M = {}
 
 --- Return the current yank_system_ops configuration
