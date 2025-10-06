@@ -211,12 +211,12 @@ are planned to be supported.
 
 ### Operating System Support
 
-| Operating System | Yank Files | Put Files | Zip Files | Extract Files | Put URI | Put Image Data | Open in File Browser |
-|------------------|------------|-----------|-----------|---------------|---------|----------------|----------------------|
-| Windows          | ⚠️         | ⚠️        | ⚠️        | ⚠️            | ⚠️      | ⚠️             | ⚠️                   |
-| MacOS            | ⚠️         | ⚠️        | ⚠️        | ⚠️            | ⚠️      | ⚠️             | ⚠️                   | 
-| Linux (Wayland)  | ✅         | ✅        | ✅        | ✅            | ✅      | ✅             | ✅                   |
-| Linux (X11)      | ⚠️         | ⚠️        | ⚠️        | ⚠️            | ⚠️      | ⚠️             | ⚠️                   |
+| Operating System | Yank Files | Put Files | Zip Files | Extract Files | Put Web URI | Put Image Data | Open in File Browser |
+|------------------|------------|-----------|-----------|---------------|-------------|----------------|----------------------|
+| Windows          | ⚠️         | ⚠️        | ⚠️        | ⚠️            | ⚠️          | ⚠️             | ⚠️                   |
+| MacOS            | ⚠️         | ⚠️        | ⚠️        | ⚠️            | ⚠️          | ⚠️             | ⚠️                   | 
+| Linux (Wayland)  | ✅         | ✅        | ✅        | ✅            | ✅          | ✅             | ✅                   |
+| Linux (X11)      | ⚠️         | ⚠️        | ⚠️        | ⚠️            | ⚠️          | ⚠️             | ⚠️                   |
 
 ### Buffer Type Support
 
