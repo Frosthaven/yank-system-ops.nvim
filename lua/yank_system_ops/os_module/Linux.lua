@@ -20,8 +20,6 @@ function Linux.add_files_to_clipboard(files, base_dir)
     end
     files = filtered_files
 
-    vim.notify(vim.inspect(files), vim.log.levels.DEBUG, { title = "yank-system-ops" })
-
     -- Ensure base_dir is an absolute path and ends with /
     if base_dir then
         base_dir = vim.fn.fnamemodify(base_dir, ":p")
@@ -46,8 +44,6 @@ function Linux.add_files_to_clipboard(files, base_dir)
         -- Skip if file does not exist
         if vim.loop.fs_stat(abs_path) then
             table.insert(uri_list, "file://" .. abs_path)
-        else
-            vim.notify("Skipping missing file: " .. abs_path, vim.log.levels.DEBUG, { title = "yank-system-ops" })
         end
     end
 
