@@ -190,6 +190,8 @@ which there are pending commits/changes._
     - [Git](https://git-scm.com/) - for GitHub URL and contextual archive naming support
     - [Curl](https://curl.se/) or [Wget](https://www.gnu.org/software/wget/) for
       putting URI(s) from the web
+    - 7zip binary (either `7z` or `7zz`) for archive creation and extraction.
+      MacOS users will probably want `brew install sevenzip`.
 
 - Windows:
     - tbd
