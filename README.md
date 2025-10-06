@@ -46,11 +46,11 @@ directory. This also supports:
 
 - Putting URI(s) from the web (using `curl` or `wget`)
 
-_Example: https://example.com/image.png_
+    - _Example: https://example.com/image.png_
 
 - Putting Image data from the clipboard using your OS's clipboard manager
 
-_Example: Right clicking an image in a web browser and selecting "Copy Image"_
+    - _Example: Right clicking an image in a web browser and selecting "Copy Image"_
 
 </details>
 
