@@ -89,7 +89,7 @@ into the current supported buffer's directory.
 </details>
 
 <details>
-<summary><strong>📂 Path Info</strong></summary>
+<summary><strong>📂 Yank File Path</strong></summary>
 
 ```lua
 {
@@ -133,7 +133,7 @@ explorer used depends on your OS.
 </details>
 
 <details>
-<summary><strong>🪄 Markdown Codeblocks</strong></summary>
+<summary><strong>🪄 Yank Markdown Codeblocks</strong></summary>
 
 ```lua
 {
@@ -145,8 +145,7 @@ explorer used depends on your OS.
 ```
 
 Yank selected line(s) into a language-tagged markdown code block for pasting
-into other applications (e.g., File Explorer, Finder, Discord, Slack, email
-clients, etc.).
+into markdown supported applications.
 
 ```lua
 {
@@ -158,12 +157,13 @@ clients, etc.).
 ```
 
 Yank selected line(s) into a language-tagged markdown code block for pasting
-into other applications. Includes any diagnostic messages in the selected lines.
+into markdown supported applications. Includes any diagnostic messages in the
+selected lines.
 
 </details>
 
 <details>
-<summary><strong>🧭 GitHub URL</strong></summary>
+<summary><strong>🧭 Yank GitHub URL</strong></summary>
 
 ```lua
 {
@@ -248,8 +248,8 @@ return {
     'frosthaven/yank-system-ops.nvim',
     enabled = true,
     opts = {
-        storage_path = vim.fn.expand '~/Downloads', -- path to store files
-        files_to_keep = 3, -- automatically delete older *.nvim.zip files
+        storage_path = vim.fn.expand '~/Downloads', -- path to store archives
+        files_to_keep = 3, -- automatically delete older *.nvim.zip archives
         debug = false,
     },
     keys = {
@@ -279,7 +279,7 @@ return {
             end, desc = 'Extract clipboard file here',
             mode = { 'n', 'v' }
         },
-        -- 📂 path info -------------------------------------------------------
+        -- 📂 yank path info --------------------------------------------------
         {
             '<leader>yr', function()
                 require('yank_system_ops').yank_relative_path()
@@ -301,7 +301,7 @@ return {
             mode = { 'n', 'v' }
         },
 
-        -- 🪄 markdown codeblocks ---------------------------------------------
+        -- 🪄 yank markdown codeblocks ----------------------------------------
         {
             '<leader>ymc', function()
                 require('yank_system_ops').yank_codeblock()
@@ -315,7 +315,7 @@ return {
             mode = { 'n', 'v' }
         },
 
-        -- 🧭 gitHub url ------------------------------------------------------
+        -- 🧭 yank gitHub url -------------------------------------------------
         {
             '<leader>ygl', function()
                 require('yank_system_ops').yank_github_url()
