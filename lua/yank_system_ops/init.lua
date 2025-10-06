@@ -31,6 +31,9 @@ M._loaded = false
 -- Initializes module and applies configuration
 -- @param opts table Optional configuration overrides
 function M.setup(opts)
+    -- Single Setup -----------------------------------------------------------
+    ---------------------------------------------------------------------------
+
     if M._loaded then
         vim.notify(
             'yank-system-ops is already loaded!',
@@ -41,10 +44,16 @@ function M.setup(opts)
     end
     M._loaded = true
 
+    -- Extend Default Options -------------------------------------------------
+    ---------------------------------------------------------------------------
+
     opts = opts or {}
     M.config = vim.tbl_deep_extend('force', M.config, opts or {})
 
-    -- ensure storage path ends in a slash
+    -- Mutate Config ----------------------------------------------------------
+    ---------------------------------------------------------------------------
+
+    -- ensure storage_path ends with '/'
     if not M.config.storage_path:match '/$' then
         M.config.storage_path = M.config.storage_path .. '/'
     end
