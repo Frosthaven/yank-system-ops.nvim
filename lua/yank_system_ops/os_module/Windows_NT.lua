@@ -84,6 +84,18 @@ function Windows.open_file_browser(path)
     return true
 end
 
+--- Check if clipboard contains image data (Windows)
+-- @return boolean True if clipboard has image
+function Windows:clipboard_has_image()
+    local ps_script = [[
+        Add-Type -AssemblyName System.Windows.Forms
+        if ([System.Windows.Forms.Clipboard]::ContainsImage()) { exit 0 } else { exit 1 }
+    ]]
+    local cmd = string.format('powershell -NoProfile -Command "%s"', ps_script:gsub('"', '\\"'))
+    vim.fn.system(cmd)
+    return vim.v.shell_error == 0
+end
+
 --- Save image from Windows clipboard to target_dir
 -- Uses PowerShell
 -- @param target_dir string Directory to save the image

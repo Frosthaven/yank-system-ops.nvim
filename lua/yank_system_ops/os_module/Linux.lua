@@ -201,6 +201,24 @@ function Linux.open_file_browser(path)
     return true
 end
 
+--- Check if clipboard contains image data (Linux)
+-- @return boolean True if clipboard has image data
+function Linux:clipboard_has_image()
+    local cmd
+    if vim.fn.executable("wl-paste") == 1 then
+        cmd = [[bash -c 'wl-paste -t image/png -n >/dev/null 2>&1']]
+    elseif vim.fn.executable("xclip") == 1 then
+        cmd = [[bash -c 'xclip -selection clipboard -t image/png -o >/dev/null 2>&1']]
+    elseif vim.fn.executable("xsel") == 1 then
+        cmd = [[bash -c 'xsel --clipboard --output --mime-type image/png >/dev/null 2>&1']]
+    else
+        return false
+    end
+
+    vim.fn.system(cmd)
+    return vim.v.shell_error == 0
+end
+
 --- Save image from clipboard into target directory (Linux)
 function Linux:save_clipboard_image(target_dir)
     target_dir = target_dir or vim.fn.getcwd()
