@@ -579,12 +579,16 @@ function M.put_files_from_clipboard()
         return
     end
 
-    -- Is it an image in clipboard we can save?
-    if os_module.save_clipboard_image then
+    -- Is it image data?
+    if os_module.clipboard_has_image and os_module:clipboard_has_image() then
         local img_path = os_module:save_clipboard_image(target_dir)
         if img_path then
             __refresh_buffer_view()
-            vim.notify("Image saved from clipboard: " .. img_path, vim.log.levels.INFO, { title = "yank-system-ops" })
+            vim.notify(
+                "Image saved from clipboard: " .. img_path,
+                vim.log.levels.INFO,
+                { title = "yank-system-ops" }
+            )
             return
         end
     end

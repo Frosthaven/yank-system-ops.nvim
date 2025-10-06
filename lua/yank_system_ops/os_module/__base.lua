@@ -39,6 +39,18 @@ function Base.open_file_browser(path)
     )
 end
 
+--- Check if the clipboard has image data
+--- Abstract method. Must be implemented in subclass.
+-- @return boolean True if clipboard has image data, false otherwise
+function Base.clipboard_has_image()
+    vim.notify(
+        "clipboard_has_image not implemented for this OS",
+        vim.log.levels.WARN,
+        { title = "yank-system-ops" }
+    )
+    return false
+end
+
 --- Default stub for saving clipboard images
 -- @param target_dir string Directory to save image
 -- @return string|nil Path to saved image or nil if unsupported

@@ -115,6 +115,32 @@ function Darwin.open_file_browser(path)
     end
 end
 
+--- Check if clipboard contains image data (macOS)
+-- @return boolean True if clipboard has image
+function Darwin:clipboard_has_image()
+    local cmd
+
+    if vim.fn.executable("pngpaste") == 1 then
+        -- `-b` returns 1 if clipboard empty
+        cmd = 'bash -c "pngpaste -b >/dev/null 2>&1"'
+        vim.fn.system(cmd)
+        return vim.v.shell_error == 0
+    else
+        -- Fallback: AppleScript check
+        local script = [[
+            try
+                the clipboard as «class PNGf»
+                return 0
+            on error
+                return 1
+            end try
+        ]]
+        cmd = string.format('osascript -e \'%s\'', script)
+        local result = vim.fn.system(cmd)
+        return result:match('0') ~= nil
+    end
+end
+
 --- Save image from macOS clipboard to target_dir
 -- Uses pngpaste if available, otherwise falls back to AppleScript
 -- @param target_dir string Directory to save the image
