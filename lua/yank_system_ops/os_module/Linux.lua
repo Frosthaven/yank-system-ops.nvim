@@ -9,46 +9,74 @@ local Linux = Base:extend()
 -- to copy them to the system clipboard.
 -- @param files string|table A file path or list of file paths
 -- @return boolean True if copied successfully, false otherwise
-function Linux.add_files_to_clipboard(files)
-    if type(files) == 'string' then files = { files } end
+function Linux.add_files_to_clipboard(files, base_dir)
+
+    -- filter out any files that end in /. or /..
+    local filtered_files = {}
+    for _, f in ipairs(type(files) == "string" and { files } or files) do
+        if not f:match("/%.%.$") and not f:match("/%.$") then
+            table.insert(filtered_files, f)
+        end
+    end
+    files = filtered_files
+
+    vim.notify(vim.inspect(files), vim.log.levels.DEBUG, { title = "yank-system-ops" })
+
+    -- Ensure base_dir is an absolute path and ends with /
+    if base_dir then
+        base_dir = vim.fn.fnamemodify(base_dir, ":p")
+        if base_dir:sub(-1) ~= "/" then
+            base_dir = base_dir .. "/"
+        end
+    end
+
+    -- Normalize input to a table
+    if type(files) == "string" then
+        files = { files }
+    elseif type(files) ~= "table" then
+        vim.notify("Invalid input to add_files_to_clipboard", vim.log.levels.WARN, { title = "yank-system-ops" })
+        return false
+    end
 
     local uri_list = {}
+
     for _, f in ipairs(files) do
-        local abs_path = vim.fn.fnamemodify(f, ':p')
-        table.insert(uri_list, 'file://' .. abs_path)
+        local abs_path = vim.fn.fnamemodify(f, ":p")
+
+        -- Skip if file does not exist
+        if vim.loop.fs_stat(abs_path) then
+            table.insert(uri_list, "file://" .. abs_path)
+        else
+            vim.notify("Skipping missing file: " .. abs_path, vim.log.levels.DEBUG, { title = "yank-system-ops" })
+        end
     end
-    local uris_str = table.concat(uri_list, '\n'):gsub('"', '\\"')
+
+    if #uri_list == 0 then
+        vim.notify("No valid files to copy to clipboard", vim.log.levels.WARN, { title = "yank-system-ops" })
+        return false
+    end
+
+    local uris_str = table.concat(uri_list, "\n"):gsub('"', '\\"')
 
     local cmd
-    if vim.fn.executable('wl-copy') == 1 then
+    if vim.fn.executable("wl-copy") == 1 then
         cmd = string.format([[bash -c 'printf "%%s" "%s" | wl-copy -t text/uri-list']], uris_str)
-    elseif vim.fn.executable('xclip') == 1 then
+    elseif vim.fn.executable("xclip") == 1 then
         cmd = string.format([[bash -c 'printf "%%s" "%s" | xclip -selection clipboard -t text/uri-list']], uris_str)
-    elseif vim.fn.executable('xsel') == 1 then
-        vim.notify(
-            'xsel does not support text/uri-list — copying as plain text instead',
-            vim.log.levels.WARN,
-            { title = 'yank-system-ops' }
-        )
+    elseif vim.fn.executable("xsel") == 1 then
+        vim.notify("xsel does not support text/uri-list — copying as plain text instead", vim.log.levels.WARN, { title = "yank-system-ops" })
         cmd = string.format([[bash -c 'printf "%%s" "%s" | xsel --clipboard --input']], uris_str)
     else
-        vim.notify(
-            'No supported clipboard utility found (wl-copy, xclip, xsel)',
-            vim.log.levels.WARN,
-            { title = 'yank-system-ops' }
-        )
+        vim.notify("No supported clipboard utility found (wl-copy, xclip, xsel)", vim.log.levels.WARN, { title = "yank-system-ops" })
         return false
     end
 
     local result = vim.fn.system(cmd)
     if vim.v.shell_error ~= 0 then
-        vim.notify(
-            'Failed to copy file(s) to clipboard: ' .. result,
-            vim.log.levels.ERROR,
-            { title = 'yank-system-ops' }
-        )
+        vim.notify("Failed to copy file(s) to clipboard: " .. result, vim.log.levels.ERROR, { title = "yank-system-ops" })
         return false
     end
+
     return true
 end
 
