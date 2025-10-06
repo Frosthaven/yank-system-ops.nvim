@@ -13,7 +13,6 @@ explorers, chat apps, email clients, and your neovim projects? Now you can!
 - [📊 Support Matrix](#-support-matrix)
   - [Operating System Support](#operating-system-support)
   - [Buffer Type Support](#buffer-type-support)
-  - [File Browser Support](#file-browser-support)
 - [🚀 Usage](#-usage)
 
 <br>
@@ -234,27 +233,6 @@ are planned to be supported.
 | Netrw       | ✅        | Operates on all files and folders in the current directory |
 | Mini.files  | ✅        | Operates on all files and folders in the current directory |
 | Oil         | ❌        | Operates on all files and folders in the current directory |
-
-### File Browser Support
-
-| File Browser           | Can Open Directory |
-|------------------------|--------------------|
-| explorer.exe (Windows) | ⚠️                 |
-| ForkLift (MacOS)       | ✅                 |
-| Finder (MacOS)         | ✅                 |
-| cosmic-files           | ✅                 |
-| nautilus               | ⚠️                 |
-| nemo                   | ⚠️                 |
-| caja                   | ⚠️                 |
-| dolphin                | ⚠️                 |
-| spacefm                | ⚠️                 |
-| thunar                 | ⚠️                 |
-| pcmanfm                | ⚠️                 |
-| io.elementary.files    | ⚠️                 |
-| krusader               | ⚠️                 |
-| doublecmd              | ⚠️                 |
-| xdg-open (fallback)    | ⚠️                 |
-| gio (fallback)         | ⚠️                 |
 
 <br>
 
