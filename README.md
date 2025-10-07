@@ -352,21 +352,16 @@ may also yank all files and folders in the current directory into an archive
 <details>
 <summary><strong>What can I put from the clipboard?</strong></summary>
 
-- Web URIs (Powered by `curl` or `wget`) get downloaded as a file:
-    - Web Addresses (e.g., `https://example.com`)
-        - File type auto-detection for common filetypes (json,html,images, etc)
+- **Web URIs:** (Powered by `curl` or `wget`) download as a file with common
+  file types automatically detected.
 
-- Image data:
-    - When right clicking and selecting "Copy Image" in other applications
-        - The image is saved as a timestamped `.png` file
+- **Image data:** From copying an image in other applications. will be saved as
+  a `.png` file. If you have SVG source code in your clipboard (e.g., from
+  Lucide Icons or Figma assets), it will be saved as a `.svg` file.
 
-- SVG data:
-    - When you have SVG source code copied (e.g., Lucide Icons or Figma assets)
-        - The SVG is saved as a timestamped `.svg` file 
-
-- System files and folders:
-    - When you copy files/folders using `yank-system-ops.nvim`, your OS's
-      native file explorer, or yank to an archive
+- **System files and folders:** When you copy files/folders using
+  `yank-system-ops.nvim` or other applications (such as your OS's native file
+  explorer).
 
 </details>
 
