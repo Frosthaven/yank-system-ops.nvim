@@ -333,7 +333,7 @@ return {
 |--------------------|---------|
 | Default Buffers    | The current file is copied to the clipboard. You may also yank the current file into an archive (ending in `.nvim.zip`) which gets copied to your clipboard. This can then be pasted into other applications such as Slack, Discord, and your file browser.|
 | Directory Buffers  | All files and folders in the current directory are copied to the clipboard. You may also yank all files and folders in the current directory into an archive (ending in `.nvim.zip`) which gets copied to your clipboard. These can then be pasted into other applications such as Slack, Discord, and your file browser.|
-| Other Applications | Files and folders, images, svg source code, and web URIs (such as from your web browser). |
+| Other Applications | Files and folders, images, svg source code, archives, and web URIs (such as from your web browser). |
 
 </details>
 
@@ -343,9 +343,10 @@ return {
 
 | Source Type          | Details |
 |----------------------|---------|
-| Web URIs             | A file will be downloaded from the web URI and saved in the current buffer's active directory. Common file types are automatically detected (see next FAQ).|
-| Images               | An image copied to your clipboard from other applications will be saved as a `.png` file in the current buffer's active directory. If you have SVG source code in your clipboard (e.g., from Lucide Icons or Figma assets), it will be saved as a `.svg` file.|
 | System Files/Folders | Files and folders copied using `yank-system-ops.nvim` or other applications (such as your OS's native file explorer) will be pasted into the current buffer's active directory.|
+| Images               | An image copied to your clipboard from other applications will be saved as a `.png` file in the current buffer's active directory. If you have SVG source code in your clipboard (e.g., from Lucide Icons or Figma assets), it will be saved as a `.svg` file.|
+| Web URIs             | A file will be downloaded from the web URI and saved in the current buffer's active directory. Common file types are automatically detected (see next FAQ).|
+| Archives             | 7z supported archive formats can be put as files or extracted to the current buffer's active directory. |
 
 </details>
 
