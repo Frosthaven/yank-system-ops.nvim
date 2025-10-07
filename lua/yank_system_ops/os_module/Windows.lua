@@ -4,19 +4,6 @@
 local Base = require 'yank_system_ops.os_module.__base'
 local Windows = Base:extend()
 
--- Helper: run a PowerShell script with arguments
-local function run_ps_script(script, args)
-    args = args or {}
-    local arg_str = table.concat(args, ' ')
-    local cmd = string.format(
-        'powershell -NoProfile -Command [Console]::OutputEncoding=[Text.Encoding]::UTF8; %s %s',
-        script,
-        arg_str
-    )
-    local output = vim.fn.system(cmd)
-    return output, vim.v.shell_error
-end
-
 --- Copy file(s) to the clipboard (Windows)
 -- Uses PowerShell + System.Windows.Forms.Clipboard
 -- @param files string|table
@@ -424,6 +411,52 @@ if ($bmp) {
         { title = 'yank-system-ops' }
     )
     return nil
+end
+
+--- Open a file or folder in Explorer (Windows)
+-- Opens the folder in Explorer. If `path` is a file, selects it.
+-- @param path string Absolute path to file or folder
+-- @return boolean True on success, false on failure
+function Windows.open_file_browser(path)
+    if not path or path == '' then
+        vim.notify(
+            'No path provided to open in Explorer',
+            vim.log.levels.WARN,
+            { title = 'yank-system-ops' }
+        )
+        return false
+    end
+
+    -- Normalize path: convert / to \ and remove trailing backslash
+    path = path:gsub('/', '\\'):gsub('\\+$', '')
+
+    local is_dir = vim.fn.isdirectory(path) == 1
+    local cmd
+
+    if is_dir then
+        -- Open folder
+        cmd = string.format('explorer.exe "%s"', path)
+    else
+        -- Select file in folder
+        local abs_path = vim.fn.fnamemodify(path, ':p')
+        abs_path = abs_path:gsub('/', '\\')
+        cmd = string.format('explorer.exe /select,"%s"', abs_path)
+    end
+
+    local ok, msg, _ = os.execute(cmd)
+    if not ok then
+        vim.notify(
+            'Failed to open Explorer for path: '
+                .. path
+                .. '\n'
+                .. tostring(msg),
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
+        return false
+    end
+
+    return true
 end
 
 return Windows
