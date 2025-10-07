@@ -350,9 +350,9 @@ return {
 
 | Source Type          | Details |
 |----------------------|---------|
-| Web URIs             | A file will be downloaded from the web URI and saved in the current directory. Common file types are automatically detected (see next FAQ).|
-| Image Data           | An image copied to your clipboard from other applications will be saved as a `.png` file in the current directory. If you have SVG source code in your clipboard (e.g., from Lucide Icons or Figma assets), it will be saved as a `.svg` file.|
-| System Files/Folders | Files and folders copied using `yank-system-ops.nvim` or other applications (such as your OS's native file explorer) will be pasted into the current directory.|
+| Web URIs             | A file will be downloaded from the web URI and saved in the current buffer's active directory. Common file types are automatically detected (see next FAQ).|
+| Image Data           | An image copied to your clipboard from other applications will be saved as a `.png` file in the current buffer's active directory. If you have SVG source code in your clipboard (e.g., from Lucide Icons or Figma assets), it will be saved as a `.svg` file.|
+| System Files/Folders | Files and folders copied using `yank-system-ops.nvim` or other applications (such as your OS's native file explorer) will be pasted into the current buffer's active directory.|
 
 </details>
 
