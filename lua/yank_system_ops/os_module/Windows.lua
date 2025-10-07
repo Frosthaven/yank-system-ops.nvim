@@ -114,6 +114,68 @@ exit 0
     return true
 end
 
+--- Extract an archive from clipboard into target_dir
+-- @param target_dir string
+-- @return boolean
+function Windows:extract_files_from_clipboard(target_dir)
+    if not target_dir or target_dir == '' then
+        vim.notify(
+            'No target directory specified',
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
+        return false
+    end
+
+    -- Get clipboard content (should be path to ZIP)
+    local zip_path = vim.fn.getreg '+'
+    if not zip_path or zip_path == '' or vim.fn.filereadable(zip_path) == 0 then
+        vim.notify(
+            'No valid archive found in clipboard',
+            vim.log.levels.WARN,
+            { title = 'yank-system-ops' }
+        )
+        return false
+    end
+
+    -- Normalize paths for Windows
+    local zip_path_win = zip_path:gsub('/', '\\')
+    local target_dir_win = target_dir:gsub('/', '\\')
+
+    -- Find 7z executable
+    local binary = '7z' -- assume in PATH
+    if vim.fn.executable '7z' == 0 then
+        vim.notify(
+            '7z executable not found in PATH',
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
+        return false
+    end
+
+    -- Quote paths in case they have spaces
+    if binary:find ' ' then
+        binary = '"' .. binary .. '"'
+    end
+    zip_path_win = '"' .. zip_path_win .. '"'
+    target_dir_win = '"' .. target_dir_win .. '"'
+
+    -- Build extraction command
+    local cmd =
+        string.format('%s x %s -o%s -y', binary, zip_path_win, target_dir_win)
+    local ok = os.execute(cmd)
+    if ok ~= 0 then
+        vim.notify(
+            'Failed to extract archive',
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
+        return false
+    end
+
+    return true
+end
+
 --- Check if clipboard has image
 function Windows:clipboard_has_image()
     return false

@@ -9,17 +9,23 @@ local pathinfo = require 'yank_system_ops.pathinfo'
 
 local os_module = loader.get_os_module()
 local config = loader.get_config()
+local uv = vim.loop
+
+--- Normalize a path to absolute form with forward slashes
+local function normalize_path(p)
+    local abs = vim.fn.fnamemodify(p, ':p')
+    return abs:gsub('\\', '/')
+end
 
 --- Get available 7z binary
--- @return string|nil Returns binary name or nil if not found
 function M.get_7zip_binary()
-    local possible_binaries = { '7z', '7zz' }
+    local possible_binaries =
+        { '7z', '7zz', 'C:\\Program Files\\7-Zip\\7z.exe' }
     for _, b in ipairs(possible_binaries) do
         if vim.fn.executable(b) == 1 then
             return b
         end
     end
-
     vim.notify(
         'No 7z binary found in PATH (tried: '
             .. table.concat(possible_binaries, ', ')
@@ -31,14 +37,24 @@ function M.get_7zip_binary()
 end
 
 --- Compress files into a zip archive
--- @param items table List of file paths
+-- @param items table|string List of file paths
 -- @param base_dir string Base directory
 -- @param filetype string Filetype context
 -- @return string|nil Path to zip file
 function M.create_zip(items, base_dir, filetype)
-    items = pathinfo.filter_recursive_items(items)
+    -- Ensure items is always a table of strings
+    local filtered = pathinfo.filter_recursive_items(items)
+    if not filtered then
+        items = {}
+    elseif type(filtered) == 'string' then
+        items = { filtered }
+    elseif type(filtered) == 'table' then
+        items = filtered
+    else
+        items = {}
+    end
 
-    if not items or #items == 0 then
+    if #items == 0 then
         vim.notify(
             'No files/folders to compress',
             vim.log.levels.WARN,
@@ -47,21 +63,29 @@ function M.create_zip(items, base_dir, filetype)
         return
     end
 
+    base_dir = normalize_path(base_dir)
     if base_dir:sub(-1) ~= '/' then
         base_dir = base_dir .. '/'
     end
 
+    -- Ensure project_root is a string
     local project_root = vim.fn.finddir('.git/..', base_dir .. ';')
+    if type(project_root) == 'table' then
+        project_root = project_root[1] or ''
+    end
+
     local project_prefix = ''
-    if project_root ~= '' and type(project_root) == 'string' then
+    if project_root ~= '' then
         project_prefix = vim.fn.fnamemodify(project_root, ':t') .. '__'
     end
 
     local base_name
-    if filetype == 'minifiles' or filetype == 'netrw' then
+    if filetype == 'minifiles' or filetype == 'netrw' or filetype == 'oil' then
         base_name = vim.fn.fnamemodify(base_dir:gsub('/$', ''), ':t')
     else
-        base_name = vim.fn.fnamemodify(items[1]:gsub('/$', ''), ':t')
+        base_name = (#items > 0)
+                and vim.fn.fnamemodify(items[1]:gsub('/$', ''), ':t')
+            or 'project'
     end
     if base_name == '' then
         base_name = 'project'
@@ -71,26 +95,28 @@ function M.create_zip(items, base_dir, filetype)
     local zip_name =
         string.format('%s%s__%s.nvim.zip', project_prefix, base_name, timestamp)
 
-    local downloads = config.storage_path
+    local downloads = normalize_path(config.storage_path)
     if vim.fn.isdirectory(downloads) == 0 then
         vim.fn.mkdir(downloads, 'p')
     end
     local zip_path = downloads .. '/' .. zip_name
 
+    -- Build relative paths for 7-Zip
     local rel_items = {}
     for _, f in ipairs(items) do
-        local st = vim.loop.fs_stat(f)
-        if st then
-            local full = vim.fn.fnamemodify(f, ':p')
-            if full:sub(1, #base_dir) == base_dir then
-                local rel = full:sub(#base_dir + 1)
-                if rel ~= '.' and rel ~= '..' then
-                    table.insert(rel_items, string.format('"%s"', rel))
-                end
+        local full = normalize_path(f)
+        if full:sub(1, #base_dir) == base_dir then
+            local rel = full:sub(#base_dir + 1)
+            if rel ~= '.' and rel ~= '..' and rel ~= '' then
+                table.insert(rel_items, string.format('"%s"', rel))
             end
         end
     end
 
+    -- Fallback if rel_items is not a table
+    if type(rel_items) ~= 'table' then
+        rel_items = {}
+    end
     if #rel_items == 0 then
         vim.notify(
             'No valid files to compress in base_dir',
@@ -101,29 +127,77 @@ function M.create_zip(items, base_dir, filetype)
     end
 
     local binary = M.get_7zip_binary()
-    local cmd = string.format(
-        '%s a -tzip "%s" %s -r',
-        binary,
-        zip_path,
-        table.concat(rel_items, ' ')
-    )
-    local full_cmd = string.format('cd "%s" ; %s', base_dir, cmd)
-
-    local result = vim.fn.system(full_cmd)
-    if vim.v.shell_error ~= 0 then
-        vim.notify(
-            'Failed to create zip: ' .. result,
-            vim.log.levels.ERROR,
-            { title = 'yank-system-ops' }
-        )
+    if not binary then
         return
     end
 
+    local uv = vim.loop
+
+    -- OS-specific command
+    if vim.fn.has 'win32' == 1 then
+        -- Normalize Windows paths
+        local base_dir_win = base_dir:gsub('/$', ''):gsub('/', '\\')
+        local zip_path_win = zip_path:gsub('/', '\\')
+
+        -- Convert rel_items to Windows format safely
+        local rel_items_win = {}
+        for i = 1, #rel_items do
+            local r = rel_items[i]
+            if type(r) == 'string' then
+                rel_items_win[#rel_items_win + 1] = r:gsub('/', '\\')
+            end
+        end
+
+        -- Quote binary if it contains spaces
+        local binary_path = binary
+        if binary_path:find ' ' then
+            binary_path = string.format('"%s"', binary_path)
+        end
+
+        -- Build Windows command using & separator
+        local cmd = string.format(
+            '%s a -tzip "%s" %s -r',
+            binary_path,
+            zip_path_win,
+            table.concat(rel_items_win, ' ')
+        )
+        local full_cmd = string.format('cd /d "%s" & %s', base_dir_win, cmd)
+        local ok = os.execute(full_cmd)
+        if ok ~= 0 then
+            vim.notify(
+                'Failed to create zip',
+                vim.log.levels.ERROR,
+                { title = 'yank-system-ops' }
+            )
+            return
+        end
+    else
+        -- Linux/macOS
+        local cmd = string.format(
+            'cd "%s" ; %s a -tzip "%s" %s -r',
+            base_dir,
+            binary,
+            zip_path,
+            table.concat(rel_items, ' ')
+        )
+        local result = vim.fn.system(cmd)
+        if vim.v.shell_error ~= 0 then
+            vim.notify(
+                'Failed to create zip: ' .. result,
+                vim.log.levels.ERROR,
+                { title = 'yank-system-ops' }
+            )
+            return
+        end
+    end
+
+    -- Copy zip path to clipboard
     vim.fn.setreg('+', zip_path)
 
+    -- Remove old archives
     local existing = vim.fn.globpath(downloads, '*.nvim.zip', true, true)
     table.sort(existing, function(a, b)
-        return vim.loop.fs_stat(a).mtime.sec > vim.loop.fs_stat(b).mtime.sec
+        return uv.fs_stat(a).mtime.sec > uv.fs_stat(b).mtime.sec
     end)
     for i = (config.files_to_keep + 1), #existing do
         os.remove(existing[i])
@@ -133,9 +207,6 @@ function M.create_zip(items, base_dir, filetype)
 end
 
 --- Compress selected files and copy the archive to the clipboard
--- @param items table
--- @param base_dir string
--- @param filetype string
 function M.zip_files_to_clipboard(items, base_dir, filetype)
     local zip_path = M.create_zip(items, base_dir, filetype)
     if zip_path then
@@ -149,7 +220,6 @@ function M.zip_files_to_clipboard(items, base_dir, filetype)
 end
 
 --- Extract an archive from clipboard into target directory
--- @param target_dir string
 function M.extract_files_from_clipboard(target_dir)
     local ok = os_module:extract_files_from_clipboard(target_dir)
     if ok then
