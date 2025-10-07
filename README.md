@@ -15,7 +15,7 @@ explorers, chat apps, email clients, and your neovim projects? Now you can!
   - [Buffer Type Support](#buffer-type-support)
 - [🚀 Usage](#-usage)
 - [❓ FAQ](#-faq)
-- [󱍼 Roadmap](#-roadmap)
+- [📋 Roadmap](#-roadmap)
 
 <br>
 
@@ -336,32 +336,35 @@ return {
 <details>
 <summary><strong>What can I yank to the clipboard?</strong></summary>
 
-#### For default buffers:
 
-The current file is copied to the clipboard. You may also yank the current file
-into an archive (ending in `.nvim.zip`) which gets copied to your clipboard.
-
-#### For file explorer buffers (Netrw, Mini.files, Oil):
-
-All files and folders in the current directory are copied to the clipboard. You
-may also yank all files and folders in the current directory into an archive
-(ending in `.nvim.zip`) which gets copied to your clipboard.
+| Buffer Type       | Details |
+|-------------------|---------|
+| Default Buffers   | The current file is copied to the clipboard. You may also
+yank the current file into an archive (ending in `.nvim.zip`) which gets copied
+to your clipboard.|
+| Directory Buffers | All files and folders in the current directory are copied
+to the clipboard. You may also yank all files and folders in the current
+directory into an archive (ending in `.nvim.zip`) which gets copied to your
+clipboard.|
 
 </details>
 
 <details>
 <summary><strong>What can I put from the clipboard?</strong></summary>
 
-- **Web URIs:** (Powered by `curl` or `wget`) download as a file with common
-  file types automatically detected.
 
-- **Image data:** From copying an image in other applications. will be saved as
-  a `.png` file. If you have SVG source code in your clipboard (e.g., from
-  Lucide Icons or Figma assets), it will be saved as a `.svg` file.
-
-- **System files and folders:** When you copy files/folders using
-  `yank-system-ops.nvim` or other applications (such as your OS's native file
-  explorer).
+| Source Type       | Details |
+|-------------------|---------|
+| Web URIs          | A file will be downloaded from the web URI and saved in
+the current directory. Common file types are automatically detected (see next
+FAQ).|
+| Image Data       | An image copied to your clipboard from other applications
+will be saved as a `.png` file in the current directory. If you have SVG source
+code in your clipboard (e.g., from Lucide Icons or Figma assets), it will be
+saved as a `.svg` file.|
+| System Files/Folders | Files and folders copied using `yank-system-ops.nvim`
+or other applications (such as your OS's native file explorer) will be pasted
+into the current directory.|
 
 </details>
 
@@ -372,10 +375,12 @@ These are some of the supported file types that are automatically detected when
 putting web URIs. If the file type cannot be detected, the file will be saved
 with a `.bin` extension:
 
-- Images: `.png`, `.jpg`, `.gif`, `.webp`, `.svg`
-- Archives: `.zip`
-- Documents: `.pdf`
-- Markup: `.html`, `.xml`, `.json`
+| File Type | Details |
+|-----------|---------|
+| Images    | `.png`, `.jpg`, `.gif`, `.webp`, `.svg` |
+| Archives  | `.zip`  |
+| Documents | `.pdf`  |
+| Markup    | `.html`, `.xml`, `.json` |
 
 You can [browse the download handler](https://github.com/Frosthaven/yank-system-ops.nvim/blob/main/lua/yank_system_ops/uri_downloader.lua)
 to learn more.
@@ -384,7 +389,7 @@ to learn more.
 
 <br>
 
-## 󱍼 Roadmap
+## 📋 Roadmap
 
 - [x] Initial prototype
 - [ ] Complete Windows support
