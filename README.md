@@ -377,10 +377,10 @@ a high-level overview of how each platform is supported:
 
 - **Windows:** Relies on `powershell` commands to interact with the clipboard.
   _Note: Windows support is still being worked on._
-- **MacOS:** Relies on `osascript` commands and `swift` scripts to interact
+- **MacOS:** Relies on `bash`, `osascript`, and `swift` scripts to interact
   with the clipboard.
-- **Linux (Wayland):** Relies on `wl-clipboard`, `xclip`, or `xsel` to interact
-  with the clipboard.
+- **Linux (Wayland):** Relies on `bash`, `wl-clipboard`, and `xclip` or `xsel`
+  to interact with the clipboard.
 
 By leveraging abstractions from these underlying tools and commands,
 `yank-system-ops.nvim` can effectively interact with the system clipboard on
