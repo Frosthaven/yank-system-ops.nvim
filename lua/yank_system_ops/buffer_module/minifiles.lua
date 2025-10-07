@@ -4,7 +4,7 @@
 local Base = require 'yank_system_ops.buffer_module.__base'
 local M = Base:extend()
 
-local minifile = require 'mini.files'
+local minifiles = require 'mini.files'
 
 --- Get list of files in the current buffer
 -- Returns all files in the directory if buffer points to a directory,
@@ -53,11 +53,7 @@ end
 
 --- Refresh the view for the buffer
 function M.refresh_view()
-    local dir = M.get_active_dir()
-    if dir then
-        -- Open mini.files at the current directory, reusing the existing buffer
-        minifile.open(dir)
-    end
+    minifiles.open()
 end
 
 return M
