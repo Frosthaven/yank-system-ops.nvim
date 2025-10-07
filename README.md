@@ -344,7 +344,7 @@ return {
 | Source Type          | Details |
 |----------------------|---------|
 | System Files/Folders | Files and folders copied using `yank-system-ops.nvim` or other applications (such as your OS's native file explorer) will be pasted into the current buffer's active directory.|
-| Images               | An image copied to your clipboard from other applications will be saved as a `.png` file in the current buffer's active directory. If you have SVG source code in your clipboard (e.g., from Lucide Icons or Figma assets), it will be saved as a `.svg` file.|
+| Images               | An image copied to your clipboard from other applications or screenshot tools will be saved as a `.png` file in the current buffer's active directory. If you have SVG source code in your clipboard (e.g., from Lucide Icons or Figma assets), it will be saved as a `.svg` file.|
 | Web URIs             | A file will be downloaded from the web URI and saved in the current buffer's active directory. Common file types are automatically detected (see next FAQ).|
 | Archives             | 7z supported archive formats can be put as files or extracted to the current buffer's active directory. |
 
