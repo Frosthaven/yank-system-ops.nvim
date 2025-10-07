@@ -14,6 +14,8 @@ explorers, chat apps, email clients, and your neovim projects? Now you can!
   - [Operating System Support](#operating-system-support)
   - [Buffer Type Support](#buffer-type-support)
 - [🚀 Usage](#-usage)
+- [❓ FAQ](#-faq)
+- [󱍼 Roadmap](#-roadmap)
 
 <br>
 
@@ -326,3 +328,71 @@ return {
     }
 }
 ```
+
+<br>
+
+## ❓ FAQ
+
+<details>
+<summary><strong>What can I yank to the clipboard?</strong></summary>
+
+#### For default buffers:
+
+The current file is copied to the clipboard. You may also yank the current file
+into an archive (ending in `.nvim.zip`) which gets copied to your clipboard.
+
+#### For file explorer buffers (Netrw, Mini.files, Oil):
+
+All files and folders in the current directory are copied to the clipboard. You
+may also yank all files and folders in the current directory into an archive
+(ending in `.nvim.zip`) which gets copied to your clipboard.
+
+</details>
+
+<details>
+<summary><strong>What can I put from the clipboard?</strong></summary>
+
+- Web URIs (Powered by `curl` or `wget`) get downloaded as a file:
+    - Web Addresses (e.g., `https://example.com`)
+        - File type auto-detection for common filetypes (json,html,images, etc)
+
+- Image data:
+    - When right clicking and selecting "Copy Image" in other applications
+        - The image is saved as a timestamped `.png` file
+
+- SVG data:
+    - When you have SVG source code copied (e.g., Lucide Icons or Figma assets)
+        - The SVG is saved as a timestamped `.svg` file 
+
+- System files and folders:
+    - When you copy files/folders using `yank-system-ops.nvim`, your OS's
+      native file explorer, or yank to an archive
+
+</details>
+
+<details>
+<summary><strong>What File Types are automatically detected with Web URI puts?</strong></summary>
+
+These are some of the supported file types that are automatically detected when
+putting web URIs. If the file type cannot be detected, the file will be saved
+with a `.bin` extension:
+
+- Images: `.png`, `.jpg`, `.gif`, `.webp`, `.svg`
+- Archives: `.zip`
+- Documents: `.pdf`
+- Markup: `.html`, `.xml`, `.json`
+
+You can [browse the download handler](https://github.com/Frosthaven/yank-system-ops.nvim/blob/main/lua/yank_system_ops/uri_downloader.lua)
+to learn more.
+
+</details>
+
+<br>
+
+## 󱍼 Roadmap
+
+- [x] Initial prototype
+- [ ] Complete Windows support
+- [ ] Add setup opts for notifications, archive format, naming, etc.
+- [ ] Add UI for narrowing file/folder selection when yanking/archiving
+- [ ] Add buffer registry for runtime addition of buffer support
