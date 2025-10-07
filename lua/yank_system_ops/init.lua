@@ -119,6 +119,32 @@ function M.setup(opts)
     -- 🌐 open in file browser --------------------------------------
 
     M.open_buffer_in_file_manager = file_manager.open_buffer
+
+    -- Debug ------------------------------------------------------------------
+    ---------------------------------------------------------------------------
+
+    -- notify buffer directory on BufEnter
+    if M.config.debug and false then
+        vim.api.nvim_create_autocmd('BufEnter', {
+            callback = function()
+                buffer_module = loader.get_buffer_module()
+                active_dir = buffer_module.get_active_dir()
+                local items, target_dir = loader.get_buffer_context()
+                vim.notify(
+                    'Buffer: '
+                        .. vim.api.nvim_buf_get_name(0)
+                        .. '\n'
+                        .. 'Items: '
+                        .. vim.inspect(items)
+                        .. '\n'
+                        .. 'Active Dir: '
+                        .. (active_dir or 'N/A'),
+                    vim.log.levels.DEBUG,
+                    { title = 'yank-system-ops' }
+                )
+            end,
+        })
+    end
 end
 
 return M

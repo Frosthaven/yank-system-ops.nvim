@@ -5,6 +5,7 @@ local M = {}
 
 local loader = require 'yank_system_ops.__loader'
 local ui = require 'yank_system_ops.ui'
+local pathinfo = require 'yank_system_ops.pathinfo'
 
 local os_module = loader.get_os_module()
 local config = loader.get_config()
@@ -35,14 +36,7 @@ end
 -- @param filetype string Filetype context
 -- @return string|nil Path to zip file
 function M.create_zip(items, base_dir, filetype)
-    -- filter out any items ending with /. or /..
-    local filtered_items = {}
-    for _, f in ipairs(items) do
-        if not f:match '/%.$' and not f:match '/%.$%.' then
-            table.insert(filtered_items, f)
-        end
-    end
-    items = filtered_items
+    items = pathinfo.filter_recursive_items(items)
 
     if not items or #items == 0 then
         vim.notify(

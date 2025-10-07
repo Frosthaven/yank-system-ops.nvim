@@ -2,6 +2,20 @@
 -- @module yank_system_ops.pathinfo
 local M = {}
 
+-- Filter out '.' and '..' from a list of items
+-- @param items table List of file/directory paths
+-- @return table Filtered list of items
+function M.filter_recursive_items(items)
+    local filtered_items = {}
+    for _, f in ipairs(items) do
+        local name = vim.fn.fnamemodify(f, ':t')
+        if name ~= '.' and name ~= '..' then
+            table.insert(filtered_items, f)
+        end
+    end
+    return filtered_items
+end
+
 --- Yank relative path of current buffer
 -- @param bufnr number|nil Optional buffer number
 function M.yank_relative_path(bufnr)

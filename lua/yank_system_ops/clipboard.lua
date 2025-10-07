@@ -7,11 +7,14 @@ local loader = require 'yank_system_ops.__loader'
 local os_module = loader.get_os_module()
 local ui = require 'yank_system_ops.ui'
 local uri_downloader = require 'yank_system_ops.uri_downloader'
+local pathinfo = require 'yank_system_ops.pathinfo'
 
 --- Copy files to system clipboard
 -- @param items table List of file paths
 -- @return boolean success
 function M.yank_files(items)
+    items = pathinfo.filter_recursive_items(items)
+
     if not items or #items == 0 then
         vim.notify(
             'No files selected to yank',

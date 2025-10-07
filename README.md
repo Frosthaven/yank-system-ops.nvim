@@ -1,4 +1,4 @@
-> [!IMPORTANT] 
+> [!IMPORTANT]
 > This plugin is still in the PROTOTYPE phase. Expect breaking changes
 
 ## 🗃️ `yank-system-ops.nvim`
@@ -195,7 +195,7 @@ explorer used depends on your OS.
 
 - Windows:
     - tbd
-- MacOS: 
+- MacOS:
     - [pngpaste](https://github.com/jcsalterego/pngpaste) for better clipboard
       image support
     - `xcode-select --install` for swift command support
@@ -222,8 +222,8 @@ are planned to be supported.
 
 | Operating System | Yank Files | Put Files | Zip Files | Extract Files | Put Web URI | Put Image Data | Open in File Browser |
 |------------------|------------|-----------|-----------|---------------|-------------|----------------|----------------------|
-| Windows          | ❌         | ❌        | ❌        | ❌            | ❌          | ❌             | ❌                   |
-| MacOS            | ✅         | ✅        | ✅        | ✅            | ✅          | ✅             | ✅                   | 
+| Windows          | ✅         | ❌        | ❌        | ❌            | ❌          | ❌             | ❌                   |
+| MacOS            | ✅         | ✅        | ✅        | ✅            | ✅          | ✅             | ✅                   |
 | Linux (Wayland)  | ✅         | ✅        | ✅        | ✅            | ✅          | ✅             | ✅                   |
 | Linux (X11)      | ⚠️         | ⚠️        | ⚠️        | ⚠️            | ⚠️          | ⚠️             | ⚠️                   |
 
