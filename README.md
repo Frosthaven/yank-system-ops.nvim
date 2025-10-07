@@ -47,7 +47,7 @@ browser. See the [FAQ](#-faq) for details on what can be yanked.
 ```
 
 Put file(s) from your system clipboard into the current supported buffer's
-directory. See the [FAQ](#-faq) for details on what can be put. 
+directory. See the [FAQ](#-faq) for details on what can be put.
 
 </details>
 
@@ -216,10 +216,10 @@ are planned to be supported.
 
 | Operating System | Yank Files | Put Files | Yank as Archive | Extract Archive | Put Web URI | Put Image | Open in File Browser |
 |------------------|------------|-----------|-----------------|-----------------|-------------|-----------|----------------------|
-| Windows          | ✅         | ✅        | ✅              | ⚠️              | ❌          | ❌        | ❌                   |
+| Windows          | ✅         | ✅        | ✅              | ✅              | ❌          | ❌        | ❌                   |
 | MacOS            | ✅         | ✅        | ✅              | ✅              | ✅          | ✅        | ✅                   |
 | Linux (Wayland)  | ✅         | ✅        | ✅              | ✅              | ✅          | ✅        | ✅                   |
-| Linux (X11)      | ⚠️          | ⚠️        | ⚠️             | ⚠️              | ⚠️          | ⚠️        | ⚠️                   |
+| Linux (X11)      | ⚠️          | ⚠️       | ⚠️              | ⚠️               | ⚠️          | ⚠️        | ⚠️                   |
 
 ### Buffer Type Support
 
