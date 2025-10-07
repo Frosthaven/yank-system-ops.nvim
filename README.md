@@ -367,6 +367,28 @@ to learn more.
 
 </details>
 
+<details>
+<summary><strong>How does this add native clipboard support on multiple platforms?</strong></summary>
+
+Each platform handles the system clipboard vastly different from one another. To
+bridge this gap, `yank-system-ops.nvim` uses a combination of cli tools and
+native OS commands to provide a consistent experience across platforms. Below is
+a high-level overview of how each platform is supported:
+
+- **Windows:** Relies on `powershell` commands to interact with the clipboard.
+  _Note: Windows support is still being worked on._
+- **MacOS:** Relies on `osascript` commands and `swift` scripts to interact
+  with the clipboard.
+- **Linux (Wayland):** Relies on `wl-clipboard`, `xclip`, or `xsel` to interact
+  with the clipboard.
+
+By leveraging these tools and commands, `yank-system-ops.nvim` can effectively
+interact with the system clipboard on various operating systems, allowing users
+to seamlessly copy and paste files, images, and URIs between Neovim and other
+applications.
+
+</details>
+
 <br>
 
 ## 📋 Roadmap
