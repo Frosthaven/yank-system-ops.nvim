@@ -216,10 +216,10 @@ are planned to be supported.
 
 | Operating System | Yank Files | Put Files | Yank as Archive | Extract Archive | Put Web URI | Put Image | Open in File Browser |
 |------------------|------------|-----------|-----------------|-----------------|-------------|-----------|----------------------|
-| Windows          | ✅         | ✅        | ✅              | ✅              | ❌          | ❌        | ❌                   |
+| Windows          | ✅         | ✅        | ✅              | ✅              | ✅          | ✅        | ✅                   |
 | MacOS            | ✅         | ✅        | ✅              | ✅              | ✅          | ✅        | ✅                   |
 | Linux (Wayland)  | ✅         | ✅        | ✅              | ✅              | ✅          | ✅        | ✅                   |
-| Linux (X11)      | ⚠️          | ⚠️       | ⚠️              | ⚠️               | ⚠️          | ⚠️        | ⚠️                   |
+| Linux (X11)      | ⚠️          | ⚠️         ⚠️              | ⚠️               | ⚠️          | ⚠️        | ⚠️                   |
 
 ### Buffer Type Support
 
@@ -378,7 +378,6 @@ native OS commands to provide a consistent experience across platforms. Below is
 a high-level overview of how each platform is supported:
 
 - **Windows:** Relies on `powershell` commands to interact with the clipboard.
-  _Note: Windows support is still being worked on._
 - **MacOS:** Relies on `bash`, `osascript`, and `swift` scripts to interact
   with the clipboard.
 - **Linux (Wayland):** Relies on `bash`, `wl-clipboard`, and `xclip` or `xsel`
@@ -417,7 +416,7 @@ Now I can just yank and put like a civilized human being.
 ## 📋 Roadmap
 
 - [x] Initial prototype
-- [ ] Complete Windows support
+- [x] Complete Windows support
 - [ ] Complete Linux (X11) support
 - [ ] Add setup opts for notifications, archive format, naming, etc.
 - [ ] Add UI for narrowing file/folder selection when yanking/archiving
