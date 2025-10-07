@@ -216,7 +216,7 @@ are planned to be supported.
 
 | Operating System | Yank Files | Put Files | Zip Files | Extract Files | Put Web URI | Put Image Data | Open in File Browser |
 |------------------|------------|-----------|-----------|---------------|-------------|----------------|----------------------|
-| Windows          | ✅         | ✅        | ❌        | ❌            | ❌          | ❌             | ❌                   |
+| Windows          | ✅         | ✅        | ✅        | ⚠️            | ❌          | ❌             | ❌                   |
 | MacOS            | ✅         | ✅        | ✅        | ✅            | ✅          | ✅             | ✅                   |
 | Linux (Wayland)  | ✅         | ✅        | ✅        | ✅            | ✅          | ✅             | ✅                   |
 | Linux (X11)      | ⚠️          | ⚠️        | ⚠️       | ⚠️            | ⚠️          | ⚠️             | ⚠️                   |

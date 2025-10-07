@@ -114,6 +114,95 @@ exit 0
     return true
 end
 
+--- Extract an archive from the clipboard into a target directory (Windows)
+-- @param target_dir string Absolute path to extract into
+-- @return table|nil List of extracted file paths or nil on failure
+function Windows:extract_files_from_clipboard(target_dir)
+    if not target_dir or target_dir == '' then
+        vim.notify('No target directory specified', vim.log.levels.ERROR, {
+            title = 'yank-system-ops',
+        })
+        return nil
+    end
+
+    -- Ensure 7z exists in PATH
+    if vim.fn.executable '7z' == 0 then
+        vim.notify('7z executable not found in PATH', vim.log.levels.ERROR, {
+            title = 'yank-system-ops',
+        })
+        return nil
+    end
+
+    -- PowerShell: retrieve first file from clipboard and copy it to target_dir
+    local ps = string.format(
+        [=[
+Add-Type -AssemblyName System.Windows.Forms
+Start-Sleep -Milliseconds 50
+$files = [System.Windows.Forms.Clipboard]::GetFileDropList()
+if ($files.Count -eq 0) { exit 2 }
+
+$src = $files[0]
+if (-not (Test-Path $src)) { exit 3 }
+
+$target = "%s"
+$dest = Join-Path $target (Split-Path $src -Leaf)
+Copy-Item -LiteralPath $src -Destination $dest -Force
+Write-Output $dest
+exit 0
+]=],
+        target_dir:gsub('\\', '/')
+    )
+
+    local output =
+        vim.fn.system { 'powershell', '-NoProfile', '-STA', '-Command', ps }
+    local rc = vim.v.shell_error
+    if rc ~= 0 then
+        vim.notify(
+            'Failed to retrieve archive from clipboard.\nPowerShell output:\n'
+                .. (output or '<none>'),
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
+        return nil
+    end
+
+    local archive_path = vim.fn.trim(output)
+    if archive_path == '' or vim.fn.filereadable(archive_path) == 0 then
+        vim.notify(
+            'No valid archive copied from clipboard.',
+            vim.log.levels.WARN,
+            {
+                title = 'yank-system-ops',
+            }
+        )
+        return nil
+    end
+
+    -- Extract the copied archive into target_dir
+    local extract_cmd =
+        string.format('7z x "%s" -o"%s" -y', archive_path, target_dir)
+    local ok = os.execute(extract_cmd)
+    if ok ~= 0 then
+        vim.notify(
+            'Failed to extract archive: ' .. archive_path,
+            vim.log.levels.ERROR,
+            {
+                title = 'yank-system-ops',
+            }
+        )
+        return nil
+    end
+
+    -- Cleanup: remove the copied archive file
+    local delete_cmd = string.format(
+        'powershell -NoProfile -Command Remove-Item -LiteralPath "%s" -Force',
+        archive_path
+    )
+    os.execute(delete_cmd)
+
+    return { archive_path }
+end
+
 --- Check if clipboard has image
 function Windows:clipboard_has_image()
     return false
