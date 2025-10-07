@@ -406,9 +406,9 @@ specific lines in a GitHub repo. Other times I need to download project assets
 from either Figma or an icon provider like Lucide Icons.
 
 All of these tasks required me to leave Neovim, navigate to my file explorer,
-and then find the file(s) I needed and do something with them.
+and then find the file(s) I needed and do something with them like an animal.
 
-Now I can just yank and put.
+Now I can just yank and put like a civilized human being.
 
 </details>
 
