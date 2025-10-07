@@ -395,6 +395,23 @@ creating and extracting archives.
 
 </details>
 
+<details>
+<summary><strong>Why did you make this?</strong></summary>
+
+As a developer, I live in Neovim. The rest of the workforce does not.
+
+I often found myself needing to quickly share files over Slack, Discord, email,
+and other applications. Sometimes I'd need to point fellow developers to
+specific lines in a GitHub repo. Other times I need to download project assets
+from either Figma or an icon provider like Lucide Icons.
+
+All of these tasks required me to leave Neovim, navigate to my file explorer,
+and then find the file(s) I needed and do something with them.
+
+Now I can just yank and put.
+
+</details>
+
 <br>
 
 ## 📋 Roadmap
