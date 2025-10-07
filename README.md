@@ -329,10 +329,11 @@ return {
 <summary><strong>What can I yank to the clipboard?</strong></summary>
 
 
-| Buffer Type       | Details |
-|-------------------|---------|
-| Default Buffers   | The current file is copied to the clipboard. You may also yank the current file into an archive (ending in `.nvim.zip`) which gets copied to your clipboard. This can then be pasted into other applications such as Slack, Discord, and your file browser.|
-| Directory Buffers | All files and folders in the current directory are copied to the clipboard. You may also yank all files and folders in the current directory into an archive (ending in `.nvim.zip`) which gets copied to your clipboard. These can then be pasted into other applications such as Slack, Discord, and your file browser.|
+| Buffer Type        | Details |
+|--------------------|---------|
+| Default Buffers    | The current file is copied to the clipboard. You may also yank the current file into an archive (ending in `.nvim.zip`) which gets copied to your clipboard. This can then be pasted into other applications such as Slack, Discord, and your file browser.|
+| Directory Buffers  | All files and folders in the current directory are copied to the clipboard. You may also yank all files and folders in the current directory into an archive (ending in `.nvim.zip`) which gets copied to your clipboard. These can then be pasted into other applications such as Slack, Discord, and your file browser.|
+| Other Applications | Files and folders, images, svg source code, and web URIs (such as from your web browser). |
 
 </details>
 
