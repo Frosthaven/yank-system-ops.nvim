@@ -80,9 +80,44 @@ function Windows.put_files_from_clipboard(target_dir)
         return false
     end
 
-    -- Replace backslashes for PowerShell
-    local ps_target = target_dir:gsub('\\', '/')
+    if vim.fn.isdirectory(target_dir) == 0 then
+        vim.notify(
+            'Target directory not found: ' .. target_dir,
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
+        return false
+    end
 
+    -- Step 1: Check clipboard for SVG/text content
+    local clip = vim.fn.getreg '+' or ''
+    clip = vim.trim(clip)
+    if clip:match '^<svg' then
+        local timestamp = os.date '%Y%m%d_%H%M%S'
+        local svg_file =
+            string.format('%s\\clipboard_%s.svg', target_dir, timestamp)
+        local f = io.open(svg_file, 'w')
+        if f then
+            f:write(clip)
+            f:close()
+            vim.notify(
+                'SVG content saved to: ' .. svg_file,
+                vim.log.levels.INFO,
+                { title = 'yank-system-ops' }
+            )
+            return true
+        else
+            vim.notify(
+                'Failed to write SVG to: ' .. svg_file,
+                vim.log.levels.ERROR,
+                { title = 'yank-system-ops' }
+            )
+            return false
+        end
+    end
+
+    -- Step 2: Fall back to file paths
+    local ps_target = target_dir:gsub('\\', '/')
     local ps = string.format(
         [=[
 Add-Type -AssemblyName System.Windows.Forms
@@ -196,35 +231,28 @@ exit 0
 end
 
 --- Check if clipboard has image
---- @TODO: test
 function Windows:clipboard_has_image()
-    -- PowerShell script to check clipboard
     local ps = [=[
 Add-Type -AssemblyName System.Windows.Forms
 $data = [System.Windows.Forms.Clipboard]::GetDataObject()
 
-# Exit if there are any files in the clipboard
-if ($data.GetDataPresent([System.Windows.Forms.DataFormats]::FileDrop)) { exit 1 }
+# Raw bitmap/DIB
+if ($data.GetDataPresent([System.Windows.Forms.DataFormats]::Bitmap)) { exit 0 }
+if ($data.GetDataPresent([System.Windows.Forms.DataFormats]::Dib)) { exit 0 }
 
-# Check for common web image formats
-$imageFormats = @(
-    [System.Windows.Forms.DataFormats]::PNG,
-    [System.Windows.Forms.DataFormats]::Dib,
-    [System.Windows.Forms.DataFormats]::Bitmap
-)
-
-foreach ($f in $imageFormats) {
-    if ($data.GetDataPresent($f)) { exit 0 }
+# HTML with <img>
+if ($data.GetDataPresent([System.Windows.Forms.DataFormats]::Html)) {
+    $html = $data.GetData([System.Windows.Forms.DataFormats]::Html) -as [string]
+    if ($html -match '<img') { exit 0 }
 }
 
-# No image detected
 exit 1
 ]=]
 
-    -- Run the PowerShell script
     vim.fn.system {
         'powershell',
         '-NoProfile',
+        '-STA',
         '-Command',
         '[Console]::OutputEncoding=[Text.Encoding]::UTF8; ' .. ps,
     }
@@ -232,44 +260,170 @@ exit 1
     return vim.v.shell_error == 0
 end
 
---- Save clipboard image
+--- Correct the file extension based on actual content
+-- @param path string: path to the downloaded file
+-- @return string|nil: new path with correct extension, or nil on failure
+local function fix_image_extension(path)
+    if vim.fn.filereadable(path) == 0 then
+        return nil
+    end
+
+    local f = io.open(path, 'rb')
+    if not f then
+        return nil
+    end
+    local header = f:read(512)
+    f:close()
+
+    local ext
+    if header:match '^<svg' then
+        ext = 'svg'
+    elseif header:sub(1, 8) == '\137PNG\r\n\26\n' then
+        ext = 'png'
+    elseif header:sub(1, 2) == '\255\216' then
+        ext = 'jpg'
+    end
+
+    if ext then
+        local new_path = path:gsub('%.%w+$', '.' .. ext)
+        if new_path ~= path then
+            os.rename(path, new_path)
+            return new_path
+        end
+        return path
+    end
+
+    return path
+end
+
+--- Save clipboard image, HTML <img> content, or SVG to target directory (Windows)
+-- Prefers SVG or base64 images to preserve transparency. Falls back to bitmap if necessary.
+-- @param target_dir string: destination directory
+-- @return string|nil: path to saved image, or nil on failure
 function Windows:save_clipboard_image(target_dir)
-    target_dir = target_dir or vim.fn.getcwd()
-    if vim.fn.isdirectory(target_dir) == 0 then
+    if not target_dir or vim.fn.isdirectory(target_dir) == 0 then
         vim.notify(
-            'Target directory not found: ' .. tostring(target_dir),
-            vim.log.levels.ERROR,
-            { title = 'yank-system-ops' }
+            'Invalid target directory: ' .. tostring(target_dir),
+            vim.log.levels.ERROR
         )
         return nil
     end
 
-    local filename = 'clipboard_image_' .. os.date '%Y%m%d_%H%M%S' .. '.png'
-    local out_path = target_dir .. '\\' .. filename
+    local timestamp = os.date '%Y%m%d_%H%M%S'
+    local out_path
 
-    local ps = string.format(
-        [=[
+    -- Step 1: Check for SVG content in clipboard
+    local clip = vim.fn.getreg '+' or ''
+    clip = vim.trim(clip)
+    if clip:match '^<svg' then
+        out_path =
+            vim.fs.joinpath(target_dir, 'clipboard_' .. timestamp .. '.svg')
+        local f = io.open(out_path, 'w')
+        if f then
+            f:write(clip)
+            f:close()
+            vim.notify(
+                'Saved SVG content to: ' .. out_path,
+                vim.log.levels.INFO,
+                { title = 'yank-system-ops' }
+            )
+            return out_path
+        else
+            vim.notify(
+                'Failed to write SVG to: ' .. out_path,
+                vim.log.levels.ERROR,
+                { title = 'yank-system-ops' }
+            )
+            return nil
+        end
+    end
+
+    -- Step 2: Check HTML <img> base64 or URL
+    out_path = vim.fs.joinpath(target_dir, 'clipboard_' .. timestamp)
+    local ps_script = string.format(
+        [[
 Add-Type -AssemblyName System.Windows.Forms
-Add-Type -AssemblyName System.Drawing
-if ([System.Windows.Forms.Clipboard]::ContainsImage()) {
-    $img = [System.Windows.Forms.Clipboard]::GetImage()
-    $img.Save("%s", [System.Drawing.Imaging.ImageFormat]::Png)
-} else { exit 1 }
-]=],
+$data = [System.Windows.Forms.Clipboard]::GetDataObject()
+$imgSaved = $false
+
+if ($data.GetDataPresent([System.Windows.Forms.DataFormats]::Html)) {
+    $html = $data.GetData([System.Windows.Forms.DataFormats]::Html) -as [string]
+
+    # Embedded base64 image
+    if ($html -match '<img[^>]+src="data:image/(png|jpeg|jpg);base64,([^"]+)"') {
+        $ext = $matches[1]
+        $out = "%s." + $ext
+        [IO.File]::WriteAllBytes($out, [Convert]::FromBase64String($matches[2]))
+        $imgSaved = $true
+        Write-Output $out
+    }
+    # Linked URL
+    elseif ($html -match '<img[^>]+src="(https?://[^"]+)"') {
+        $url = $matches[1]
+        $out = "%s.png"
+        try {
+            Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing
+            $imgSaved = $true
+            Write-Output $out
+        } catch {
+            Write-Host "Failed to download image from $url"
+        }
+    }
+}
+
+if (-not $imgSaved) { exit 1 } else { exit 0 }
+]],
+        out_path,
         out_path
     )
 
-    local result, rc = run_ps_script(ps)
-    if rc ~= 0 then
-        vim.notify(
-            'Failed to save clipboard image:\n' .. (result or '<no output>'),
-            vim.log.levels.ERROR,
-            { title = 'yank-system-ops' }
-        )
-        return nil
+    local result = vim.fn.system {
+        'powershell',
+        '-NoProfile',
+        '-STA',
+        '-Command',
+        '[Console]::OutputEncoding=[Text.Encoding]::UTF8; ' .. ps_script,
+    }
+    if vim.v.shell_error == 0 then
+        local saved_file = vim.fn.trim(result)
+        if vim.fn.filereadable(saved_file) == 1 then
+            return fix_image_extension(saved_file) or saved_file
+        end
     end
 
-    return out_path
+    -- Step 3: Fallback to bitmap (may lose transparency)
+    out_path = vim.fs.joinpath(target_dir, 'clipboard_' .. timestamp .. '.png')
+    local ps_bitmap = string.format(
+        [[
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+$bmp = [System.Windows.Forms.Clipboard]::GetImage()
+if ($bmp) {
+    $bmp.Save("%s", [System.Drawing.Imaging.ImageFormat]::Png)
+    exit 0
+} else { exit 1 }
+]],
+        out_path
+    )
+
+    local result_bitmap = vim.fn.system {
+        'powershell',
+        '-NoProfile',
+        '-STA',
+        '-Command',
+        '[Console]::OutputEncoding=[Text.Encoding]::UTF8; ' .. ps_bitmap,
+    }
+    if vim.v.shell_error == 0 and vim.fn.filereadable(out_path) == 1 then
+        return fix_image_extension(out_path) or out_path
+    end
+
+    vim.notify(
+        'No compatible image found in clipboard.\nPowerShell output:\n'
+            .. tostring(result_bitmap),
+        vim.log.levels.WARN,
+        { title = 'yank-system-ops' }
+    )
+    return nil
 end
 
 return Windows
