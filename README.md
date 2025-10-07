@@ -389,9 +389,9 @@ By leveraging abstractions from these underlying tools and commands,
 various operating systems, allowing users to seamlessly copy and paste files,
 images, and URIs between Neovim and other applications.
 
-In addition, `yank-system-ops.nvim` uses the `7zip` cli tool for creating and
-extracting archives, which is available on all major platforms. This allows for
-consistent archive handling across all platforms.
+In addition, `yank-system-ops.nvim` uses the `7zip` cli tool. Because it is
+available on all major platforms, we can provide a consistent experience when
+creating and extracting archives.
 
 </details>
 
