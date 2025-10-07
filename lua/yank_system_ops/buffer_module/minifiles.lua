@@ -42,7 +42,9 @@ end
 -- Returns the directory if buffer points to a directory, or parent directory if a file
 -- @return string|nil Absolute path of directory, or nil if invalid
 function M.get_active_dir()
-    local path = vim.fn.expand('%:p'):gsub('^minifiles://%d+//', '/')
+    local path = vim.fn.expand '%:p'
+    path = path:gsub('^minifiles://%d+/', '')
+
     local stat = vim.loop.fs_stat(path)
     if stat then
         return stat.type == 'directory' and path
