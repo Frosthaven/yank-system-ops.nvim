@@ -225,7 +225,7 @@ are planned to be supported.
 
 | Buffer Type | Supported | Notes                                                      |
 |-------------|-----------|------------------------------------------------------------|
-| default     | ✅        | Operates on the open file and it's directory               |
+| Default     | ✅        | Operates on the open file and it's directory               |
 | Netrw       | ✅        | Operates on all files and folders in the current directory |
 | Mini.files  | ✅        | Operates on all files and folders in the current directory |
 | Oil         | ✅        | Operates on all files and folders in the current directory |
