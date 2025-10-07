@@ -34,8 +34,8 @@ explorers, chat apps, email clients, and your neovim projects? Now you can!
 ```
 
 Yank file(s) in the current supported buffer into your native system clipboard
-for pasting into other applications (e.g., File Explorer, Finder, Discord,
-Slack, email clients, etc.).
+for pasting into other applications such as Slack, Discord, and your file
+browser. See the [FAQ](#-faq) for details on what can be yanked.
 
 ```lua
 {
@@ -47,15 +47,7 @@ Slack, email clients, etc.).
 ```
 
 Put file(s) from your system clipboard into the current supported buffer's
-directory. This also supports:
-
-- Putting URI(s) from the web (using `curl` or `wget`)
-
-    - _Example: `https://example.com/image.png`_
-
-- Putting Image data from the clipboard using your OS's clipboard manager
-
-    - _Example: Right clicking an image in a web browser and selecting "Copy Image"_
+directory. See the [FAQ](#-faq) for details on what can be put. 
 
 </details>
 
@@ -73,8 +65,8 @@ directory. This also supports:
 
 Compress the current supported buffer's file(s) into a `.nvim.zip` archive
 located in the configured `storage_path` and copy it to your system clipboard
-for pasting into other applications (e.g., File Explorer, Finder, Discord,
-Slack, email clients, etc.).
+for pasting into other applications such as Slack, Discord, and your file
+browser.
 
 ```lua
 {
@@ -339,8 +331,8 @@ return {
 
 | Buffer Type       | Details |
 |-------------------|---------|
-| Default Buffers   | The current file is copied to the clipboard. You may also yank the current file into an archive (ending in `.nvim.zip`) which gets copied to your clipboard.|
-| Directory Buffers | All files and folders in the current directory are copied to the clipboard. You may also yank all files and folders in the current directory into an archive (ending in `.nvim.zip`) which gets copied to your clipboard.|
+| Default Buffers   | The current file is copied to the clipboard. You may also yank the current file into an archive (ending in `.nvim.zip`) which gets copied to your clipboard. This can then be pasted into other applications such as Slack, Discord, and your file browser.|
+| Directory Buffers | All files and folders in the current directory are copied to the clipboard. You may also yank all files and folders in the current directory into an archive (ending in `.nvim.zip`) which gets copied to your clipboard. These can then be pasted into other applications such as Slack, Discord, and your file browser.|
 
 </details>
 
