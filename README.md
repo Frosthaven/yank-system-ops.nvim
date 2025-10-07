@@ -376,3 +376,4 @@ to learn more.
 - [ ] Add setup opts for notifications, archive format, naming, etc.
 - [ ] Add UI for narrowing file/folder selection when yanking/archiving
 - [ ] Add buffer registry for runtime addition of buffer support
+- [ ] Look into supporting tree-style file explorers
