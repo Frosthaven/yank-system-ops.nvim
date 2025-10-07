@@ -204,25 +204,40 @@ exit 0
 end
 
 --- Check if clipboard has image
+--- @TODO: test
 function Windows:clipboard_has_image()
-    return false
-    --     local ps = [=[
-    -- Add-Type -AssemblyName System.Windows.Forms
-    -- $data = [System.Windows.Forms.Clipboard]::GetDataObject()
-    --
-    -- # If clipboard has files, ignore image
-    -- if ($data.GetDataPresent([System.Windows.Forms.DataFormats]::FileDrop)) { exit 1 }
-    --
-    -- # Check for real image formats
-    -- $formats = $data.GetFormats()
-    -- if ($formats -contains "Bitmap" -or $formats -contains "PNG") { exit 0 } else { exit 1 }
-    -- ]=]
-    --
-    --     vim.fn.system(
-    --         'powershell -NoProfile -Command [Console]::OutputEncoding=[Text.Encoding]::UTF8; '
-    --             .. ps
-    --     )
-    --     return vim.v.shell_error == 0
+    -- PowerShell script to check clipboard
+    local ps = [=[
+Add-Type -AssemblyName System.Windows.Forms
+$data = [System.Windows.Forms.Clipboard]::GetDataObject()
+
+# Exit if there are any files in the clipboard
+if ($data.GetDataPresent([System.Windows.Forms.DataFormats]::FileDrop)) { exit 1 }
+
+# Check for common web image formats
+$imageFormats = @(
+    [System.Windows.Forms.DataFormats]::PNG,
+    [System.Windows.Forms.DataFormats]::Dib,
+    [System.Windows.Forms.DataFormats]::Bitmap
+)
+
+foreach ($f in $imageFormats) {
+    if ($data.GetDataPresent($f)) { exit 0 }
+}
+
+# No image detected
+exit 1
+]=]
+
+    -- Run the PowerShell script
+    vim.fn.system {
+        'powershell',
+        '-NoProfile',
+        '-Command',
+        '[Console]::OutputEncoding=[Text.Encoding]::UTF8; ' .. ps,
+    }
+
+    return vim.v.shell_error == 0
 end
 
 --- Save clipboard image

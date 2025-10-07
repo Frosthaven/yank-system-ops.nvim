@@ -9,10 +9,9 @@ local pathinfo = require 'yank_system_ops.pathinfo'
 
 local os_module = loader.get_os_module()
 local config = loader.get_config()
-local uv = vim.loop
 
 --- Normalize a path to absolute form with forward slashes
-local function normalize_path(p)
+function M.normalize_path(p)
     local abs = vim.fn.fnamemodify(p, ':p')
     return abs:gsub('\\', '/')
 end
@@ -63,7 +62,7 @@ function M.create_zip(items, base_dir, filetype)
         return
     end
 
-    base_dir = normalize_path(base_dir)
+    base_dir = M.normalize_path(base_dir)
     if base_dir:sub(-1) ~= '/' then
         base_dir = base_dir .. '/'
     end
@@ -95,7 +94,7 @@ function M.create_zip(items, base_dir, filetype)
     local zip_name =
         string.format('%s%s__%s.nvim.zip', project_prefix, base_name, timestamp)
 
-    local downloads = normalize_path(config.storage_path)
+    local downloads = M.normalize_path(config.storage_path)
     if vim.fn.isdirectory(downloads) == 0 then
         vim.fn.mkdir(downloads, 'p')
     end
@@ -104,7 +103,7 @@ function M.create_zip(items, base_dir, filetype)
     -- Build relative paths for 7-Zip
     local rel_items = {}
     for _, f in ipairs(items) do
-        local full = normalize_path(f)
+        local full = M.normalize_path(f)
         if full:sub(1, #base_dir) == base_dir then
             local rel = full:sub(#base_dir + 1)
             if rel ~= '.' and rel ~= '..' and rel ~= '' then
