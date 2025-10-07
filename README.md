@@ -3,7 +3,7 @@
 
 ## 🗃️ `yank-system-ops.nvim`
 
-### Share file(s) between other folders, projects, and applications
+### Share file(s) between other folders, projects, and applications. Uses native file copy & paste.
 
 Have you ever wanted to quickly copy and paste files between the web, file
 explorers, chat apps, email clients, and your neovim projects? Now you can!
