@@ -339,13 +339,8 @@ return {
 
 | Buffer Type       | Details |
 |-------------------|---------|
-| Default Buffers   | The current file is copied to the clipboard. You may also
-yank the current file into an archive (ending in `.nvim.zip`) which gets copied
-to your clipboard.|
-| Directory Buffers | All files and folders in the current directory are copied
-to the clipboard. You may also yank all files and folders in the current
-directory into an archive (ending in `.nvim.zip`) which gets copied to your
-clipboard.|
+| Default Buffers   | The current file is copied to the clipboard. You may also yank the current file into an archive (ending in `.nvim.zip`) which gets copied to your clipboard.|
+| Directory Buffers | All files and folders in the current directory are copied to the clipboard. You may also yank all files and folders in the current directory into an archive (ending in `.nvim.zip`) which gets copied to your clipboard.|
 
 </details>
 
@@ -353,18 +348,11 @@ clipboard.|
 <summary><strong>What can I put from the clipboard?</strong></summary>
 
 
-| Source Type       | Details |
-|-------------------|---------|
-| Web URIs          | A file will be downloaded from the web URI and saved in
-the current directory. Common file types are automatically detected (see next
-FAQ).|
-| Image Data       | An image copied to your clipboard from other applications
-will be saved as a `.png` file in the current directory. If you have SVG source
-code in your clipboard (e.g., from Lucide Icons or Figma assets), it will be
-saved as a `.svg` file.|
-| System Files/Folders | Files and folders copied using `yank-system-ops.nvim`
-or other applications (such as your OS's native file explorer) will be pasted
-into the current directory.|
+| Source Type          | Details |
+|----------------------|---------|
+| Web URIs             | A file will be downloaded from the web URI and saved in the current directory. Common file types are automatically detected (see next FAQ).|
+| Image Data           | An image copied to your clipboard from other applications will be saved as a `.png` file in the current directory. If you have SVG source code in your clipboard (e.g., from Lucide Icons or Figma assets), it will be saved as a `.svg` file.|
+| System Files/Folders | Files and folders copied using `yank-system-ops.nvim` or other applications (such as your OS's native file explorer) will be pasted into the current directory.|
 
 </details>
 
