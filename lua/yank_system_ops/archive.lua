@@ -18,21 +18,28 @@ end
 
 --- Get available 7z binary
 function M.get_7zip_binary()
-    local possible_binaries =
-        { '7z', '7zz', 'C:\\Program Files\\7-Zip\\7z.exe' }
-    for _, b in ipairs(possible_binaries) do
-        if vim.fn.executable(b) == 1 then
-            return b
+    local possible_binaries = { '7z', '7zz' }
+
+    if vim.fn.has 'win32' == 1 then
+        -- On Windows, assume '7z' works in PowerShell
+        -- common installations use an app execution alias that vim
+        -- can't detect with vim.fn.executable
+        return '7z'
+    else
+        for _, b in ipairs(possible_binaries) do
+            if vim.fn.executable(b) == 1 then
+                return b
+            end
         end
+        vim.notify(
+            'No 7z binary found in PATH (tried: '
+                .. table.concat(possible_binaries, ', ')
+                .. ')',
+            vim.log.levels.ERROR,
+            { title = 'yank-system-ops' }
+        )
+        return nil
     end
-    vim.notify(
-        'No 7z binary found in PATH (tried: '
-            .. table.concat(possible_binaries, ', ')
-            .. ')',
-        vim.log.levels.ERROR,
-        { title = 'yank-system-ops' }
-    )
-    return nil
 end
 
 --- Compress files into a zip archive

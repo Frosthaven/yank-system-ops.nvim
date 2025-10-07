@@ -125,14 +125,6 @@ function Windows:extract_files_from_clipboard(target_dir)
         return nil
     end
 
-    -- Ensure 7z exists in PATH
-    if vim.fn.executable '7z' == 0 then
-        vim.notify('7z executable not found in PATH', vim.log.levels.ERROR, {
-            title = 'yank-system-ops',
-        })
-        return nil
-    end
-
     -- PowerShell: retrieve first file from clipboard and copy it to target_dir
     local ps = string.format(
         [=[
