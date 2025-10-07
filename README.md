@@ -382,10 +382,10 @@ a high-level overview of how each platform is supported:
 - **Linux (Wayland):** Relies on `wl-clipboard`, `xclip`, or `xsel` to interact
   with the clipboard.
 
-By leveraging these tools and commands, `yank-system-ops.nvim` can effectively
-interact with the system clipboard on various operating systems, allowing users
-to seamlessly copy and paste files, images, and URIs between Neovim and other
-applications.
+By leveraging abstractions from these underlying tools and commands,
+`yank-system-ops.nvim` can effectively interact with the system clipboard on
+various operating systems, allowing users to seamlessly copy and paste files,
+images, and URIs between Neovim and other applications.
 
 </details>
 
