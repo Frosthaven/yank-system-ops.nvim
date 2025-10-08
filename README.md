@@ -216,10 +216,10 @@ are planned to be supported.
 
 | Operating System | Yank Files | Put Files | Yank as Archive | Extract Archive | Put Web URI | Put Image | Open in File Browser |
 |------------------|------------|-----------|-----------------|-----------------|-------------|-----------|----------------------|
-| Windows          | ✅         | ✅       | ✅              | ✅             | ✅          | ✅       | ✅                   |
-| MacOS            | ✅         | ✅       | ✅              | ✅             | ✅          | ✅       | ✅                   |
-| Linux (Wayland)  | ✅         | ✅       | ✅              | ✅             | ✅          | ✅       | ✅                   |
-| Linux (X11)      | ⚠️         | ⚠️       | ⚠️              | ⚠️             | ⚠️          | ⚠️       | ⚠️                   |
+| Windows          | ✅         | ✅        | ✅              | ✅              | ✅          | ✅        | ✅                   |
+| MacOS            | ✅         | ✅        | ✅              | ✅              | ✅          | ✅        | ✅                   |
+| Linux (Wayland)  | ✅         | ✅        | ✅              | ✅              | ✅          | ✅        | ✅                   |
+| Linux (X11)      | ⚠️         | ⚠️        | ⚠️              | ⚠️              | ⚠️          | ⚠️        | ⚠️                   |
 
 ### Buffer Type Support
 
