@@ -15,7 +15,7 @@ explorers, chat apps, email clients, and your neovim projects? Now you can!
   - [Buffer Type Support](#buffer-type-support)
 - [🚀 Usage](#-usage)
 - [❓ FAQ](#-faq)
-- [📋 Roadmap](#-roadmap)
+- [🗺 Roadmap](#-roadmap)
 
 <br>
 
@@ -413,7 +413,7 @@ Now I can just yank and put like a civilized human being.
 
 <br>
 
-## 📋 Roadmap
+## 🗺 Roadmap
 
 - [x] Initial prototype
 - [x] Complete Windows support
