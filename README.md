@@ -418,7 +418,6 @@ Now I can just yank and put like a civilized human being.
 - [x] Initial prototype on Linux (Wayland)
 - [x] Complete MacOS support
 - [x] Complete Windows support
-~~- [ ] Complete Linux (X11) support~~
 - [ ] Finish [frosthaven/native-clipboard.nvim](https://github.com/Frosthaven/native-clipboard.nvim)
 - [ ] Integrate with [frosthaven/native-clipboard.nvim](https://github.com/Frosthaven/native-clipboard.nvim)
 - [ ] Add setup opts for notifications, archive format, naming, etc.
