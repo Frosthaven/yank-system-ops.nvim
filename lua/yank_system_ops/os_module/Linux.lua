@@ -4,6 +4,8 @@
 local Base = require 'yank_system_ops.os_module.__base'
 local Linux = Base:extend()
 
+local clipboard = require 'native_clipboard'
+
 --- Put file(s) from system clipboard into target directory
 -- Supports multiple files copied from Linux file managers.
 -- @param target_dir string Absolute path
@@ -12,25 +14,11 @@ function Linux.put_files_from_clipboard(target_dir)
     --- Parse clipboard content into valid file paths
     -- @param clip string Clipboard text
     -- @return table List of absolute file paths
-    local function parse_clipboard_files(clip)
-        local items = {}
-        for part in clip:gmatch '[^\r\n%s]+' do
-            local path = part:gsub('^file://', '')
-            if
-                vim.fn.filereadable(path) == 1
-                or vim.fn.isdirectory(path) == 1
-            then
-                table.insert(items, path)
-            end
-        end
-        return items
-    end
 
     local items = {}
 
     -- Attempt to get clipboard content via vim register
-    local clip = vim.fn.getreg '+' or ''
-    clip = vim.trim(clip)
+    local clip = clipboard:get 'html' or clipboard:get 'text'
 
     -- Step 1: Handle SVG content directly
     if clip:match '^<svg' then
@@ -59,7 +47,7 @@ function Linux.put_files_from_clipboard(target_dir)
 
     -- Step 2: Handle file paths
     if clip ~= '' then
-        items = parse_clipboard_files(clip)
+        items = clipboard:get 'files' or {}
     end
 
     -- Fallback: wl-paste / xclip / xsel for multiple files
@@ -74,8 +62,8 @@ function Linux.put_files_from_clipboard(target_dir)
         end
 
         if cmd then
-            local output = vim.fn.system(cmd)
-            items = parse_clipboard_files(output)
+            vim.fn.system(cmd)
+            items = clipboard:get 'files' or {}
         end
     end
 
@@ -293,8 +281,88 @@ function Linux:save_clipboard_image(target_dir)
         return nil
     end
 
-    local filename = 'clipboard_image_' .. os.date '%Y%m%d_%H%M%S' .. '.png'
-    local out_path = target_dir .. '/' .. filename
+    local timestamp = os.date '%Y%m%d_%H%M%S'
+    local text_or_html = clipboard:get 'html' or clipboard:get 'text' or ''
+
+    -- Step 1: Check for SVG content
+    if text_or_html:match '^<svg' then
+        local out_path =
+            vim.fs.joinpath(target_dir, 'clipboard_' .. timestamp .. '.svg')
+        local f = io.open(out_path, 'w')
+        if f then
+            f:write(text_or_html)
+            f:close()
+            vim.notify(
+                'Saved SVG content to: ' .. out_path,
+                vim.log.levels.INFO,
+                { title = 'yank-system-ops' }
+            )
+            return Linux:fix_image_extension(out_path) or out_path
+        end
+    end
+
+    -- Step 2: Check for HTML <img> with base64 or URL
+    if text_or_html:match '^<img' then
+        -- Embedded base64 <img>
+        local img_type, base64_data =
+            text_or_html:match '<img[^>]+src="data:image/(%w+);base64,([^"]+)"'
+        if base64_data then
+            local out_path = vim.fs.joinpath(
+                target_dir,
+                'clipboard_' .. timestamp .. '.' .. img_type
+            )
+            local f = io.open(out_path, 'wb')
+            if f then
+                f:write(
+                    vim.fn.systemlist('base64 --decode', base64_data)[1] or ''
+                )
+                f:close()
+                vim.notify(
+                    'Saved base64 image to: ' .. out_path,
+                    vim.log.levels.INFO,
+                    { title = 'yank-system-ops' }
+                )
+                return Linux:fix_image_extension(out_path) or out_path
+            end
+        end
+
+        -- Linked <img> URL
+        local url = text_or_html:match '<img[^>]+src="(https?://[^"]+)"'
+        if url then
+            local out_path =
+                vim.fs.joinpath(target_dir, 'clipboard_' .. timestamp .. '.png')
+            local result = vim.fn.system {
+                'curl',
+                '-L',
+                '-s',
+                '-o',
+                out_path,
+                '-H',
+                'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+                '-H',
+                'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                url,
+            }
+            if
+                result
+                and vim.v.shell_error == 0
+                and vim.fn.filereadable(out_path) == 1
+            then
+                vim.notify(
+                    'Downloaded image from: ' .. url,
+                    vim.log.levels.INFO,
+                    { title = 'yank-system-ops' }
+                )
+                return Linux:fix_image_extension(out_path) or out_path
+            end
+        end
+    end
+
+    ----------------------------------------------------------------------
+    -- Step 3: Fallback to bitmap (wl-paste, xclip, or xsel)
+    ----------------------------------------------------------------------
+    local filename = 'clipboard_image_' .. timestamp .. '.png'
+    local out_path = vim.fs.joinpath(target_dir, filename)
 
     local cmd
     if vim.fn.executable 'wl-paste' == 1 then
@@ -329,7 +397,7 @@ function Linux:save_clipboard_image(target_dir)
         return nil
     end
 
-    return out_path
+    return Linux:fix_image_extension(out_path) or out_path
 end
 
 return Linux

@@ -242,6 +242,7 @@ example below to configure `yank-system-ops.nvim`:
 ```lua
 return {
     'frosthaven/yank-system-ops.nvim',
+    dependencies = { 'frosthaven/native-clipboard.nvim' },
     enabled = true,
     lazy = false, -- currently does not support lazy loading
     opts = {
@@ -418,8 +419,8 @@ Now I can just yank and put like a civilized human being.
 - [x] Initial prototype on Linux (Wayland)
 - [x] Complete MacOS support
 - [x] Complete Windows support
-- [ ] Finish [frosthaven/native-clipboard.nvim](https://github.com/Frosthaven/native-clipboard.nvim)
-- [ ] Integrate with [frosthaven/native-clipboard.nvim](https://github.com/Frosthaven/native-clipboard.nvim)
+- [x] Finish [frosthaven/native-clipboard.nvim](https://github.com/Frosthaven/native-clipboard.nvim)
+- [x] Integrate with [frosthaven/native-clipboard.nvim](https://github.com/Frosthaven/native-clipboard.nvim)
 - [ ] Add setup opts for notifications, archive format, naming, etc.
 - [ ] Add UI for narrowing file/folder selection when yanking/archiving
 - [ ] Add buffer registry for runtime addition of buffer support

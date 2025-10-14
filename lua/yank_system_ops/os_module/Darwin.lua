@@ -4,6 +4,8 @@
 local Base = require 'yank_system_ops.os_module.__base'
 local Darwin = Base:extend()
 
+local clipboard = require 'native_clipboard'
+
 --- Helper to quote shell arguments safely
 local function shell_quote(str)
     return "'" .. str:gsub("'", "'\\''") .. "'"
@@ -276,7 +278,7 @@ function Darwin.open_file_browser(path)
     return vim.v.shell_error == 0
 end
 
---- Save image from clipboard
+--- Save image from clipboard into target directory (Darwin/macOS)
 function Darwin:save_clipboard_image(target_dir)
     target_dir = target_dir or vim.fn.getcwd()
     if vim.fn.isdirectory(target_dir) == 0 then
@@ -288,7 +290,72 @@ function Darwin:save_clipboard_image(target_dir)
         return nil
     end
 
-    local filename = 'clipboard_image_' .. os.date '%Y%m%d_%H%M%S' .. '.png'
+    local timestamp = os.date '%Y%m%d_%H%M%S'
+    local text_or_html = clipboard:get 'html' or clipboard:get 'text' or ''
+
+    -- Step 1: Check for SVG content
+    if text_or_html:match '^<svg' then
+        local out_path =
+            vim.fs.joinpath(target_dir, 'clipboard_' .. timestamp .. '.svg')
+        local f = io.open(out_path, 'w')
+        if f then
+            f:write(text_or_html)
+            f:close()
+            vim.notify(
+                'Saved SVG content to: ' .. out_path,
+                vim.log.levels.INFO,
+                { title = 'yank-system-ops' }
+            )
+            return Darwin:fix_image_extension(out_path) or out_path
+        end
+    end
+
+    -- Step 2: Check for HTML <img> with base64 or URL
+    if text_or_html:match '^<img' then
+        local img_type, base64_data =
+            text_or_html:match '<img[^>]+src="data:image/(%w+);base64,([^"]+)"'
+        if base64_data then
+            local out_path = vim.fs.joinpath(
+                target_dir,
+                'clipboard_' .. timestamp .. '.' .. img_type
+            )
+            local f = io.open(out_path, 'wb')
+            if f then
+                f:write(
+                    vim.fn.systemlist('base64 --decode', base64_data)[1] or ''
+                )
+                f:close()
+                vim.notify(
+                    'Saved base64 image to: ' .. out_path,
+                    vim.log.levels.INFO,
+                    { title = 'yank-system-ops' }
+                )
+                return Darwin:fix_image_extension(out_path) or out_path
+            end
+        end
+
+        local url = text_or_html:match '<img[^>]+src="(https?://[^"]+)"'
+        if url then
+            local out_path =
+                vim.fs.joinpath(target_dir, 'clipboard_' .. timestamp .. '.png')
+            local result =
+                vim.fn.system { 'curl', '-L', '-s', '-o', out_path, url }
+            if
+                vim.v.shell_error == 0
+                and vim.fn.filereadable(out_path) == 1
+            then
+                vim.notify(
+                    'Downloaded image from: ' .. url,
+                    vim.log.levels.INFO,
+                    { title = 'yank-system-ops' }
+                )
+                return Darwin:fix_image_extension(out_path) or out_path
+            end
+        end
+    end
+
+    -- Step 3: Fallback to bitmap (pngpaste or AppleScript)
+    local filename = 'clipboard_image_' .. timestamp .. '.png'
     local out_path = target_dir .. '/' .. filename
 
     local cmd
@@ -326,7 +393,7 @@ function Darwin:save_clipboard_image(target_dir)
         return nil
     end
 
-    return out_path
+    return Darwin:fix_image_extension(out_path) or out_path
 end
 
 return Darwin

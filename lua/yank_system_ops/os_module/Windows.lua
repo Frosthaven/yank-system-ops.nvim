@@ -167,42 +167,6 @@ exit 0
     return { archive_path }
 end
 
---- Correct the file extension based on actual content
--- @param path string: path to the downloaded file
--- @return string|nil: new path with correct extension, or nil on failure
-local function fix_image_extension(path)
-    if vim.fn.filereadable(path) == 0 then
-        return nil
-    end
-
-    local f = io.open(path, 'rb')
-    if not f then
-        return nil
-    end
-    local header = f:read(512)
-    f:close()
-
-    local ext
-    if header:match '^<svg' then
-        ext = 'svg'
-    elseif header:sub(1, 8) == '\137PNG\r\n\26\n' then
-        ext = 'png'
-    elseif header:sub(1, 2) == '\255\216' then
-        ext = 'jpg'
-    end
-
-    if ext then
-        local new_path = path:gsub('%.%w+$', '.' .. ext)
-        if new_path ~= path then
-            os.rename(path, new_path)
-            return new_path
-        end
-        return path
-    end
-
-    return path
-end
-
 --- Save clipboard image, HTML <img> content, or SVG to target directory (Windows)
 -- Prefers SVG or base64 images to preserve transparency. Falls back to bitmap if necessary.
 -- @param target_dir string: destination directory
@@ -294,7 +258,7 @@ if (-not $imgSaved) { exit 1 } else { exit 0 }
     if vim.v.shell_error == 0 then
         local saved_file = vim.fn.trim(result)
         if vim.fn.filereadable(saved_file) == 1 then
-            return fix_image_extension(saved_file) or saved_file
+            return Windows:fix_image_extension(saved_file) or saved_file
         end
     end
 
@@ -321,7 +285,7 @@ if ($bmp) {
         '[Console]::OutputEncoding=[Text.Encoding]::UTF8; ' .. ps_bitmap,
     }
     if vim.v.shell_error == 0 and vim.fn.filereadable(out_path) == 1 then
-        return fix_image_extension(out_path) or out_path
+        return Windows:fix_image_extension(out_path) or out_path
     end
 
     vim.notify(

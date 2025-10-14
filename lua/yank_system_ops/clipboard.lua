@@ -86,7 +86,7 @@ function M.put_files(target_dir)
     end
 
     -- Handle image data
-    local has_image = clipboard:has 'image'
+    local has_image = clipboard:has 'image' or clipboard:has 'html'
     if has_image then
         local img_path = os_module:save_clipboard_image(target_dir)
         if img_path then

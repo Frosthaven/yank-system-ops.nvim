@@ -15,6 +15,42 @@ function Base.put_files_from_clipboard(target_dir)
     )
 end
 
+--- Correct the file extension based on actual content
+-- @param path string: path to the downloaded file
+-- @return string|nil: new path with correct extension, or nil on failure
+function Base:fix_image_extension(path)
+    if vim.fn.filereadable(path) == 0 then
+        return nil
+    end
+
+    local f = io.open(path, 'rb')
+    if not f then
+        return nil
+    end
+    local header = f:read(512)
+    f:close()
+
+    local ext
+    if header:match '^<svg' then
+        ext = 'svg'
+    elseif header:sub(1, 8) == '\137PNG\r\n\26\n' then
+        ext = 'png'
+    elseif header:sub(1, 2) == '\255\216' then
+        ext = 'jpg'
+    end
+
+    if ext then
+        local new_path = path:gsub('%.%w+$', '.' .. ext)
+        if new_path ~= path then
+            os.rename(path, new_path)
+            return new_path
+        end
+        return path
+    end
+
+    return path
+end
+
 --- Extract files from clipboard into a target directory
 -- Abstract method. Must be implemented by OS-specific modules.
 -- @param target_dir string Absolute path
