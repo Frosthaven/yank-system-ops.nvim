@@ -4,105 +4,7 @@
 local Base = require 'yank_system_ops.os_module.__base'
 local Linux = Base:extend()
 
---- Copy file(s) to the system clipboard
--- Converts file paths to URI format and uses `wl-copy`, `xclip`, or `xsel`
--- to copy them to the system clipboard.
--- @param files string|table A file path or list of file paths
--- @return boolean True if copied successfully, false otherwise
-function Linux.add_files_to_clipboard(files, base_dir)
-    -- filter out any files that end in /. or /..
-    local filtered_files = {}
-    for _, f in ipairs(type(files) == 'string' and { files } or files) do
-        if not f:match '/%.%.$' and not f:match '/%.$' then
-            table.insert(filtered_files, f)
-        end
-    end
-    files = filtered_files
-
-    -- Ensure base_dir is an absolute path and ends with /
-    if base_dir then
-        base_dir = vim.fn.fnamemodify(base_dir, ':p')
-        if base_dir:sub(-1) ~= '/' then
-            base_dir = base_dir .. '/'
-        end
-    end
-
-    -- Normalize input to a table
-    if type(files) == 'string' then
-        files = { files }
-    elseif type(files) ~= 'table' then
-        vim.notify(
-            'Invalid input to add_files_to_clipboard',
-            vim.log.levels.WARN,
-            { title = 'yank-system-ops' }
-        )
-        return false
-    end
-
-    local uri_list = {}
-
-    for _, f in ipairs(files) do
-        local abs_path = vim.fn.fnamemodify(f, ':p')
-
-        -- Skip if file does not exist
-        if vim.loop.fs_stat(abs_path) then
-            table.insert(uri_list, 'file://' .. abs_path)
-        end
-    end
-
-    if #uri_list == 0 then
-        vim.notify(
-            'No valid files to copy to clipboard',
-            vim.log.levels.WARN,
-            { title = 'yank-system-ops' }
-        )
-        return false
-    end
-
-    local uris_str = table.concat(uri_list, '\n'):gsub('"', '\\"')
-
-    local cmd
-    if vim.fn.executable 'wl-copy' == 1 then
-        cmd = string.format(
-            [[bash -c 'printf "%%s" "%s" | wl-copy -t text/uri-list']],
-            uris_str
-        )
-    elseif vim.fn.executable 'xclip' == 1 then
-        cmd = string.format(
-            [[bash -c 'printf "%%s" "%s" | xclip -selection clipboard -t text/uri-list']],
-            uris_str
-        )
-    elseif vim.fn.executable 'xsel' == 1 then
-        vim.notify(
-            'xsel does not support text/uri-list — copying as plain text instead',
-            vim.log.levels.WARN,
-            { title = 'yank-system-ops' }
-        )
-        cmd = string.format(
-            [[bash -c 'printf "%%s" "%s" | xsel --clipboard --input']],
-            uris_str
-        )
-    else
-        vim.notify(
-            'No supported clipboard utility found (wl-copy, xclip, xsel)',
-            vim.log.levels.WARN,
-            { title = 'yank-system-ops' }
-        )
-        return false
-    end
-
-    local result = vim.fn.system(cmd)
-    if vim.v.shell_error ~= 0 then
-        vim.notify(
-            'Failed to copy file(s) to clipboard: ' .. result,
-            vim.log.levels.ERROR,
-            { title = 'yank-system-ops' }
-        )
-        return false
-    end
-
-    return true
-end
+local clipboard = require 'native_clipboard'
 
 --- Put file(s) from system clipboard into target directory
 -- Supports multiple files copied from Linux file managers.
@@ -112,34 +14,20 @@ function Linux.put_files_from_clipboard(target_dir)
     --- Parse clipboard content into valid file paths
     -- @param clip string Clipboard text
     -- @return table List of absolute file paths
-    local function parse_clipboard_files(clip)
-        local items = {}
-        for part in clip:gmatch '[^\r\n%s]+' do
-            local path = part:gsub('^file://', '')
-            if
-                vim.fn.filereadable(path) == 1
-                or vim.fn.isdirectory(path) == 1
-            then
-                table.insert(items, path)
-            end
-        end
-        return items
-    end
 
     local items = {}
 
-    -- Attempt to get clipboard content via vim register
-    local clip = vim.fn.getreg '+' or ''
-    clip = vim.trim(clip)
+    -- Attempt to get clipboard content
+    local text_or_html = clipboard:get 'html' or clipboard:get 'text' or ''
 
     -- Step 1: Handle SVG content directly
-    if clip:match '^<svg' then
+    if text_or_html:match '^<svg' then
         local timestamp = os.date '%Y%m%d_%H%M%S'
         local svg_file =
             string.format('%s/clipboard_%s.svg', target_dir, timestamp)
         local f = io.open(svg_file, 'w')
         if f then
-            f:write(clip)
+            f:write(text_or_html)
             f:close()
             vim.notify(
                 'SVG content saved to: ' .. svg_file,
@@ -158,8 +46,8 @@ function Linux.put_files_from_clipboard(target_dir)
     end
 
     -- Step 2: Handle file paths
-    if clip ~= '' then
-        items = parse_clipboard_files(clip)
+    if text_or_html ~= '' then
+        items = clipboard:get 'files' or {}
     end
 
     -- Fallback: wl-paste / xclip / xsel for multiple files
@@ -174,17 +62,12 @@ function Linux.put_files_from_clipboard(target_dir)
         end
 
         if cmd then
-            local output = vim.fn.system(cmd)
-            items = parse_clipboard_files(output)
+            vim.fn.system(cmd)
+            items = clipboard:get 'files' or {}
         end
     end
 
     if #items == 0 then
-        vim.notify(
-            'No valid file URIs found in clipboard',
-            vim.log.levels.WARN,
-            { title = 'yank-system-ops' }
-        )
         return false
     end
 
@@ -381,26 +264,6 @@ function Linux.open_file_browser(path)
     return true
 end
 
---- Check if clipboard contains image data (Linux)
--- @return boolean True if clipboard has image data
-function Linux:clipboard_has_image()
-    local cmd
-    if vim.fn.executable 'wl-paste' == 1 then
-        cmd = [[bash -c 'wl-paste -t image/png -n >/dev/null 2>&1']]
-    elseif vim.fn.executable 'xclip' == 1 then
-        cmd =
-            [[bash -c 'xclip -selection clipboard -t image/png -o >/dev/null 2>&1']]
-    elseif vim.fn.executable 'xsel' == 1 then
-        cmd =
-            [[bash -c 'xsel --clipboard --output --mime-type image/png >/dev/null 2>&1']]
-    else
-        return false
-    end
-
-    vim.fn.system(cmd)
-    return vim.v.shell_error == 0
-end
-
 --- Save image from clipboard into target directory (Linux)
 function Linux:save_clipboard_image(target_dir)
     target_dir = target_dir or vim.fn.getcwd()
@@ -413,8 +276,88 @@ function Linux:save_clipboard_image(target_dir)
         return nil
     end
 
-    local filename = 'clipboard_image_' .. os.date '%Y%m%d_%H%M%S' .. '.png'
-    local out_path = target_dir .. '/' .. filename
+    local timestamp = os.date '%Y%m%d_%H%M%S'
+    local text_or_html = clipboard:get 'html' or clipboard:get 'text' or ''
+
+    -- Step 1: Check for SVG content
+    if text_or_html:match '^<svg' then
+        local out_path =
+            vim.fs.joinpath(target_dir, 'clipboard_' .. timestamp .. '.svg')
+        local f = io.open(out_path, 'w')
+        if f then
+            f:write(text_or_html)
+            f:close()
+            vim.notify(
+                'Saved SVG content to: ' .. out_path,
+                vim.log.levels.INFO,
+                { title = 'yank-system-ops' }
+            )
+            return Linux:fix_image_extension(out_path) or out_path
+        end
+    end
+
+    -- Step 2: Check for HTML <img> with base64 or URL
+    if text_or_html:match '^<img' then
+        -- Embedded base64 <img>
+        local img_type, base64_data =
+            text_or_html:match '<img[^>]+src="data:image/(%w+);base64,([^"]+)"'
+        if base64_data then
+            local out_path = vim.fs.joinpath(
+                target_dir,
+                'clipboard_' .. timestamp .. '.' .. img_type
+            )
+            local f = io.open(out_path, 'wb')
+            if f then
+                f:write(
+                    vim.fn.systemlist('base64 --decode', base64_data)[1] or ''
+                )
+                f:close()
+                vim.notify(
+                    'Saved base64 image to: ' .. out_path,
+                    vim.log.levels.INFO,
+                    { title = 'yank-system-ops' }
+                )
+                return Linux:fix_image_extension(out_path) or out_path
+            end
+        end
+
+        -- Linked <img> URL
+        local url = text_or_html:match '<img[^>]+src="(https?://[^"]+)"'
+        if url then
+            local out_path =
+                vim.fs.joinpath(target_dir, 'clipboard_' .. timestamp .. '.png')
+            local result = vim.fn.system {
+                'curl',
+                '-L',
+                '-s',
+                '-o',
+                out_path,
+                '-H',
+                'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+                '-H',
+                'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                url,
+            }
+            if
+                result
+                and vim.v.shell_error == 0
+                and vim.fn.filereadable(out_path) == 1
+            then
+                vim.notify(
+                    'Downloaded image from: ' .. url,
+                    vim.log.levels.INFO,
+                    { title = 'yank-system-ops' }
+                )
+                return Linux:fix_image_extension(out_path) or out_path
+            end
+        end
+    end
+
+    ----------------------------------------------------------------------
+    -- Step 3: Fallback to bitmap (wl-paste, xclip, or xsel)
+    ----------------------------------------------------------------------
+    local filename = 'clipboard_image_' .. timestamp .. '.png'
+    local out_path = vim.fs.joinpath(target_dir, filename)
 
     local cmd
     if vim.fn.executable 'wl-paste' == 1 then
@@ -449,7 +392,7 @@ function Linux:save_clipboard_image(target_dir)
         return nil
     end
 
-    return out_path
+    return Linux:fix_image_extension(out_path) or out_path
 end
 
 return Linux

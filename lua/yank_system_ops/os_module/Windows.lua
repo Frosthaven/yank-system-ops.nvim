@@ -4,56 +4,6 @@
 local Base = require 'yank_system_ops.os_module.__base'
 local Windows = Base:extend()
 
---- Copy file(s) to the clipboard (Windows)
--- Uses PowerShell + System.Windows.Forms.Clipboard
--- @param files string|table
--- @return boolean
-function Windows.add_files_to_clipboard(files)
-    if type(files) == 'string' then
-        files = { files }
-    end
-    if type(files) ~= 'table' or #files == 0 then
-        vim.notify(
-            'No files provided to copy',
-            vim.log.levels.WARN,
-            { title = 'yank-system-ops' }
-        )
-        return false
-    end
-
-    -- Escape paths
-    local escaped_files = {}
-    for _, f in ipairs(files) do
-        table.insert(escaped_files, "'" .. f:gsub("'", "''") .. "'")
-    end
-    local file_list = table.concat(escaped_files, ', ')
-
-    -- PowerShell script
-    local ps = string.format(
-        [=[
-Add-Type -AssemblyName System.Windows.Forms
-$sc = New-Object System.Collections.Specialized.StringCollection
-%s | ForEach-Object { if (Test-Path $_) { $sc.Add($_) | Out-Null } }
-if ($sc.Count -gt 0) {
-    [System.Windows.Forms.Clipboard]::SetFileDropList($sc)
-    exit 0
-} else { exit 1 }
-]=],
-        file_list
-    )
-
-    local result = vim.fn.system { 'powershell', '-NoProfile', '-Command', ps }
-    if vim.v.shell_error ~= 0 then
-        vim.notify(
-            'Failed to copy file(s) to clipboard: ' .. (result or '<no output>'),
-            vim.log.levels.ERROR,
-            { title = 'yank-system-ops' }
-        )
-        return false
-    end
-    return true
-end
-
 --- Put files from clipboard into target_dir
 -- @param target_dir string
 -- @return boolean
@@ -217,72 +167,6 @@ exit 0
     return { archive_path }
 end
 
---- Check if clipboard has image
-function Windows:clipboard_has_image()
-    local ps = [=[
-Add-Type -AssemblyName System.Windows.Forms
-$data = [System.Windows.Forms.Clipboard]::GetDataObject()
-
-# Raw bitmap/DIB
-if ($data.GetDataPresent([System.Windows.Forms.DataFormats]::Bitmap)) { exit 0 }
-if ($data.GetDataPresent([System.Windows.Forms.DataFormats]::Dib)) { exit 0 }
-
-# HTML with <img>
-if ($data.GetDataPresent([System.Windows.Forms.DataFormats]::Html)) {
-    $html = $data.GetData([System.Windows.Forms.DataFormats]::Html) -as [string]
-    if ($html -match '<img') { exit 0 }
-}
-
-exit 1
-]=]
-
-    vim.fn.system {
-        'powershell',
-        '-NoProfile',
-        '-STA',
-        '-Command',
-        '[Console]::OutputEncoding=[Text.Encoding]::UTF8; ' .. ps,
-    }
-
-    return vim.v.shell_error == 0
-end
-
---- Correct the file extension based on actual content
--- @param path string: path to the downloaded file
--- @return string|nil: new path with correct extension, or nil on failure
-local function fix_image_extension(path)
-    if vim.fn.filereadable(path) == 0 then
-        return nil
-    end
-
-    local f = io.open(path, 'rb')
-    if not f then
-        return nil
-    end
-    local header = f:read(512)
-    f:close()
-
-    local ext
-    if header:match '^<svg' then
-        ext = 'svg'
-    elseif header:sub(1, 8) == '\137PNG\r\n\26\n' then
-        ext = 'png'
-    elseif header:sub(1, 2) == '\255\216' then
-        ext = 'jpg'
-    end
-
-    if ext then
-        local new_path = path:gsub('%.%w+$', '.' .. ext)
-        if new_path ~= path then
-            os.rename(path, new_path)
-            return new_path
-        end
-        return path
-    end
-
-    return path
-end
-
 --- Save clipboard image, HTML <img> content, or SVG to target directory (Windows)
 -- Prefers SVG or base64 images to preserve transparency. Falls back to bitmap if necessary.
 -- @param target_dir string: destination directory
@@ -374,7 +258,7 @@ if (-not $imgSaved) { exit 1 } else { exit 0 }
     if vim.v.shell_error == 0 then
         local saved_file = vim.fn.trim(result)
         if vim.fn.filereadable(saved_file) == 1 then
-            return fix_image_extension(saved_file) or saved_file
+            return Windows:fix_image_extension(saved_file) or saved_file
         end
     end
 
@@ -401,7 +285,7 @@ if ($bmp) {
         '[Console]::OutputEncoding=[Text.Encoding]::UTF8; ' .. ps_bitmap,
     }
     if vim.v.shell_error == 0 and vim.fn.filereadable(out_path) == 1 then
-        return fix_image_extension(out_path) or out_path
+        return Windows:fix_image_extension(out_path) or out_path
     end
 
     vim.notify(

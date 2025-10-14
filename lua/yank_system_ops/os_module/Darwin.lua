@@ -4,72 +4,11 @@
 local Base = require 'yank_system_ops.os_module.__base'
 local Darwin = Base:extend()
 
+local clipboard = require 'native_clipboard'
+
 --- Helper to quote shell arguments safely
 local function shell_quote(str)
     return "'" .. str:gsub("'", "'\\''") .. "'"
-end
-
-local function get_plugin_root()
-    -- Resolve to absolute path of this Lua file
-    local source = debug.getinfo(1, 'S').source
-    if source:sub(1, 1) == '@' then
-        source = source:sub(2)
-    end
-    -- Move up to the plugin root
-    return vim.fn.fnamemodify(source, ':h:h:h:h') -- adjust depth as needed
-end
-
---- Copy a single file (or multiple files) to macOS clipboard using Swift
--- @param files string|table File path(s) to copy
--- @return boolean success
-function Darwin.add_files_to_clipboard(files)
-    if type(files) == 'string' then
-        files = { files }
-    elseif type(files) ~= 'table' then
-        vim.notify(
-            'Invalid input to add_files_to_clipboard',
-            vim.log.levels.WARN,
-            { title = 'yank-system-ops' }
-        )
-        return false
-    end
-
-    local plugin_root = get_plugin_root()
-    local swift_file = plugin_root
-        .. '/lua/yank_system_ops/os_module/Darwin/Darwin_copyfiles.swift'
-    if not vim.loop.fs_stat(swift_file) then
-        vim.notify(
-            'Swift file not found: ' .. swift_file,
-            vim.log.levels.ERROR,
-            { title = 'yank-system-ops' }
-        )
-        return false
-    end
-
-    -- Build bash command with $@ to safely handle spaces
-    local cmd_tbl = { 'bash', '-c', 'swift "$@"', 'dummy', swift_file }
-    for _, f in ipairs(files) do
-        local name = vim.fn.fnamemodify(f, ':t') -- get basename
-        if name ~= '.' and name ~= '..' and vim.loop.fs_stat(f) then
-            table.insert(cmd_tbl, f) -- valid file
-        end
-    end
-
-    if #cmd_tbl <= 4 then -- only bash, -c, swift "$@", dummy, swift_file
-        return false -- nothing valid to copy
-    end
-
-    local result = vim.fn.system(cmd_tbl)
-    if vim.v.shell_error ~= 0 then
-        vim.notify(
-            'Failed to copy files to clipboard:\n' .. result,
-            vim.log.levels.ERROR,
-            { title = 'yank-system-ops' }
-        )
-        return false
-    end
-
-    return true
 end
 
 --- Recursively extract an archive into a target directory on Darwin
@@ -234,9 +173,9 @@ function Darwin.put_files_from_clipboard(target_dir)
     end
 
     -- Step 1: Check clipboard for SVG content
-    local clip = vim.fn.getreg '+' or ''
-    clip = vim.trim(clip)
-    if clip:match '^<svg' then
+    local text_or_html = clipboard:get 'html' or clipboard:get 'text' or ''
+    text_or_html = vim.trim(text_or_html)
+    if text_or_html:match '^<svg' then
         -- Add timestamp to filename
         local timestamp = os.date '%Y%m%d_%H%M%S'
         local svg_file =
@@ -244,7 +183,7 @@ function Darwin.put_files_from_clipboard(target_dir)
 
         local f = io.open(svg_file, 'w')
         if f then
-            f:write(clip)
+            f:write(text_or_html)
             f:close()
             vim.notify(
                 'SVG content saved to: ' .. svg_file,
@@ -339,26 +278,7 @@ function Darwin.open_file_browser(path)
     return vim.v.shell_error == 0
 end
 
---- Check if clipboard contains image
-function Darwin:clipboard_has_image()
-    if vim.fn.executable 'pngpaste' == 1 then
-        vim.fn.system 'bash -c "pngpaste -b >/dev/null 2>&1"'
-        return vim.v.shell_error == 0
-    else
-        local script = [[
-            try
-                the clipboard as «class PNGf»
-                return 0
-            on error
-                return 1
-            end try
-        ]]
-        local result = vim.fn.system('osascript -e ' .. shell_quote(script))
-        return result:match '0' ~= nil
-    end
-end
-
---- Save image from clipboard
+--- Save image from clipboard into target directory (Darwin/macOS)
 function Darwin:save_clipboard_image(target_dir)
     target_dir = target_dir or vim.fn.getcwd()
     if vim.fn.isdirectory(target_dir) == 0 then
@@ -370,7 +290,72 @@ function Darwin:save_clipboard_image(target_dir)
         return nil
     end
 
-    local filename = 'clipboard_image_' .. os.date '%Y%m%d_%H%M%S' .. '.png'
+    local timestamp = os.date '%Y%m%d_%H%M%S'
+    local text_or_html = clipboard:get 'html' or clipboard:get 'text' or ''
+
+    -- Step 1: Check for SVG content
+    if text_or_html:match '^<svg' then
+        local out_path =
+            vim.fs.joinpath(target_dir, 'clipboard_' .. timestamp .. '.svg')
+        local f = io.open(out_path, 'w')
+        if f then
+            f:write(text_or_html)
+            f:close()
+            vim.notify(
+                'Saved SVG content to: ' .. out_path,
+                vim.log.levels.INFO,
+                { title = 'yank-system-ops' }
+            )
+            return Darwin:fix_image_extension(out_path) or out_path
+        end
+    end
+
+    -- Step 2: Check for HTML <img> with base64 or URL
+    if text_or_html:match '^<img' then
+        local img_type, base64_data =
+            text_or_html:match '<img[^>]+src="data:image/(%w+);base64,([^"]+)"'
+        if base64_data then
+            local out_path = vim.fs.joinpath(
+                target_dir,
+                'clipboard_' .. timestamp .. '.' .. img_type
+            )
+            local f = io.open(out_path, 'wb')
+            if f then
+                f:write(
+                    vim.fn.systemlist('base64 --decode', base64_data)[1] or ''
+                )
+                f:close()
+                vim.notify(
+                    'Saved base64 image to: ' .. out_path,
+                    vim.log.levels.INFO,
+                    { title = 'yank-system-ops' }
+                )
+                return Darwin:fix_image_extension(out_path) or out_path
+            end
+        end
+
+        local url = text_or_html:match '<img[^>]+src="(https?://[^"]+)"'
+        if url then
+            local out_path =
+                vim.fs.joinpath(target_dir, 'clipboard_' .. timestamp .. '.png')
+            local result =
+                vim.fn.system { 'curl', '-L', '-s', '-o', out_path, url }
+            if
+                vim.v.shell_error == 0
+                and vim.fn.filereadable(out_path) == 1
+            then
+                vim.notify(
+                    'Downloaded image from: ' .. url,
+                    vim.log.levels.INFO,
+                    { title = 'yank-system-ops' }
+                )
+                return Darwin:fix_image_extension(out_path) or out_path
+            end
+        end
+    end
+
+    -- Step 3: Fallback to bitmap (pngpaste or AppleScript)
+    local filename = 'clipboard_image_' .. timestamp .. '.png'
     local out_path = target_dir .. '/' .. filename
 
     local cmd
@@ -408,7 +393,7 @@ function Darwin:save_clipboard_image(target_dir)
         return nil
     end
 
-    return out_path
+    return Darwin:fix_image_extension(out_path) or out_path
 end
 
 return Darwin

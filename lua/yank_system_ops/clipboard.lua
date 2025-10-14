@@ -8,6 +8,7 @@ local os_module = loader.get_os_module()
 local ui = require 'yank_system_ops.ui'
 local uri_downloader = require 'yank_system_ops.uri_downloader'
 local pathinfo = require 'yank_system_ops.pathinfo'
+local clipboard = require 'native_clipboard'
 
 --- Copy files to system clipboard
 -- @param items table List of file paths
@@ -24,10 +25,10 @@ function M.yank_files(items)
         return false
     end
 
-    local ok, err = pcall(os_module.add_files_to_clipboard, items)
+    local ok = clipboard:set('files', items)
     if not ok then
         vim.notify(
-            'Failed to copy files to clipboard: ' .. tostring(err),
+            'Failed to copy files to clipboard',
             vim.log.levels.ERROR,
             { title = 'yank-system-ops' }
         )
@@ -85,8 +86,7 @@ function M.put_files(target_dir)
     end
 
     -- Handle image data
-    local has_image = os_module.clipboard_has_image
-        and os_module:clipboard_has_image()
+    local has_image = clipboard:has 'image' or clipboard:has 'html'
     if has_image then
         local img_path = os_module:save_clipboard_image(target_dir)
         if img_path then
