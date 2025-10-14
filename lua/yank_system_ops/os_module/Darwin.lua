@@ -173,9 +173,9 @@ function Darwin.put_files_from_clipboard(target_dir)
     end
 
     -- Step 1: Check clipboard for SVG content
-    local clip = vim.fn.getreg '+' or ''
-    clip = vim.trim(clip)
-    if clip:match '^<svg' then
+    local text_or_html = clipboard:get 'html' or clipboard:get 'text' or ''
+    text_or_html = vim.trim(text_or_html)
+    if text_or_html:match '^<svg' then
         -- Add timestamp to filename
         local timestamp = os.date '%Y%m%d_%H%M%S'
         local svg_file =
@@ -183,7 +183,7 @@ function Darwin.put_files_from_clipboard(target_dir)
 
         local f = io.open(svg_file, 'w')
         if f then
-            f:write(clip)
+            f:write(text_or_html)
             f:close()
             vim.notify(
                 'SVG content saved to: ' .. svg_file,

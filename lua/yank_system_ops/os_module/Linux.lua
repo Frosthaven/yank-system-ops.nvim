@@ -17,17 +17,17 @@ function Linux.put_files_from_clipboard(target_dir)
 
     local items = {}
 
-    -- Attempt to get clipboard content via vim register
-    local clip = clipboard:get 'html' or clipboard:get 'text'
+    -- Attempt to get clipboard content
+    local text_or_html = clipboard:get 'html' or clipboard:get 'text' or ''
 
     -- Step 1: Handle SVG content directly
-    if clip:match '^<svg' then
+    if text_or_html:match '^<svg' then
         local timestamp = os.date '%Y%m%d_%H%M%S'
         local svg_file =
             string.format('%s/clipboard_%s.svg', target_dir, timestamp)
         local f = io.open(svg_file, 'w')
         if f then
-            f:write(clip)
+            f:write(text_or_html)
             f:close()
             vim.notify(
                 'SVG content saved to: ' .. svg_file,
@@ -46,7 +46,7 @@ function Linux.put_files_from_clipboard(target_dir)
     end
 
     -- Step 2: Handle file paths
-    if clip ~= '' then
+    if text_or_html ~= '' then
         items = clipboard:get 'files' or {}
     end
 
@@ -68,11 +68,6 @@ function Linux.put_files_from_clipboard(target_dir)
     end
 
     if #items == 0 then
-        vim.notify(
-            'No valid file URIs found in clipboard',
-            vim.log.levels.WARN,
-            { title = 'yank-system-ops' }
-        )
         return false
     end
 
