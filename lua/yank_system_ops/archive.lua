@@ -198,8 +198,11 @@ function M.create_zip(items, base_dir, filetype)
         end
     end
 
+    -- ensure the path doesn't have double slashes
+    zip_path = zip_path:gsub('//', '/')
+
     -- Copy zip path to clipboard
-    vim.fn.setreg('+', zip_path)
+    clipboard:set('text', zip_path)
 
     -- Remove old archives
     local existing = vim.fn.globpath(downloads, '*.nvim.zip', true, true)
@@ -217,6 +220,8 @@ end
 function M.zip_files_to_clipboard(items, base_dir, filetype)
     local zip_path = M.create_zip(items, base_dir, filetype)
     if zip_path then
+        -- remove file:// prefix if present
+        zip_path = zip_path:gsub('^file://', '')
         clipboard:set('files', { zip_path })
         vim.notify(
             'Compressed archive added to clipboard',
