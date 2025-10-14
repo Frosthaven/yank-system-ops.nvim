@@ -19,9 +19,9 @@ function M.download(uri, target_dir)
         return nil
     end
 
+    -- Extract filename from URL
     local filename = uri:match '.+/([^/]+)$' or 'downloaded_file'
     filename = filename:gsub('%?.*$', ''):gsub('#.*$', '')
-    local url_ext = filename:match '%.([^.]+)$'
 
     local tmpfile = vim.fn.tempname()
     local download_cmd
@@ -53,103 +53,69 @@ function M.download(uri, target_dir)
         return nil
     end
 
-    -- MIME type detection
-    local mime = ''
-    if vim.fn.executable 'curl' == 1 then
-        mime = vim.fn.system(
-            string.format(
-                'curl -sI "%s" | grep -i Content-Type | awk \'{print $2}\' | tr -d "\r"',
-                uri
-            )
-        )
-    elseif vim.fn.executable 'wget' == 1 then
-        mime = vim.fn.system(
-            string.format(
-                'wget --spider --server-response "%s" 2>&1 | grep -i Content-Type | awk \'{print $2}\' | tr -d "\r"',
-                uri
-            )
-        )
-    end
-    mime = vim.trim(mime or '')
+    -- Detect extension by magic numbers
+    local ext
+    local f = io.open(tmpfile, 'rb')
+    if f then
+        local bytes = f:read(1024) or ''
+        f:close()
 
-    local mime_map = {
-        ['image/png'] = 'png',
-        ['image/jpeg'] = 'jpg',
-        ['image/jpg'] = 'jpg',
-        ['image/gif'] = 'gif',
-        ['image/webp'] = 'webp',
-        ['application/zip'] = 'zip',
-        ['application/pdf'] = 'pdf',
-        ['text/html'] = 'html',
-        ['application/xhtml+xml'] = 'html',
-        ['application/xml'] = 'xml',
-        ['text/xml'] = 'xml',
-        ['application/json'] = 'json',
-        ['text/json'] = 'json',
-        ['image/svg+xml'] = 'svg',
-    }
+        local hex = bytes:gsub('.', function(c)
+            return string.format('%02X', c:byte())
+        end)
 
-    local ext = mime_map[mime]
+        local magic_map = {
+            ['89504E470D0A1A0A'] = 'png',
+            ['FFD8FF'] = 'jpg',
+            ['47494638'] = 'gif',
+            ['424D'] = 'bmp',
+            ['25504446'] = 'pdf',
+            ['52494646'] = 'webp', -- RIFF + WEBP
+            ['49492A00'] = 'tiff', -- little-endian TIFF
+            ['4D4D002A'] = 'tiff', -- big-endian TIFF
+        }
 
-    -- Content sniffing / magic numbers
-    if not ext then
-        local f = io.open(tmpfile, 'rb')
-        if f then
-            local bytes = f:read(1024) or ''
-            f:close()
-
-            local hex = bytes:gsub('.', function(c)
-                return string.format('%02X', c:byte())
-            end)
-            local magic_map = {
-                ['89504E470D0A1A0A'] = 'png',
-                ['FFD8FF'] = 'jpg',
-                ['47494638'] = 'gif',
-                ['504B0304'] = 'zip',
-                ['25504446'] = 'pdf',
-                ['52494646'] = 'webp',
-            }
-            for sig, mx_ext in pairs(magic_map) do
-                if hex:find(sig, 1, true) then
-                    ext = mx_ext
-                    break
-                end
+        for sig, mx_ext in pairs(magic_map) do
+            if hex:find(sig, 1, true) then
+                ext = mx_ext
+                break
             end
+        end
 
-            -- Text sniffing
-            if not ext then
-                if bytes:match '^%s*<svg' then
-                    ext = 'svg'
-                elseif bytes:match '^%s*<%?xml' then
-                    ext = 'xml'
-                elseif bytes:match '^%s*{' or bytes:match '^%s*%[' then
-                    ext = 'json'
-                elseif
-                    bytes:match '^%s*<!DOCTYPE html>' or bytes:match '^%s*<html'
-                then
-                    ext = 'html'
-                end
+        -- Text sniffing
+        if not ext then
+            if bytes:match '^%s*<svg' then
+                ext = 'svg'
+            elseif bytes:match '^%s*<%?xml' then
+                ext = 'xml'
+            elseif bytes:match '^%s*{' or bytes:match '^%s*%[' then
+                ext = 'json'
+            elseif
+                bytes:match '^%s*<!DOCTYPE html>' or bytes:match '^%s*<html'
+            then
+                ext = 'html'
             end
         end
     end
 
-    if not ext and url_ext then
-        ext = url_ext
-    end
+    -- Fallback to URL extension
     if not ext then
-        ext = 'bin'
+        ext = filename:match '%.([^.]+)$' or 'bin'
     end
 
-    local base_name = filename:gsub('%.' .. ext .. '$', '')
+    -- Remove any existing extension from filename to avoid double extension
+    local base_name = filename:gsub('%.[^%.]+$', '')
+    filename = base_name .. '.' .. ext
+
+    -- Add timestamp if filename is empty or generic
     if base_name == 'downloaded_file' or base_name == '' then
         local timestamp = os.date '%Y%m%d_%H%M%S'
         filename = string.format('%s__%s.%s', base_name, timestamp, ext)
-    else
-        filename = base_name .. '.' .. ext
     end
 
     local final_path = target_dir .. '/' .. filename
 
+    -- Copy temporary file to final location
     local fsrc = io.open(tmpfile, 'rb')
     if not fsrc then
         vim.notify(

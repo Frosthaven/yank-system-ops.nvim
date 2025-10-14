@@ -31,12 +31,31 @@ function Base:fix_image_extension(path)
     f:close()
 
     local ext
+
+    -- SVG
     if header:match '^<svg' then
         ext = 'svg'
+    -- PNG
     elseif header:sub(1, 8) == '\137PNG\r\n\26\n' then
         ext = 'png'
+    -- JPEG
     elseif header:sub(1, 2) == '\255\216' then
         ext = 'jpg'
+    -- GIF
+    elseif header:sub(1, 6) == 'GIF87a' or header:sub(1, 6) == 'GIF89a' then
+        ext = 'gif'
+    -- BMP
+    elseif header:sub(1, 2) == 'BM' then
+        ext = 'bmp'
+    -- TIFF (both big-endian and little-endian)
+    elseif header:sub(1, 4) == 'II*\0' or header:sub(1, 4) == 'MM\0*' then
+        ext = 'tiff'
+    -- WebP (RIFF header + "WEBP" signature)
+    elseif header:sub(1, 4) == 'RIFF' and header:sub(9, 12) == 'WEBP' then
+        ext = 'webp'
+    -- PDF
+    elseif header:sub(1, 4) == '%PDF' then
+        ext = 'pdf'
     end
 
     if ext then
