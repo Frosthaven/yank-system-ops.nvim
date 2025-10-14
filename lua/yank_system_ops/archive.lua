@@ -6,6 +6,7 @@ local M = {}
 local loader = require 'yank_system_ops.__loader'
 local ui = require 'yank_system_ops.ui'
 local pathinfo = require 'yank_system_ops.pathinfo'
+local clipboard = require 'native_clipboard'
 
 local os_module = loader.get_os_module()
 local config = loader.get_config()
@@ -216,7 +217,7 @@ end
 function M.zip_files_to_clipboard(items, base_dir, filetype)
     local zip_path = M.create_zip(items, base_dir, filetype)
     if zip_path then
-        os_module.add_files_to_clipboard(zip_path)
+        clipboard:set('files', { zip_path })
         vim.notify(
             'Compressed archive added to clipboard',
             vim.log.levels.INFO,

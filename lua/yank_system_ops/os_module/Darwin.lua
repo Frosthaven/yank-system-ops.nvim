@@ -9,69 +9,6 @@ local function shell_quote(str)
     return "'" .. str:gsub("'", "'\\''") .. "'"
 end
 
-local function get_plugin_root()
-    -- Resolve to absolute path of this Lua file
-    local source = debug.getinfo(1, 'S').source
-    if source:sub(1, 1) == '@' then
-        source = source:sub(2)
-    end
-    -- Move up to the plugin root
-    return vim.fn.fnamemodify(source, ':h:h:h:h') -- adjust depth as needed
-end
-
---- Copy a single file (or multiple files) to macOS clipboard using Swift
--- @param files string|table File path(s) to copy
--- @return boolean success
-function Darwin.add_files_to_clipboard(files)
-    if type(files) == 'string' then
-        files = { files }
-    elseif type(files) ~= 'table' then
-        vim.notify(
-            'Invalid input to add_files_to_clipboard',
-            vim.log.levels.WARN,
-            { title = 'yank-system-ops' }
-        )
-        return false
-    end
-
-    local plugin_root = get_plugin_root()
-    local swift_file = plugin_root
-        .. '/lua/yank_system_ops/os_module/Darwin/Darwin_copyfiles.swift'
-    if not vim.loop.fs_stat(swift_file) then
-        vim.notify(
-            'Swift file not found: ' .. swift_file,
-            vim.log.levels.ERROR,
-            { title = 'yank-system-ops' }
-        )
-        return false
-    end
-
-    -- Build bash command with $@ to safely handle spaces
-    local cmd_tbl = { 'bash', '-c', 'swift "$@"', 'dummy', swift_file }
-    for _, f in ipairs(files) do
-        local name = vim.fn.fnamemodify(f, ':t') -- get basename
-        if name ~= '.' and name ~= '..' and vim.loop.fs_stat(f) then
-            table.insert(cmd_tbl, f) -- valid file
-        end
-    end
-
-    if #cmd_tbl <= 4 then -- only bash, -c, swift "$@", dummy, swift_file
-        return false -- nothing valid to copy
-    end
-
-    local result = vim.fn.system(cmd_tbl)
-    if vim.v.shell_error ~= 0 then
-        vim.notify(
-            'Failed to copy files to clipboard:\n' .. result,
-            vim.log.levels.ERROR,
-            { title = 'yank-system-ops' }
-        )
-        return false
-    end
-
-    return true
-end
-
 --- Recursively extract an archive into a target directory on Darwin
 -- Handles nested archives like .tar inside .zip
 -- @param archive_path string Full path to archive
@@ -337,25 +274,6 @@ function Darwin.open_file_browser(path)
 
     vim.fn.system(cmd)
     return vim.v.shell_error == 0
-end
-
---- Check if clipboard contains image
-function Darwin:clipboard_has_image()
-    if vim.fn.executable 'pngpaste' == 1 then
-        vim.fn.system 'bash -c "pngpaste -b >/dev/null 2>&1"'
-        return vim.v.shell_error == 0
-    else
-        local script = [[
-            try
-                the clipboard as «class PNGf»
-                return 0
-            on error
-                return 1
-            end try
-        ]]
-        local result = vim.fn.system('osascript -e ' .. shell_quote(script))
-        return result:match '0' ~= nil
-    end
 end
 
 --- Save image from clipboard

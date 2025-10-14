@@ -4,56 +4,6 @@
 local Base = require 'yank_system_ops.os_module.__base'
 local Windows = Base:extend()
 
---- Copy file(s) to the clipboard (Windows)
--- Uses PowerShell + System.Windows.Forms.Clipboard
--- @param files string|table
--- @return boolean
-function Windows.add_files_to_clipboard(files)
-    if type(files) == 'string' then
-        files = { files }
-    end
-    if type(files) ~= 'table' or #files == 0 then
-        vim.notify(
-            'No files provided to copy',
-            vim.log.levels.WARN,
-            { title = 'yank-system-ops' }
-        )
-        return false
-    end
-
-    -- Escape paths
-    local escaped_files = {}
-    for _, f in ipairs(files) do
-        table.insert(escaped_files, "'" .. f:gsub("'", "''") .. "'")
-    end
-    local file_list = table.concat(escaped_files, ', ')
-
-    -- PowerShell script
-    local ps = string.format(
-        [=[
-Add-Type -AssemblyName System.Windows.Forms
-$sc = New-Object System.Collections.Specialized.StringCollection
-%s | ForEach-Object { if (Test-Path $_) { $sc.Add($_) | Out-Null } }
-if ($sc.Count -gt 0) {
-    [System.Windows.Forms.Clipboard]::SetFileDropList($sc)
-    exit 0
-} else { exit 1 }
-]=],
-        file_list
-    )
-
-    local result = vim.fn.system { 'powershell', '-NoProfile', '-Command', ps }
-    if vim.v.shell_error ~= 0 then
-        vim.notify(
-            'Failed to copy file(s) to clipboard: ' .. (result or '<no output>'),
-            vim.log.levels.ERROR,
-            { title = 'yank-system-ops' }
-        )
-        return false
-    end
-    return true
-end
-
 --- Put files from clipboard into target_dir
 -- @param target_dir string
 -- @return boolean
@@ -215,36 +165,6 @@ exit 0
     os.execute(delete_cmd)
 
     return { archive_path }
-end
-
---- Check if clipboard has image
-function Windows:clipboard_has_image()
-    local ps = [=[
-Add-Type -AssemblyName System.Windows.Forms
-$data = [System.Windows.Forms.Clipboard]::GetDataObject()
-
-# Raw bitmap/DIB
-if ($data.GetDataPresent([System.Windows.Forms.DataFormats]::Bitmap)) { exit 0 }
-if ($data.GetDataPresent([System.Windows.Forms.DataFormats]::Dib)) { exit 0 }
-
-# HTML with <img>
-if ($data.GetDataPresent([System.Windows.Forms.DataFormats]::Html)) {
-    $html = $data.GetData([System.Windows.Forms.DataFormats]::Html) -as [string]
-    if ($html -match '<img') { exit 0 }
-}
-
-exit 1
-]=]
-
-    vim.fn.system {
-        'powershell',
-        '-NoProfile',
-        '-STA',
-        '-Command',
-        '[Console]::OutputEncoding=[Text.Encoding]::UTF8; ' .. ps,
-    }
-
-    return vim.v.shell_error == 0
 end
 
 --- Correct the file extension based on actual content

@@ -3,18 +3,6 @@
 -- @module Base
 local Base = {}
 
---- Copy file(s) to the system clipboard
--- Abstract method. Must be implemented in subclass.
--- @param files string|table A file path or a list of file paths
-function Base.add_files_to_clipboard(files)
-    files = files or {}
-    vim.notify(
-        'add_files_to_clipboard not implemented for this OS',
-        vim.log.levels.WARN,
-        { title = 'yank-system-ops' }
-    )
-end
-
 --- Put file(s) from the system clipboard to a target directory
 -- Abstract method. Must be implemented in subclass.
 -- @param target_dir string Absolute path to target directory
@@ -51,18 +39,6 @@ function Base.open_file_browser(path)
         vim.log.levels.WARN,
         { title = 'yank-system-ops' }
     )
-end
-
---- Check if the clipboard has image data
---- Abstract method. Must be implemented in subclass.
--- @return boolean True if clipboard has image data, false otherwise
-function Base.clipboard_has_image()
-    vim.notify(
-        'clipboard_has_image not implemented for this OS',
-        vim.log.levels.WARN,
-        { title = 'yank-system-ops' }
-    )
-    return false
 end
 
 --- Default stub for saving clipboard images
