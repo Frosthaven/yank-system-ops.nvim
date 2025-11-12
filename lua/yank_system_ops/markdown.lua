@@ -74,13 +74,15 @@ function M.yank_diagnostics(severity)
     local lines =
         vim.api.nvim_buf_get_lines(bufnr, start_line - 1, end_line, false)
 
-    -- Attempt to get buffer's comment prefix
-    local commentstring = vim.bo.commentstring or ''
-    local comment_prefix = commentstring:match '^(.-)%%s'
+    -- Get buffer's commentstring and split into prefix/suffix
+    local cs = vim.bo.commentstring or ''
+    local comment_prefix, comment_suffix = cs:match '^(.-)%%s(.-)$'
+    comment_prefix = comment_prefix or ''
+    comment_suffix = comment_suffix or ''
 
     local markdown
 
-    if comment_prefix and comment_prefix ~= '' then
+    if comment_prefix ~= '' then
         -- Map diagnostics by line number
         local diags_by_line = {}
         for _, d in ipairs(diagnostics) do
@@ -93,21 +95,18 @@ function M.yank_diagnostics(severity)
             )
         end
 
-        -- Annotate lines with diagnostics as inline comments
+        -- Annotate lines with diagnostics
         local annotated = {}
         for i, line in ipairs(lines) do
             local lnum = start_line + i - 1
             if diags_by_line[lnum] then
-                table.insert(
-                    annotated,
-                    line
-                        .. ' '
-                        .. comment_prefix
-                        .. ' '
-                        .. table.concat(diags_by_line[lnum], '; ')
-                )
+                annotated[i] = line
+                    .. ' '
+                    .. comment_prefix
+                    .. table.concat(diags_by_line[lnum], '; ')
+                    .. comment_suffix
             else
-                table.insert(annotated, line)
+                annotated[i] = line
             end
         end
 
@@ -117,7 +116,7 @@ function M.yank_diagnostics(severity)
             table.concat(annotated, '\n')
         )
     else
-        -- Fallback: keep original behavior (bullet list + code block)
+        -- Fallback: bullet list + code block
         local items = {}
         for _, d in ipairs(diagnostics) do
             local msg = d.message:gsub('\n', ' ')
